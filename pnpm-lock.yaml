@@ -118,8 +118,8 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
       '@shiplightai/devtools-assets':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       ai:
         specifier: ^7.0.42
         version: 7.0.42(zod@3.25.76)
@@ -2715,8 +2715,9 @@ packages:
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
-  '@shiplightai/devtools-assets@1.0.0':
-    resolution: {integrity: sha512-/Ff3PDliamHrmsr+qx84gFkVKh1FvI3oKr5MD2tGu+p0sz5h85SJFuTQIZtOBUZyTE53H3LwuwAME8ZR1L2upA==}
+  '@shiplightai/devtools-assets@1.0.1':
+    resolution: {integrity: sha512-iYFFOy8CJMe+na+ewR6H9e5Bjmb0TpFAQ9boBaT5IUZaXsn3fQ0tiWoB4oVSIzLjA8hDB1p0q5yG1X/bpAQWog==}
+    engines: {node: '>=22.0.0'}
 
   '@sinclair/typebox@0.34.45':
     resolution: {integrity: sha512-qJcFVfCa5jxBFSuv7S5WYbA8XdeCPmhnaVVfX/2Y6L8WYg8sk3XY2+6W0zH+3mq1Cz+YC7Ki66HfqX6IHAwnkg==}
@@ -9184,7 +9185,7 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@shiplightai/devtools-assets@1.0.0': {}
+  '@shiplightai/devtools-assets@1.0.1': {}
 
   '@sinclair/typebox@0.34.45': {}
 
