@@ -11,9 +11,6 @@ import { classifyRepositoryLink, type RepositoryLinkVerdict } from './repository
  */
 const UNREACHABLE_URL = 'https://github.com/ShiplightAI/not-a-public-repo';
 
-/** The public repository this server's source actually lives in. */
-const PUBLIC_URL = 'https://github.com/ShiplightAI/shiplight-cli';
-
 /** Narrows away the `omitted` case, which carries no message. */
 function detailOf(verdict: RepositoryLinkVerdict): string {
   assert.notEqual(verdict.kind, 'omitted', 'expected a verdict with a message');
@@ -99,16 +96,17 @@ describe('server.json', () => {
     readFileSync(join(dirname(dirname(fileURLToPath(import.meta.url))), 'server.json'), 'utf8'),
   ) as { repository?: { url?: string } };
 
-  it('links the public repository', () => {
-    // Checked without a network call so it holds in any environment. Until this
-    // repo went public the field was omitted, because the only source was a
-    // private monorepo and every reader outside the org got a 404. Now there is
-    // a repository they can actually open, so the link must be present and be
-    // that one.
+  it('does not link a repository readers cannot open', () => {
+    // Checked without a network call so it holds in any environment: the URL
+    // itself is the defect, whatever GitHub happens to answer today. The field
+    // is optional in the registry schema and stays omitted while this
+    // repository is not public — see the note in
+    // scripts/__tests__/server-json-registry-manifest.test.ts for how to add it
+    // back when that changes.
     assert.equal(
-      manifest.repository?.url,
-      PUBLIC_URL,
-      'server.json must point readers at the public repository holding this server.',
+      manifest.repository,
+      undefined,
+      'server.json declares a repository, but this repo is not public — the link would 404 for registry readers.',
     );
   });
 });

@@ -104,22 +104,26 @@ describe('server.json tracks the published MCP package', () => {
     assert.match(manifest.websiteUrl ?? '', /^https:\/\//);
   });
 
-  test('advertises the public repository as the source', () => {
-    // History: 0.2.0 shipped a repository.url pointing at a private monorepo, so every reader outside the org got a 404. The field
-    // was then omitted rather than repointed, because no public repo held this
-    // server's source and any substitute would have sent reviewers to unrelated
-    // code. That constraint is gone — the source is public now — so the link
-    // must be present and point at the repository that actually holds it.
+  test('does not advertise a repository readers cannot open', () => {
+    // The field is optional in the schema — only name, description and version
+    // are required — and 0.2.0 shipped one pointing at a repository that 404'd
+    // for everyone outside the org, so every reader of the registry entry got a
+    // broken link. It stays omitted while this repository is not public.
+    //
+    // When ShiplightAI/shiplight-cli goes public, add it back:
+    //   "repository": { "url": "https://github.com/ShiplightAI/shiplight-cli",
+    //                   "source": "github", "subfolder": "apps/mcp-server" }
+    // and invert this assertion. The publish workflow's manifest validator
+    // checks the URL is anonymously reachable, so it will confirm the change.
     //
     // apps/mcp-server/scripts/repositoryLink.test.ts asserts the same thing in
     // the mcp-server lane, so a developer running that package's tests sees it
     // without waiting for this one.
     assert.equal(
-      manifest.repository?.url,
-      'https://github.com/ShiplightAI/shiplight-cli',
-      'server.json must point readers at the public repository holding this server',
+      manifest.repository,
+      undefined,
+      'server.json declares a repository, but this repo is not public — the link would 404 for registry readers',
     );
-    assert.equal(manifest.repository?.source, 'github');
   });
 
   test('if a repository is declared at all, it is a well-formed public GitHub link', () => {
