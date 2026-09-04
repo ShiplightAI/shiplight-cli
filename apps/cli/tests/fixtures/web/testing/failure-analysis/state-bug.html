@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Not Persisted - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .settings-form {
+            max-width: 500px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: var(--spacing-xl);
+            right: var(--spacing-xl);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .toast {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            min-width: 250px;
+        }
+
+        .toast-success {
+            background: var(--success);
+        }
+
+        .toast-info {
+            background: var(--secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+
+        .current-stored {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .stored-label {
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stored-value {
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+        }
+
+        .stored-value.empty {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>State Not Persisted</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>State Not Persisted</h1>
+            <p class="description">A settings form where saving appears successful but the data is not actually persisted. Loading settings reverts to original values.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>User Settings</h2>
+                <p>Update your username and email, then save. Use "Load Settings" to reload the saved data.</p>
+
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="username-input">Username</label>
+                        <input type="text" id="username-input" class="form-control" value="default_user" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="email-input">Email</label>
+                        <input type="email" id="email-input" class="form-control" value="user@example.com" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="bio-input">Bio</label>
+                        <textarea id="bio-input" class="form-control" placeholder="Tell us about yourself" rows="3">Hello, I am a default user.</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="save-btn">Save Settings</button>
+                        <button class="btn btn-secondary" id="load-btn">Load Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Stored Data (Server-side)</h2>
+                <p>This shows what the server actually has stored for your settings.</p>
+                <div class="current-stored">
+                    <div class="stored-label">Username</div>
+                    <div class="stored-value" id="stored-username">default_user</div>
+                </div>
+                <div class="current-stored" style="margin-top: var(--spacing-md);">
+                    <div class="stored-label">Email</div>
+                    <div class="stored-value" id="stored-email">user@example.com</div>
+                </div>
+                <div class="current-stored" style="margin-top: var(--spacing-md);">
+                    <div class="stored-label">Bio</div>
+                    <div class="stored-value" id="stored-bio">Hello, I am a default user.</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>After clicking "Save Settings", the data should be persisted. Clicking "Load Settings" should populate the form with the most recently saved values.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        (function() {
+            // BUG: The "saved" data is stored in a variable that is never actually
+            // used when loading. The load function always returns the hardcoded defaults.
+            var savedData = {
+                username: 'default_user',
+                email: 'user@example.com',
+                bio: 'Hello, I am a default user.'
+            };
+
+            var defaults = {
+                username: 'default_user',
+                email: 'user@example.com',
+                bio: 'Hello, I am a default user.'
+            };
+
+            function showToast(message, type) {
+                var container = document.getElementById('toast-container');
+                var toast = document.createElement('div');
+                toast.className = 'toast toast-' + type;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(function() {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 3000);
+            }
+
+            document.getElementById('save-btn').addEventListener('click', function() {
+                // This looks like it saves, but it writes to a variable
+                // that is never read by the load function
+                savedData.username = document.getElementById('username-input').value;
+                savedData.email = document.getElementById('email-input').value;
+                savedData.bio = document.getElementById('bio-input').value;
+
+                showToast('Settings saved!', 'success');
+            });
+
+            document.getElementById('load-btn').addEventListener('click', function() {
+                // BUG: Reads from "defaults" instead of "savedData",
+                // so it always loads the original hardcoded values.
+                var data = defaults;
+
+                document.getElementById('username-input').value = data.username;
+                document.getElementById('email-input').value = data.email;
+                document.getElementById('bio-input').value = data.bio;
+
+                // Update the "stored data" display to show what the server actually has
+                document.getElementById('stored-username').textContent = data.username;
+                document.getElementById('stored-email').textContent = data.email;
+                document.getElementById('stored-bio').textContent = data.bio;
+
+                showToast('Settings loaded from server', 'info');
+            });
+        })();
+    </script>
+</body>
+</html>

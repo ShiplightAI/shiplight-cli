@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        .login-header .icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+        }
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid var(--danger);
+            color: #991b1b;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            display: none;
+        }
+        .error-message.visible {
+            display: block;
+        }
+        .success-message {
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            color: #065f46;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            display: none;
+            text-align: center;
+        }
+        .success-message.visible {
+            display: block;
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .dashboard-content {
+            display: none;
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+        .dashboard-content.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Login Form</span>
+            </div>
+            <span class="badge">Type D: Configuration</span>
+            <h1>Login Form</h1>
+            <p class="description">A login page with credential validation. Tests with incorrect credentials will see "Invalid credentials" error.</p>
+        </div>
+
+        <div class="test-content">
+            <div id="login-section" class="login-container">
+                <div class="login-header">
+                    <div class="icon">👤</div>
+                    <h2>Sign In</h2>
+                    <p style="color: var(--text-secondary);">Enter your credentials to access the dashboard</p>
+                </div>
+
+                <div id="error-message" class="error-message">
+                    Invalid credentials. Please check your username and password.
+                </div>
+
+                <div id="success-message" class="success-message">
+                    Login successful! Redirecting to dashboard...
+                </div>
+
+                <form id="login-form" class="login-form" onsubmit="return false;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" id="login-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="info-box" style="margin-top: var(--spacing-xl);">
+                    <h4>Test Credentials</h4>
+                    <p>Username: <code>testuser</code> / Password: <code>correctpassword</code></p>
+                </div>
+            </div>
+
+            <div id="dashboard-content" class="dashboard-content">
+                <h2>Welcome to the Dashboard</h2>
+                <p>You have successfully logged in.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VALID_USERNAME = 'testuser';
+        const VALID_PASSWORD = 'correctpassword';
+
+        document.getElementById('login-btn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-message');
+            const successEl = document.getElementById('success-message');
+
+            errorEl.classList.remove('visible');
+            successEl.classList.remove('visible');
+
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                successEl.classList.add('visible');
+                setTimeout(function() {
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('dashboard-content').classList.add('visible');
+                }, 1000);
+            } else {
+                errorEl.classList.add('visible');
+            }
+        });
+    </script>
+</body>
+</html>

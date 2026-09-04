@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broken Counter Assertion - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .counter-display {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xl);
+            padding: var(--spacing-2xl);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            border: 2px solid var(--border-color);
+        }
+
+        .counter-value {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .counter-label {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .counter-controls {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .counter-history {
+            margin-top: var(--spacing-xl);
+        }
+
+        .history-entry {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+
+        .history-timestamp {
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Broken Counter Assertion</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>Broken Counter Assertion</h1>
+            <p class="description">A counter component where the Increment button fails to update the displayed count due to an application bug.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Counter Component</h2>
+                <p>Click the "Increment" button to increase the counter. The displayed count should update after each click.</p>
+
+                <div class="counter-display">
+                    <div>
+                        <div class="counter-label">Current Count</div>
+                        <div class="counter-value" id="counter-display">Count: 0</div>
+                    </div>
+                    <div class="counter-controls">
+                        <button class="btn btn-primary btn-lg" id="increment-btn">Increment</button>
+                        <button class="btn btn-outline btn-sm" id="reset-btn">Reset Counter</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Click History</h2>
+                <p>A log of all button clicks and their expected effects.</p>
+                <div class="counter-history" id="click-history">
+                    <div class="history-entry" style="color: var(--text-muted); font-style: italic;">No clicks recorded yet.</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>Each click on "Increment" should increase the count by 1. The display should update to reflect the new value immediately.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var internalCount = 0;
+            var clickCount = 0;
+            var historyEl = document.getElementById('click-history');
+            var displayEl = document.getElementById('counter-display');
+
+            document.getElementById('increment-btn').addEventListener('click', function() {
+                clickCount++;
+                // BUG: The internal count is incremented but the display is never updated.
+                // The developer accidentally assigned to a local variable instead of updating the DOM.
+                internalCount++;
+                var newValue = internalCount;
+                // This line should be: displayEl.textContent = 'Count: ' + newValue;
+                // Instead it does nothing visible:
+                var _unused = 'Count: ' + newValue;
+
+                // History still logs the click to make it look like the handler fires
+                var entry = document.createElement('div');
+                entry.className = 'history-entry';
+                var now = new Date();
+                var timestamp = now.toLocaleTimeString();
+                entry.innerHTML = '<span class="history-timestamp">' + timestamp + '</span>' +
+                    '<span>Clicked Increment (click #' + clickCount + ')</span>';
+
+                if (clickCount === 1) {
+                    historyEl.innerHTML = '';
+                }
+                historyEl.appendChild(entry);
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                internalCount = 0;
+                clickCount = 0;
+                displayEl.textContent = 'Count: 0';
+                historyEl.innerHTML = '<div class="history-entry" style="color: var(--text-muted); font-style: italic;">No clicks recorded yet.</div>';
+            });
+        })();
+    </script>
+</body>
+</html>

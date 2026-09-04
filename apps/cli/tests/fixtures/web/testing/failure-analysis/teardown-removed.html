@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teardown Removed - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            min-height: 550px;
+        }
+
+        .admin-sidebar {
+            background: var(--gray-900);
+            padding: var(--spacing-lg) 0;
+        }
+
+        .admin-logo {
+            padding: 0 var(--spacing-lg) var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-700);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .admin-logo h3 {
+            color: var(--text-inverse);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .admin-logo span {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .admin-nav {
+            list-style: none;
+        }
+
+        .admin-nav li a {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            color: var(--gray-400);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+        }
+
+        .admin-nav li a:hover {
+            color: var(--text-inverse);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-nav li a.active {
+            color: var(--text-inverse);
+            background: rgba(99, 102, 241, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .admin-nav li a .icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .admin-main {
+            background: var(--bg-primary);
+            padding: var(--spacing-2xl);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .admin-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .admin-header .header-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        /* User list */
+        .user-list {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .user-list-header {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--bg-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-list-item {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            transition: background 0.15s;
+        }
+
+        .user-list-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .user-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .user-avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            color: var(--text-inverse);
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .user-email-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .role-tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .role-tag.admin { background: #fef2f2; color: #991b1b; }
+        .role-tag.user { background: #eff6ff; color: #1e40af; }
+        .role-tag.editor { background: #ecfdf5; color: #065f46; }
+
+        .user-actions-col {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-lightest);
+            border-color: var(--primary);
+        }
+
+        .icon-btn.delete:hover {
+            background: #fef2f2;
+            border-color: var(--danger);
+        }
+
+        /* Add User Modal */
+        .add-user-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .add-user-modal.visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-2xl);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-content h3 {
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            background: var(--bg-dark);
+            color: var(--text-inverse);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* NOTE: "Reset Data" button was removed from the admin panel */
+        /* The old teardown step would click a "Reset Data" button that no longer exists */
+
+        @media (max-width: 768px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sidebar {
+                display: none;
+            }
+
+            .user-list-header,
+            .user-list-item {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Teardown Removed</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Teardown Removed</h1>
+            <p class="description">The admin panel previously had a "Reset Data" button used by test teardown steps to clean up test data. That button was removed. The page is fully functional -- only the cleanup mechanism changed.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: teardown_outdated</h4>
+                <p>The "Reset Data" button was removed from the admin panel because data cleanup is now handled automatically by the backend.</p>
+                <ul>
+                    <li><strong>Old test teardown:</strong> After test completes, click "Reset Data" button to clean up created users</li>
+                    <li><strong>Current state:</strong> No "Reset Data" button exists on the page</li>
+                    <li><strong>Expected fix:</strong> Remove the teardown step that clicks "Reset Data", or replace it with an appropriate alternative</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="admin-layout">
+                    <div class="admin-sidebar">
+                        <div class="admin-logo">
+                            <h3>Admin Panel</h3>
+                            <span>v4.2.0</span>
+                        </div>
+                        <ul class="admin-nav">
+                            <li><a href="#" class="active"><span class="icon">&#x1F465;</span> Users</a></li>
+                            <li><a href="#"><span class="icon">&#x1F4CA;</span> Analytics</a></li>
+                            <li><a href="#"><span class="icon">&#x1F4E7;</span> Messages</a></li>
+                            <li><a href="#"><span class="icon">&#x2699;&#xFE0F;</span> Settings</a></li>
+                            <li><a href="#"><span class="icon">&#x1F4D1;</span> Audit Log</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="admin-main">
+                        <div class="admin-header">
+                            <h2>User Management</h2>
+                            <div class="header-actions">
+                                <!-- NOTE: "Reset Data" button was HERE but has been REMOVED -->
+                                <!-- Old button: <button class="btn btn-danger btn-sm">Reset Data</button> -->
+                                <button class="btn btn-primary btn-sm" id="addUserBtn">Add User</button>
+                            </div>
+                        </div>
+
+                        <div class="user-list" id="userList">
+                            <div class="user-list-header">
+                                <span>User</span>
+                                <span>Email</span>
+                                <span>Role</span>
+                                <span>Actions</span>
+                            </div>
+                            <div class="user-list-item" data-user-id="1">
+                                <div class="user-info">
+                                    <div class="user-avatar-sm" style="background: var(--primary);">SA</div>
+                                    <span class="user-name">Sarah Anderson</span>
+                                </div>
+                                <span class="user-email-text">sarah.anderson@company.com</span>
+                                <span><span class="role-tag admin">Admin</span></span>
+                                <div class="user-actions-col">
+                                    <button class="icon-btn" title="Edit">&#x270E;</button>
+                                    <button class="icon-btn delete" title="Delete" onclick="deleteUser(this)">&#x2715;</button>
+                                </div>
+                            </div>
+                            <div class="user-list-item" data-user-id="2">
+                                <div class="user-info">
+                                    <div class="user-avatar-sm" style="background: var(--secondary);">MT</div>
+                                    <span class="user-name">Mike Thompson</span>
+                                </div>
+                                <span class="user-email-text">mike.thompson@company.com</span>
+                                <span><span class="role-tag editor">Editor</span></span>
+                                <div class="user-actions-col">
+                                    <button class="icon-btn" title="Edit">&#x270E;</button>
+                                    <button class="icon-btn delete" title="Delete" onclick="deleteUser(this)">&#x2715;</button>
+                                </div>
+                            </div>
+                            <div class="user-list-item" data-user-id="3">
+                                <div class="user-info">
+                                    <div class="user-avatar-sm" style="background: var(--success);">LR</div>
+                                    <span class="user-name">Lisa Rodriguez</span>
+                                </div>
+                                <span class="user-email-text">lisa.rodriguez@company.com</span>
+                                <span><span class="role-tag user">User</span></span>
+                                <div class="user-actions-col">
+                                    <button class="icon-btn" title="Edit">&#x270E;</button>
+                                    <button class="icon-btn delete" title="Delete" onclick="deleteUser(this)">&#x2715;</button>
+                                </div>
+                            </div>
+                            <div class="user-list-item" data-user-id="4">
+                                <div class="user-info">
+                                    <div class="user-avatar-sm" style="background: var(--warning);">JC</div>
+                                    <span class="user-name">James Chen</span>
+                                </div>
+                                <span class="user-email-text">james.chen@company.com</span>
+                                <span><span class="role-tag user">User</span></span>
+                                <div class="user-actions-col">
+                                    <button class="icon-btn" title="Edit">&#x270E;</button>
+                                    <button class="icon-btn delete" title="Delete" onclick="deleteUser(this)">&#x2715;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="margin-top: var(--spacing-md); font-size: 0.875rem; color: var(--text-secondary);">
+                            Showing <span id="userCount">4</span> users
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="add-user-modal" id="addUserModal">
+        <div class="modal-content">
+            <h3>Add New User</h3>
+            <div class="form-group">
+                <label for="newUserName">Full Name</label>
+                <input type="text" id="newUserName" class="form-control" placeholder="Enter name">
+            </div>
+            <div class="form-group">
+                <label for="newUserEmail">Email</label>
+                <input type="email" id="newUserEmail" class="form-control" placeholder="user@company.com">
+            </div>
+            <div class="form-group">
+                <label for="newUserRole">Role</label>
+                <select id="newUserRole" class="form-control">
+                    <option value="User">User</option>
+                    <option value="Editor">Editor</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline btn-sm" id="cancelAddUser">Cancel</button>
+                <button class="btn btn-primary btn-sm" id="confirmAddUser">Add User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var nextUserId = 5;
+        var colors = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+        function showToast(message) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            setTimeout(function() {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        function updateUserCount() {
+            var items = document.querySelectorAll('.user-list-item');
+            document.getElementById('userCount').textContent = items.length;
+        }
+
+        function deleteUser(btn) {
+            var item = btn.closest('.user-list-item');
+            var name = item.querySelector('.user-name').textContent;
+            item.style.transition = 'all 0.3s ease';
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(20px)';
+            setTimeout(function() {
+                item.remove();
+                updateUserCount();
+                showToast('User "' + name + '" deleted successfully.');
+            }, 300);
+        }
+
+        function getInitials(name) {
+            var parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return parts[0][0].toUpperCase() + parts[1][0].toUpperCase();
+            }
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+
+        // Add User Modal
+        var modal = document.getElementById('addUserModal');
+
+        document.getElementById('addUserBtn').addEventListener('click', function() {
+            modal.classList.add('visible');
+            document.getElementById('newUserName').focus();
+        });
+
+        document.getElementById('cancelAddUser').addEventListener('click', function() {
+            modal.classList.remove('visible');
+        });
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('visible');
+            }
+        });
+
+        document.getElementById('confirmAddUser').addEventListener('click', function() {
+            var name = document.getElementById('newUserName').value.trim();
+            var email = document.getElementById('newUserEmail').value.trim();
+            var role = document.getElementById('newUserRole').value;
+
+            if (!name || !email) {
+                showToast('Please fill in all required fields.');
+                return;
+            }
+
+            var initials = getInitials(name);
+            var color = colors[nextUserId % colors.length];
+            var roleClass = role.toLowerCase();
+
+            var item = document.createElement('div');
+            item.className = 'user-list-item';
+            item.setAttribute('data-user-id', nextUserId);
+            item.innerHTML =
+                '<div class="user-info">' +
+                    '<div class="user-avatar-sm" style="background: ' + color + ';">' + initials + '</div>' +
+                    '<span class="user-name">' + name + '</span>' +
+                '</div>' +
+                '<span class="user-email-text">' + email + '</span>' +
+                '<span><span class="role-tag ' + roleClass + '">' + role + '</span></span>' +
+                '<div class="user-actions-col">' +
+                    '<button class="icon-btn" title="Edit">&#x270E;</button>' +
+                    '<button class="icon-btn delete" title="Delete" onclick="deleteUser(this)">&#x2715;</button>' +
+                '</div>';
+
+            document.getElementById('userList').appendChild(item);
+            nextUserId++;
+            updateUserCount();
+
+            // Reset form and close modal
+            document.getElementById('newUserName').value = '';
+            document.getElementById('newUserEmail').value = '';
+            document.getElementById('newUserRole').value = 'User';
+            modal.classList.remove('visible');
+
+            showToast('User "' + name + '" added successfully.');
+        });
+    </script>
+</body>
+</html>

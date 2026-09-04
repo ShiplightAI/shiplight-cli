@@ -1,0 +1,13 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    // Declared per-package, not in the root config — see the note in
+    // packages/mcp-tools/turbo.json. A root-level definition fans
+    // `dependsOn: ["build"]` out across every workspace.
+    "test:browser": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": false
+    }
+  }
+}

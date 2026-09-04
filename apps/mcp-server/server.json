@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.shiplight/shiplight",
+  "title": "Shiplight",
+  "description": "An MCP server that provides browser automation",
+  "version": "0.2.1",
+  "websiteUrl": "https://www.shiplight.ai",
+  "repository": {
+    "url": "https://github.com/ShiplightAI/shiplight-cli",
+    "source": "github",
+    "subfolder": "apps/mcp-server"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@shiplightai/mcp",
+      "version": "0.2.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PWDEBUG",
+          "description": "Must be set to \"console\". Enables Playwright semantic locator generation (getByRole, getByTestId) for action entities. Without it, only XPath locators are available.",
+          "value": "console"
+        }
+      ]
+    }
+  ]
+}

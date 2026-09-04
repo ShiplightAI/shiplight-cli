@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Dropdown and Date Picker - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Forms</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Native Dropdown and Date Picker</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Form Controls</h2>
+                <form id="native-controls-form">
+                    <div class="form-group">
+                        <label for="shipping-method">Shipping Method</label>
+                        <select id="shipping-method" name="shipping-method" class="form-control">
+                            <option value="">Choose a shipping method</option>
+                            <option value="standard">Standard (5-7 days)</option>
+                            <option value="express">Express (2-3 days)</option>
+                            <option value="next-day">Next Day</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delivery-date">Preferred Delivery Date</label>
+                        <input
+                            id="delivery-date"
+                            name="delivery-date"
+                            type="date"
+                            class="form-control"
+                            min="2026-01-01"
+                            max="2027-12-31"
+                        >
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Save Selection</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  run-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # turbo's `--affected` does `git diff <base>...HEAD` and needs `main`
+      # as a LOCAL branch ref. actions/checkout leaves it as remote-tracking
+      # only (`origin/main`); without the local ref turbo logs
+      # `Failed to resolve base ref 'main'` and falls back to running every
+      # package — slow, and surfaces unrelated test failures on PRs that
+      # didn't touch those packages. Skip the branch we're currently on
+      # (push-to-main runs).
+      - name: Create local refs for turbo --affected base
+        run: |
+          for branch in main; do
+            if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+              git fetch --no-tags origin "$branch:$branch"
+            fi
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Setup Turborepo cache
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          # The branch must be in the SAVE key, not only the restore prefix:
+          # actions/cache restores by literal prefix, so a restore-key of
+          # `<os>-turbo-<branch>-` can never match a key of `<os>-turbo-<sha>`.
+          # That mismatch made every run a cold cache ("0 cached, N total").
+          # The bare `<os>-turbo-` fallback lets a fresh PR branch inherit
+          # main's cache instead of rebuilding every upstream package.
+          key: ${{ runner.os }}-turbo-${{ github.head_ref || github.ref_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-${{ github.head_ref || github.ref_name }}-
+            ${{ runner.os }}-turbo-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run source guards
+        run: node --test --import tsx 'scripts/__tests__/*.test.mjs' 'scripts/__tests__/*.test.ts'
+
+      - name: Run unit + logic tests for affected packages
+        run: pnpm turbo run test:unit test:logic --affected --concurrency=3
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          SUPABASE_URL: 'http://localhost:54321'
+          SUPABASE_KEY: 'test-key-for-ci'

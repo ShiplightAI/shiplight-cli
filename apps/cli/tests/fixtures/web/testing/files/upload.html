@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .upload-area {
+            border: 3px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-2xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg-secondary);
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .upload-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .upload-subtext {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .upload-subtext span {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: var(--spacing-xl);
+            display: none;
+        }
+
+        .file-list.visible {
+            display: block;
+        }
+
+        .file-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .file-remove {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .file-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: var(--border-radius-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>File Operations</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>File Upload</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Upload Files</h2>
+                
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Drop files here or click to browse</div>
+                    <div class="upload-subtext">Supports all file types • <span>Multiple files allowed</span></div>
+                </div>
+                
+                <input type="file" id="file-input" multiple>
+
+                <div class="file-list" id="file-list">
+                    <h3>Selected Files</h3>
+                    <div id="file-items"></div>
+                    <button class="btn btn-primary mt-2" id="upload-btn">Upload Files</button>
+                    <button class="btn btn-secondary mt-2" id="clear-btn">Clear All</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const fileItems = document.getElementById('file-items');
+        const uploadBtn = document.getElementById('upload-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        let selectedFiles = [];
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // Drag & Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // Handle files
+        function handleFiles(files) {
+            selectedFiles = [...selectedFiles, ...Array.from(files)];
+            renderFiles();
+        }
+
+        // Render file list
+        function renderFiles() {
+            if (selectedFiles.length === 0) {
+                fileList.classList.remove('visible');
+                return;
+            }
+
+            fileList.classList.add('visible');
+            fileItems.innerHTML = '';
+
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-icon">📄</div>
+                    <div class="file-details">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">${formatFileSize(file.size)} • ${file.type || 'Unknown type'}</div>
+                    </div>
+                    <button class="file-remove" onclick="removeFile(${index})">×</button>
+                `;
+                fileItems.appendChild(fileItem);
+            });
+        }
+
+        // Remove file
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            renderFiles();
+        };
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Upload button
+        uploadBtn.addEventListener('click', () => {
+            alert(`Uploading ${selectedFiles.length} file(s):\n${selectedFiles.map(f => f.name).join('\n')}`);
+            console.log('Files to upload:', selectedFiles);
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            fileInput.value = '';
+            renderFiles();
+        });
+    </script>
+</body>
+</html>
+

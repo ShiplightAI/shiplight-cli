@@ -1,0 +1,457 @@
+# How this map's STRUCTURE (its check list) was produced. It began as a
+# reconstruction from the shipped sdk-core engine (every check is source_type
+# IMPLEMENTATION), so it was authored at inferred_brownfield. The owner then
+# curated and ratified the check set on 2026-06-24 (commit 4f70b8eed, "qc: edit
+# quality map (curate checks / ratify / set proof policy)"), which is what
+# promoted structure_provenance to user_authored. That is a human act; no test
+# added here can raise it.
+#
+# checks_reviewed: the owner reviewed the whole check list again on 2026-08-10
+# and approved it, after the list changed (exp-vision-fallback gained an accepted
+# gap, exp-agent-doc-surface was added since the June ratification).
+structure_provenance: "user_authored"
+checks_reviewed: true
+target:
+  id: "001-web-agent-engine"
+  name: "AI Web-Agent Automation Engine"
+  scope: "feature"
+  aliases: []
+  source_refs:
+    - path: "specs/001-web-agent-engine/spec.md"
+      label: "Reconstructed feature spec"
+    - path: "project-map.yaml"
+      label: "Project map feature entry"
+    - path: "https://docs.shiplight.ai/local/yaml-tests"
+      label: "YAML test language docs (SOURCE)"
+    - path: "packages/sdk-core"
+      label: "Engine implementation"
+
+expectations:
+  - id: exp-llm-provider-routing
+    title: "LLM is auto-selected and routed from whichever provider key is present"
+    description: >-
+      Direct provider keys (OPENAI/ANTHROPIC/GOOGLE) take precedence; a
+      Shiplight token routes through the proxy (shp_pat_* -> the Shiplight proxy, UUID -> v1
+      cloud) with the correct per-provider base URL. Wrong routing breaks all
+      runs or mis-sends keys.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/llm/__tests__/providerProxy.test.ts"
+      - path: "packages/sdk-core/src/agent/llm/__tests__/proxy.test.ts"
+    category: security
+    priority: P1
+    evidence:
+      - id: ev-providerproxy-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/llm/__tests__/providerProxy.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Direct routing logic gate for provider credentials, Shiplight proxy
+          tokens, and base URL selection."
+
+  - id: exp-model-parsing
+    title: "Model identifiers (provider:model) parse and provider auto-detects"
+    description: >-
+      'anthropic:claude-sonnet-4-6', 'openai:gpt-5.4', 'vertex:*' etc. parse;
+      unknown prefixes are preserved; provider auto-detected from bare model
+      names.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/llm/__tests__/parseModel.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-parsemodel-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/llm/__tests__/parseModel.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Covers explicit provider:model parsing and bare-model provider
+          auto-detection."
+
+  - id: exp-nl-to-action-loop
+    title: "A natural-language step is resolved into the correct concrete browser
+      action"
+    description: >-
+      The heart of the product: agent.execute('click login') + live page -> LLM
+      decision -> ActionEntity -> Playwright execution, including verify/assert
+      phrasing.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/agentHelpers.ts"
+      - path: "packages/sdk-core/tests/specs/agent-execute-verify.spec.ts"
+    category: other
+    priority: P0
+    policy_override:
+      required_modalities: [ "unit", "e2e" ]
+      required_contexts: [ "pr-ci", "keyed-browser" ]
+      require_gate: true
+      notes: "This promise needs both deterministic decision proof and a real-browser
+        fixture loop."
+    evidence:
+      - id: ev-generateaction-decision-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/action-generation/__tests__/elementBased.gen\
+          erateAction.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Pins verify rewrites plus no-action, done, cannot-complete, and
+          invalid-index error paths."
+      - id: ev-engine-fixture-execute
+        type: e2e
+        path: "packages/sdk-core/tests/specs/engine-fixture.spec.ts"
+        command: "pnpm --filter sdk-core test:browser"
+        contexts: [ "keyed-browser" ]
+        notes: "Fixture-backed real-browser path for live generate/execute behavior;
+          keyed tests self-skip when no provider key is available."
+
+  - id: exp-self-healing-locators
+    title: "Self-healing semantic locators are generated with XPath fallback"
+    description: >-
+      agent.generate() returns an ActionEntity with a semantic locator
+      (getByRole/getByTestId) and an XPath fallback; resolution prefers locator,
+      then xpath, then frame_path for nested iframes.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/actions/__tests__/utils.test.ts"
+      - path: "packages/sdk-core/tests/specs/generateAction.spec.ts"
+    category: other
+    priority: P1
+    policy_override:
+      required_modalities: [ "unit", "e2e" ]
+      required_contexts: [ "pr-ci", "keyed-browser" ]
+      require_gate: true
+      notes: "Durability claims need both locator-resolution proof and
+        generated-action proof on a real fixture."
+    evidence:
+      - id: ev-locator-resolution-unit
+        type: unit
+        path: "packages/sdk-core/src/actions/__tests__/utils.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Pins locator/XPath resolution priority for replay without another model
+          call."
+      - id: ev-engine-fixture-locator
+        type: e2e
+        path: "packages/sdk-core/tests/specs/engine-fixture.spec.ts"
+        command: "pnpm --filter sdk-core test:browser"
+        contexts: [ "keyed-browser" ]
+        notes: "Proves generated action entities carry a usable semantic locator and
+          XPath on a live fixture."
+    proof_gap:
+      summary: "Nested-iframe frame_path generation is not yet pinned by a repeatable
+        fixture proof."
+      next_step: "Add an iframe fixture that forces frame_path capture and replay."
+
+  - id: exp-action-execution-config
+    title: "Actions execute with correct timeout precedence and code transpilation"
+    description: >-
+      Per-statement timeout_ms > org action_timeout_ms > ACTION_TIMEOUT default,
+      across click/input/hover/etc.; action -> executable Playwright code
+      generation omits unset optional fields.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/actions/__tests__/timeout.test.ts"
+      - path: "packages/sdk-core/src/actions/__tests__/go_to_url.test.ts"
+      - path: "packages/sdk-core/src/actions/__tests__/js_action.test.ts"
+      - path: "packages/sdk-core/src/actions/impl/ai_assert.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-action-timeout-unit
+        type: unit
+        path: "packages/sdk-core/src/actions/__tests__/timeout.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Per-statement > org > default timeout precedence across action
+          implementations."
+      - id: ev-action-goto-unit
+        type: unit
+        path: "packages/sdk-core/src/actions/__tests__/go_to_url.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Generated action shape / code for go_to_url (omits unset optional
+          fields)."
+      - id: ev-action-js-unit
+        type: unit
+        path: "packages/sdk-core/src/actions/__tests__/js_action.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Generated action shape / code transpilation for js_action."
+      - id: ev-action-aiassert-unit
+        type: unit
+        path: "packages/sdk-core/src/actions/impl/ai_assert.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Generated action shape for ai_assert."
+    proof_gap:
+      summary: "Generated Playwright code is asserted as strings and shapes, but not
+        executed against a fixture browser flow."
+      next_step: "Run one transpiled action end-to-end against fixture HTML and assert
+        the generated code succeeds."
+
+  - id: exp-vision-fallback
+    title: "Vision (coordinates-based) fallback activates when DOM extraction is
+      insufficient"
+    description: >-
+      WebAgent.execute(..., usePureVision=true) routes to the coordinates-based
+      CUA provider; OpenAI action shapes (click/drag) normalize and filter
+      invalid points.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/action-generation/coordinatesBased/__tests__\
+          /openaiActionShape.test.ts"
+      - path: "packages/sdk-core/tests/specs/pure-vision.spec.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-openai-shape-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/action-generation/coordinatesBased/__tests__\
+          /openaiActionShape.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Pins OpenAI action-shape normalization and invalid-point filtering."
+      - id: ev-vision-switch-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/action-generation/__tests__/elementBased.gen\
+          erateAction.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Proves the DOM-to-vision handoff when the model emits
+          perform_accurate_operation."
+      - id: ev-pure-vision-spec
+        type: e2e
+        path: "packages/sdk-core/tests/specs/pure-vision.spec.ts"
+        command: "RUN_PURE_VISION_LIVE=1 pnpm --filter sdk-core test"
+        contexts: [ "opt-in-live" ]
+        notes: "Live pure-vision sweep for coordinates-based execution when the
+          environment explicitly enables spend."
+    # Owner decision 2026-08-10 (feng): accept this gap rather than fund a keyed
+    # CI lane. `deferred` is the category — the work is postponed, not missing:
+    # the two deterministic rows above already gate the action shaping and the
+    # DOM-to-vision handoff in pr-ci. The live spec needs paid CUA calls, a
+    # 1920x1080 viewport, and the staging site to be up, and its own header warns
+    # against the default pipeline because a staging outage would break unrelated
+    # PRs. If this is revisited, do the next_step below first — a lane that fails
+    # on staging outages gets muted, and then proves nothing.
+    #
+    # Note on effect: under quality-tools 0.3.2 this record changes no score and
+    # does not clear the check from the recommendation list (verified with both
+    # `deferred` and `manual-only`). It documents the decision so the gap is not
+    # re-triaged as an oversight; making the engine honour it is a quality-tools
+    # change, not a map change.
+    accepted_gaps: ["deferred"]
+    proof_gap:
+      summary: "The map has deterministic proof for coordinates-based action shaping
+        and DOM-to-vision routing, but not yet a repeatable live proof for when
+        the engine abandons DOM resolution on a real page."
+      next_step: "Add a keyed fixture that forces insufficient DOM extraction and
+        asserts the engine emits and executes a coordinates-based action. Replace
+        the staging URL with a local HTML fixture at the same time so the proof
+        stops depending on staging uptime."
+
+  - id: exp-dom-extraction
+    title: "DOM tree extraction captures interactive elements (incl. custom classes,
+      frames)"
+    description: >-
+      DomService.getClickableElements() returns an element tree + selector map
+      honoring interactive_class_names config; feeds the LLM the page's
+      actionable surface.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/tests/specs/interactive-class-names.spec.ts"
+      - path: "packages/sdk-core/src/dom"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-engine-fixture-dom
+        type: e2e
+        path: "packages/sdk-core/tests/specs/engine-fixture.spec.ts"
+        command: "pnpm --filter sdk-core test:browser"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Keyless fixture proof for interactive-element extraction and
+          selector-map rendering."
+      - id: ev-dom-spec
+        type: e2e
+        path: "packages/sdk-core/tests/specs/interactive-class-names.spec.ts"
+        command: "pnpm --filter sdk-core test:browser"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Browser proof for custom interactive_class_names handling: asserts a
+          custom class is discovered as interactive and rendered into the DOM
+          tree. Added to the keyless engine-fixture hard gate in sdk-tests.yml
+          (PR #2226), so it is now gated, not local-only. Keyless — inline HTML,
+          no network, no model call."
+
+  - id: exp-step-budgets
+    title: "Step and self-heal budgets are enforced (no runaway loops)"
+    description: >-
+      maxSteps must be > 0; defaults (15 for tasks, 1 for self-heal) apply;
+      self-heal and modal-dismissal are capped so the agent can't loop forever
+      or burn tokens.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/__tests__/webAgent.maxSteps.test.ts"
+      - path: "packages/sdk-core/src/agent/task/__tests__/executor.maxSteps.test.ts"
+    category: ops
+    priority: P1
+    evidence:
+      - id: ev-maxsteps-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/webAgent.maxSteps.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Covers non-positive maxSteps rejection and the core task-loop budget
+          behavior."
+    proof_gap:
+      summary: "The MAX_MODAL_DISMISSAL_STEPS auto-dismiss path is implemented but not
+        pinned by executable proof."
+      next_step: "Add a browser fixture with a dismissible modal and assert progress
+        stops within the configured modal-dismiss cap."
+
+  - id: exp-variable-substitution
+    title: "Variables substitute across formats and sensitive values are flagged"
+    description: >-
+      {{var}}, ${var}, $var, and <secret>var</secret> all resolve; unmatched
+      vars are preserved; sensitive flags propagate into the agent context.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/utils/__tests__/agentContextUtils.test.ts"
+      - path: "packages/sdk-core/src/agent/__tests__/agentContextFactory.test.ts"
+    category: security
+    priority: P1
+    evidence:
+      - id: ev-varsub-unit
+        type: unit
+        path: "packages/sdk-core/src/utils/__tests__/agentContextUtils.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Covers supported variable syntaxes, unmatched-variable preservation, and
+          sensitive-flag propagation."
+      - id: ev-varsub-redaction
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/sensitiveRedaction.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: >-
+          Closes the serialized-prompt + step-logging proof gap: a
+          sensitive-flagged value never appears in getActionGenerationUserPrompt
+          output (rendered as '[SENSITIVE - value hidden]') nor in
+          maskSensitiveVariables output (masked to '*****'), while non-sensitive
+          values still pass through.
+
+  - id: exp-knowledge-injection
+    title: "Preloaded knowledge is retrieved and reaches the LLM prompt"
+    description: >-
+      Knowledge entries (incl. images) parse and are retrieved with relevance
+      scores for injection into the agent's context.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/services/__tests__/knowledgeService.test.ts"
+      - path: "packages/sdk-core/src/services/__tests__/knowledgeParser.test.ts"
+    category: other
+    priority: P3
+    evidence:
+      - id: ev-knowledge-unit
+        type: unit
+        path: "packages/sdk-core/src/services/__tests__/knowledgeService.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Proves knowledge parsing and retrieval behavior, including image-aware
+          content preparation."
+      - id: ev-knowledge-in-prompt
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/knowledgeInjection.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: >-
+          Closes the gap: proves retrieved knowledge content is injected into
+          the constructed action-generation prompt under <retrieved_knowledge>
+          (every item, in order), and that an empty knowledge set emits no such
+          block.
+
+  - id: exp-ai-analysis
+    title: "agent.ai() runs natural-language analysis over local files, not the live
+      page"
+    description: >-
+      The non-page-bound analysis primitive: agent.ai(prompt, files) assembles a
+      single multimodal request (PDF/image as file/image parts, text files
+      inlined as labeled blocks, attachments kept in order) and returns the
+      model result with token usage. Inputs are validated BEFORE any model call
+      — a missing, over-size-limit, unsupported-type, or directory path is
+      rejected with an actionable error naming the path/limit.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/aiAnalysis.ts"
+      - path: "packages/sdk-core/src/agent/__tests__/aiAnalysis.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-ai-analysis-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/aiAnalysis.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: >-
+          Pins request assembly (text-only, PDF/image/text attachment shapes and
+          ordering), TokenUsage conversion, and pre-call rejection of missing /
+          unsupported-type / over-limit / directory paths with the offending
+          path and limit named.
+    proof_gap:
+      summary: "Request assembly and input validation are proven deterministically
+        with a mocked model; the correctness of the live analysis output is not
+        gated."
+      next_step: "Optional: a keyed live test that runs agent.ai() over a fixture file
+        and asserts a structural property of the result."
+
+  - id: exp-agent-login
+    title: "agent.login() and agent.generate2faCode() drive authenticated flows"
+    description: >-
+      The packaged auth helpers: agent.login(options) maps to a PASSWORD
+      LoginConfig and delegates to loginPage, adding a TOTP
+      two_factor_auth_config when a totpSecret is supplied, and propagates a
+      failure result; agent.generate2faCode() delegates to
+      agentServices.generate2faCode and returns its code.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/webAgent.ts"
+      - path: "packages/sdk-core/src/actions/impl/generate_2fa_code.ts"
+      - path: "packages/sdk-core/src/agent/__tests__/webAgent.login.test.ts"
+    category: auth
+    priority: P2
+    evidence:
+      - id: ev-agent-login-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/webAgent.login.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Covers PASSWORD LoginConfig mapping + loginPage delegation, TOTP config
+          injection when totpSecret is set, failure propagation, and
+          generate2faCode delegation."
+    proof_gap:
+      summary: "The option-to-config mapping and delegation are proven; the real
+        loginPage browser flow it delegates to is not driven by this check
+        (covered transitively by the engine fixture)."
+      next_step: "Optional: a keyed fixture that runs agent.login() against a login
+        page and asserts an authenticated post-state."
+
+  - id: exp-agent-doc-surface
+    title: "The documented YAML `agent` method surface stays in sync with the engine"
+    description: >-
+      Documentation baseline: a drift guard asserts every method documented in
+      the YAML spec's `agent` common-methods block is actually implemented on
+      WebAgent, so the public agent surface and its docs cannot silently
+      diverge.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/sdk-core/src/agent/__tests__/webAgent.specSurface.test.ts"
+    category: other
+    priority: P3
+    evidence:
+      - id: ev-agent-doc-surface
+        type: static
+        path: "packages/sdk-core/src/agent/__tests__/webAgent.specSurface.test.ts"
+        command: "pnpm --filter sdk-core test:unit"
+        contexts: [ "local", "pr-ci" ]
+        notes: "Extracts the documented method names from the spec's agent block and
+          asserts each is implemented on WebAgent."

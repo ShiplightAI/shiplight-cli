@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Failure Analysis Test Pages</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .hero {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--danger) 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .category-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+        }
+
+        .category-header.type-a { border-left: 4px solid var(--danger); }
+        .category-header.type-b { border-left: 4px solid var(--primary); }
+        .category-header.flaky { border-left: 4px solid var(--warning); }
+        .category-header.type-d { border-left: 4px solid var(--gray-500); }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .type-a .category-icon { background: var(--danger); }
+        .type-b .category-icon { background: var(--primary); }
+        .flaky .category-icon { background: var(--warning); }
+        .type-d .category-icon { background: var(--gray-500); }
+
+        .category-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .category-header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .test-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .test-card.type-a::before { background: var(--danger); }
+        .test-card.type-b::before { background: var(--primary); }
+        .test-card.flaky::before { background: var(--warning); }
+        .test-card.type-d::before { background: var(--gray-500); }
+
+        .test-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .test-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .test-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+
+        .test-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .test-card .test-meta {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+
+        .test-badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: var(--border-radius-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .test-badge.type-a { background: #fef2f2; color: #991b1b; }
+        .test-badge.type-b { background: #e0e7ff; color: #3730a3; }
+        .test-badge.flaky { background: #fffbeb; color: #92400e; }
+        .test-badge.type-d { background: #f3f4f6; color: #374151; }
+
+        .root-cause-tag {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.6875rem;
+            font-family: var(--font-mono);
+            background: var(--gray-100);
+            color: var(--text-secondary);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: var(--spacing-lg);
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-content">
+            <a href="../index.html" class="back-link">&larr; Back to Test Pages</a>
+
+            <div class="hero">
+                <h1>Failure Analysis Test Pages</h1>
+                <p>Pages designed to trigger specific failure analysis classifications and root causes</p>
+            </div>
+
+            <!-- Type A: App Bugs -->
+            <div class="category-section">
+                <div class="category-header type-a">
+                    <div class="category-icon">&#x1f41b;</div>
+                    <div>
+                        <h2>Type A: Application Bugs</h2>
+                        <p>Real application bugs &mdash; the agent should NOT fix the test</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="./broken-assertion.html" class="test-card type-a">
+                        <h3>Broken Assertion</h3>
+                        <p>Counter that doesn't increment when clicked. Test verifies count increases but it never does.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">assertion_failed_real_bug</span>
+                        </div>
+                    </a>
+                    <a href="./state-bug.html" class="test-card type-a">
+                        <h3>State Not Updated</h3>
+                        <p>Settings form shows "saved" toast but values don't persist on reload.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">state_not_updated</span>
+                        </div>
+                    </a>
+                    <a href="./wrong-behavior.html" class="test-card type-a">
+                        <h3>Wrong App Behavior</h3>
+                        <p>"Sort A-Z" button sorts Z-A instead. Incorrect application logic.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">incorrect_application_behavior</span>
+                        </div>
+                    </a>
+                    <a href="./silent-failure.html" class="test-card type-a">
+                        <h3>Silent Failure</h3>
+                        <p>Delete removes item from DOM but shows no confirmation message.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">silent_failure</span>
+                        </div>
+                    </a>
+                    <a href="./missing-data.html" class="test-card type-a">
+                        <h3>Missing Data</h3>
+                        <p>Pricing page missing the "Premium Plan" that should be present.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">data_not_present</span>
+                        </div>
+                    </a>
+                    <a href="./teardown-bug.html" class="test-card type-a">
+                        <h3>Teardown Ineffective</h3>
+                        <p>Delete button shows "Deleted!" but account reappears on refresh.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-a">Type A</span>
+                            <span class="root-cause-tag">teardown_ineffective</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Type B: Test Issues -->
+            <div class="category-section">
+                <div class="category-header type-b">
+                    <div class="category-icon">&#x1f527;</div>
+                    <div>
+                        <h2>Type B: Test Issues</h2>
+                        <p>The app changed but the test hasn't been updated &mdash; agent should fix the test</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="./blocking-modal.html" class="test-card type-b">
+                        <h3>Blocking Modal</h3>
+                        <p>Cookie consent modal blocks form interaction until dismissed.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">blocking_element</span>
+                        </div>
+                    </a>
+                    <a href="./renamed-elements.html" class="test-card type-b">
+                        <h3>Element Renamed</h3>
+                        <p>"Generate Report" button renamed to "Create Report".</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">element_renamed</span>
+                        </div>
+                    </a>
+                    <a href="./changed-selectors.html" class="test-card type-b">
+                        <h3>Selector Changed</h3>
+                        <p>Table CSS classes changed from old selectors to new ones.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">selector_changed</span>
+                        </div>
+                    </a>
+                    <a href="./changed-layout.html" class="test-card type-b">
+                        <h3>Layout Changed</h3>
+                        <p>Product grid changed from 3 columns to 2 columns.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">layout_changed</span>
+                        </div>
+                    </a>
+                    <a href="./ui-updated.html" class="test-card type-b">
+                        <h3>UI Updated</h3>
+                        <p>Settings moved from sidebar navigation to top nav tabs.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">ui_changed</span>
+                        </div>
+                    </a>
+                    <a href="./cascading-error.html" class="test-card type-b">
+                        <h3>Cascading Error</h3>
+                        <p>Dropdown options changed, causing downstream step failures.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">previous_step_error</span>
+                        </div>
+                    </a>
+                    <a href="./simplified-flow.html" class="test-card type-b">
+                        <h3>Extraneous Step</h3>
+                        <p>Checkout flow simplified &mdash; "Confirm Address" step removed.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">extraneous_step</span>
+                        </div>
+                    </a>
+                    <a href="./teardown-removed.html" class="test-card type-b">
+                        <h3>Teardown Outdated</h3>
+                        <p>"Reset Data" cleanup button was removed from the admin panel.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-b">Type B</span>
+                            <span class="root-cause-tag">teardown_outdated</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flaky Tests -->
+            <div class="category-section">
+                <div class="category-header flaky">
+                    <div class="category-icon">&#x1f3b2;</div>
+                    <div>
+                        <h2>Flaky Tests</h2>
+                        <p>Pages that behave differently on each load &mdash; simulates intermittent failures</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="./flaky-dynamic-classes.html" class="test-card flaky">
+                        <h3>Dynamic Class Names</h3>
+                        <p>Elements get random CSS class names on each load. Class-based selectors break intermittently.</p>
+                        <div class="test-meta">
+                            <span class="test-badge flaky">Flaky</span>
+                            <span class="root-cause-tag">dynamic_classes</span>
+                        </div>
+                    </a>
+                    <a href="./flaky-random-delay.html" class="test-card flaky">
+                        <h3>Random Delay</h3>
+                        <p>Content loads after random 0-15s delay. Tests with fixed timeouts fail intermittently.</p>
+                        <div class="test-meta">
+                            <span class="test-badge flaky">Flaky</span>
+                            <span class="root-cause-tag">random_delay</span>
+                        </div>
+                    </a>
+                    <a href="./flaky-random-order.html" class="test-card flaky">
+                        <h3>Random Order</h3>
+                        <p>List items shuffle on each page load. Positional selectors get wrong items.</p>
+                        <div class="test-meta">
+                            <span class="test-badge flaky">Flaky</span>
+                            <span class="root-cause-tag">random_order</span>
+                        </div>
+                    </a>
+                    <a href="./flaky-intermittent-modal.html" class="test-card flaky">
+                        <h3>Intermittent Modal</h3>
+                        <p>Promotional modal appears ~50% of the time, blocking form interaction.</p>
+                        <div class="test-meta">
+                            <span class="test-badge flaky">Flaky</span>
+                            <span class="root-cause-tag">intermittent_modal</span>
+                        </div>
+                    </a>
+                    <a href="./flaky-stale-dom.html" class="test-card flaky">
+                        <h3>Stale DOM</h3>
+                        <p>Content is removed and re-rendered after 500ms, causing stale element references.</p>
+                        <div class="test-meta">
+                            <span class="test-badge flaky">Flaky</span>
+                            <span class="root-cause-tag">stale_dom</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Type D: Configuration Issues -->
+            <div class="category-section">
+                <div class="category-header type-d">
+                    <div class="category-icon">&#x2699;&#xFE0F;</div>
+                    <div>
+                        <h2>Type D: Configuration Issues</h2>
+                        <p>Test configuration problems &mdash; wrong URLs, missing credentials, expired sessions</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="./nonexistent.html" class="test-card type-d">
+                        <h3>URL Not Found</h3>
+                        <p>Points to a page that doesn't exist (404). Tests starting URL misconfiguration.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-d">Type D</span>
+                            <span class="root-cause-tag">starting_url_not_found</span>
+                        </div>
+                    </a>
+                    <a href="./auth-required.html" class="test-card type-d">
+                        <h3>Missing Auth</h3>
+                        <p>Page requires token parameter. Without credentials, shows "Access Denied".</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-d">Type D</span>
+                            <span class="root-cause-tag">missing_test_account</span>
+                        </div>
+                    </a>
+                    <a href="./login-form.html" class="test-card type-d">
+                        <h3>Login Failed</h3>
+                        <p>Login form with credential validation. Wrong password shows "Invalid credentials".</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-d">Type D</span>
+                            <span class="root-cause-tag">login_configuration_issue</span>
+                        </div>
+                    </a>
+                    <a href="./session-expired.html" class="test-card type-d">
+                        <h3>Session Expired</h3>
+                        <p>Page validates session tokens. Expired sessions show "Session Expired" error.</p>
+                        <div class="test-meta">
+                            <span class="test-badge type-d">Type D</span>
+                            <span class="root-cause-tag">expired_credentials</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <h4>About These Test Pages</h4>
+                <p>These pages are designed for testing the AI failure analysis agent. Each page triggers a specific failure classification and root cause category when used with appropriately designed test cases.</p>
+                <ul>
+                    <li><strong>Type A</strong> pages contain real application bugs &mdash; the agent should identify the bug, not fix the test</li>
+                    <li><strong>Type B</strong> pages represent updated apps where old tests need fixing</li>
+                    <li><strong>Flaky</strong> pages behave differently on each load, simulating intermittent failures</li>
+                    <li><strong>Type D</strong> pages test configuration and credential issues</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

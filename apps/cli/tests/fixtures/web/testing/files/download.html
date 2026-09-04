@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Download - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .test-content h2 {
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-md);
+        }
+        .test-content h1 {
+            margin-bottom: var(--spacing-lg);
+        }
+        .download-section {
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--success);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .secondary {
+            background: #2196F3;
+        }
+        .secondary:hover {
+            background: #1976D2;
+        }
+        .warning {
+            background: #ff9800;
+        }
+        .warning:hover {
+            background: #f57c00;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #e3f2fd;
+            color: #1976D2;
+            display: none;
+        }
+        .status.show {
+            display: block;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>File Operations</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>File Download</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+
+        <div class="download-section">
+            <h2>File Downloads</h2>
+            <p>Click the buttons below to test different download scenarios:</p>
+
+            <button id="downloadCsv" class="warning" onclick="downloadCsvFile()">
+                Download CSV File
+            </button>
+
+            <button id="downloadXlsx" style="background: #009688;" onmouseover="this.style.background='#00796B'" onmouseout="this.style.background='#009688'" onclick="downloadXlsxFile()">
+                Download XLSX File
+            </button>
+
+            <button id="delayedDownloadPdf" style="background: #E91E63;" onmouseover="this.style.background='#C2185B'" onmouseout="this.style.background='#E91E63'" onclick="downloadDelayedPdfFile()">
+                Download PDF (10s delay)
+            </button>
+
+            <button id="downloadPdfNewTab" style="background: #00BCD4;" onmouseover="this.style.background='#0097A7'" onmouseout="this.style.background='#00BCD4'" onclick="downloadPdfNewTab()">
+                Download PDF In New Tab
+            </button>
+        </div>
+
+        <div id="status" class="status">
+            Download initiated: <code id="filename"></code>
+        </div>
+
+        <div id="actionStatus" class="status" style="background: #F3E5F5; color: #7B1FA2;">
+            Action performed: <code id="actionMessage"></code>
+        </div>
+    </div>
+
+    <script>
+        // Helper function to trigger download
+        function triggerDownload(filename, content, mimeType) {
+            const blob = content instanceof Blob
+                ? (mimeType ? content.slice(0, content.size, mimeType) : content)
+                : new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            showStatus(filename);
+        }
+
+        // Delayed download with configurable delay
+        async function triggerDelayedDownload(filename, content, mimeType, delayMs) {
+            console.log(`Starting delayed download: ${filename} with ${delayMs}ms delay`);
+
+            // Show status that download is being prepared
+            showActionStatus(`Preparing download... (${delayMs/1000}s delay)`);
+
+            // Wait for the specified delay
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+
+            // Now trigger the actual download
+            triggerDownload(filename, content, mimeType);
+        }
+
+        // Helper function to show download status
+        function showStatus(filename) {
+            const statusEl = document.getElementById('status');
+            const filenameEl = document.getElementById('filename');
+            filenameEl.textContent = filename;
+            statusEl.classList.add('show');
+
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // CSV file download
+        function downloadCsvFile() {
+            const csvContent = `ID,Name,Date,Status,Value
+1,Test Item 1,${new Date().toISOString()},Active,100
+2,Test Item 2,${new Date().toISOString()},Pending,200
+3,Test Item 3,${new Date().toISOString()},Complete,300
+4,Test Item 4,${new Date().toISOString()},Active,400
+5,Test Item 5,${new Date().toISOString()},Failed,500`;
+
+            triggerDownload('中文1.0勿删除.csv', csvContent, 'text/csv');
+        }
+
+        // Download PDF (opens new tab, downloads, then closes)
+        function downloadPdfNewTab() {
+            // Create a PDF with visible content
+            const pdfContent = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 792] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 88 >>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(PDF New Tab Mock Download) Tj
+/F1 14 Tf
+500 750 Td
+(789012) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000257 00000 n
+0000000336 00000 n
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+474
+%%EOF`;
+
+            // Create blob URL for the PDF
+            const blob = new Blob([pdfContent], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+
+            // Open new tab with a page that triggers download and closes
+            const newTab = window.open('', '_blank');
+            
+            if (newTab) {
+                // Write HTML to the new tab that triggers download and closes
+                newTab.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Downloading...</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                margin: 0;
+                                background: #f5f5f5;
+                            }
+                            .message {
+                                text-align: center;
+                                padding: 40px;
+                                background: white;
+                                border-radius: 8px;
+                                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="message">
+                            <h2>Download starting...</h2>
+                            <p>This tab will close automatically.</p>
+                        </div>
+                    </body>
+                    </html>
+                `);
+                newTab.document.close();
+
+                // Create and trigger download in the new tab
+                const a = newTab.document.createElement('a');
+                a.href = url;
+                a.download = 'newtab-mock.pdf';
+                newTab.document.body.appendChild(a);
+                a.click();
+
+                // Close the tab after a short delay (give browser time to start download)
+                setTimeout(() => {
+                    newTab.close();
+                    window.URL.revokeObjectURL(url);
+                }, 500);
+
+                showActionStatus('Download started in new tab');
+            } else {
+                // Fallback if popup was blocked
+                showActionStatus('Popup blocked - please allow popups');
+            }
+        }
+
+        // Download XLSX file
+        async function downloadXlsxFile() {
+            try {
+                // Fetch the actual mock-data.xlsx file
+                const response = await fetch('../assets/files/mock-data.xlsx');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch mock-data.xlsx: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                triggerDownload('mock-data.xlsx', blob, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            } catch (error) {
+                console.error('Error downloading Excel file:', error);
+                showActionStatus('Error: Could not download Excel file');
+            }
+        }
+
+        // Delayed PDF file download (10 seconds)
+        function downloadDelayedPdfFile() {
+            // Basic PDF structure with code in top-right
+            const pdfContent = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 792] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 98 >>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Delayed PDF - 10 second delay) Tj
+/F1 14 Tf
+500 750 Td
+(654321) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000257 00000 n
+0000000336 00000 n
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+484
+%%EOF`;
+
+            triggerDelayedDownload('delayed-document.pdf', pdfContent, 'application/pdf', 10000);
+        }
+
+        // Show action status (for non-download actions)
+        function showActionStatus(message) {
+            const statusEl = document.getElementById('actionStatus');
+            const messageEl = document.getElementById('actionMessage');
+            messageEl.textContent = message;
+            statusEl.classList.add('show');
+
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+        </main>
+    </div>
+</body>
+</html>

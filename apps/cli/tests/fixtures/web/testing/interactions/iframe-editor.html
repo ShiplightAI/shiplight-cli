@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Editor - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .editor-container {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .editor-toolbar button {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .editor-toolbar button:hover {
+            background: var(--primary-lightest);
+            border-color: var(--primary);
+        }
+
+        .editor-toolbar button.active {
+            background: var(--primary);
+            color: var(--text-inverse);
+            border-color: var(--primary);
+        }
+
+        .editor-frame {
+            width: 100%;
+            height: 200px;
+            border: none;
+        }
+
+        .word-count {
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .nested-container {
+            margin-top: var(--spacing-xl);
+        }
+
+        .nested-frame {
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Iframe Editor</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <!-- Simple iframe with editable content -->
+            <section class="test-section">
+                <h2>Rich Text Editor (iframe)</h2>
+                <p>An editable iframe that simulates a rich text editor. The content area lives inside an iframe.</p>
+
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button data-command="bold" title="Bold"><b>B</b></button>
+                        <button data-command="italic" title="Italic"><i>I</i></button>
+                        <button data-command="underline" title="Underline"><u>U</u></button>
+                        <button data-command="insertUnorderedList" title="Bullet List">&#8226; List</button>
+                        <button data-command="removeFormat" title="Clear Formatting">Clear</button>
+                    </div>
+                    <iframe id="editor-frame" class="editor-frame" title="Rich text editor"
+                        srcdoc="<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:12px;margin:0;line-height:1.6;color:#1a1a2e;min-height:100%}body:empty::before{content:'Start typing here...';color:#999}body:focus{outline:none}</style></head><body contenteditable='true'></body></html>"></iframe>
+                    <div class="word-count" id="word-count">Words: 0 | Characters: 0</div>
+                </div>
+
+                <div id="editor-output" style="display: none; margin-top: 1rem;">
+                    <h3>Editor HTML Output</h3>
+                    <pre id="html-output" style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--border-radius); overflow: auto; max-height: 200px;"></pre>
+                </div>
+
+                <div class="button-group mt-3">
+                    <button class="btn btn-primary" id="get-content-btn">Get Content</button>
+                    <button class="btn btn-secondary" id="clear-btn">Clear</button>
+                </div>
+            </section>
+
+            <!-- Nested iframe -->
+            <section class="test-section nested-container">
+                <h2>Nested Iframe</h2>
+                <p>An iframe containing another iframe. Tests frame_path with multiple levels.</p>
+                <iframe id="outer-frame" class="nested-frame" title="Outer frame" src="./iframe-outer.html"></iframe>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- Rich Text Editor ---
+        const editorFrame = document.getElementById('editor-frame');
+        const wordCount = document.getElementById('word-count');
+
+        editorFrame.addEventListener('load', () => {
+            const doc = editorFrame.contentDocument;
+            if (doc && doc.body) {
+                doc.body.addEventListener('input', updateWordCount);
+            }
+        });
+
+        function updateWordCount() {
+            const doc = editorFrame.contentDocument;
+            const text = doc.body.innerText.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            const chars = text.length;
+            wordCount.textContent = `Words: ${words} | Characters: ${chars}`;
+        }
+
+        // Toolbar buttons — execCommand/queryCommandState are deprecated but still work
+        // in all browsers. Acceptable for a test fixture page; no production use.
+        document.querySelectorAll('.editor-toolbar button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const command = btn.dataset.command;
+                editorFrame.contentDocument.execCommand(command, false, null);
+                editorFrame.contentWindow.focus();
+
+                // Toggle active state for formatting buttons
+                if (['bold', 'italic', 'underline'].includes(command)) {
+                    btn.classList.toggle('active',
+                        editorFrame.contentDocument.queryCommandState(command));
+                }
+            });
+        });
+
+        // Get content button
+        document.getElementById('get-content-btn').addEventListener('click', () => {
+            const output = document.getElementById('editor-output');
+            const htmlOutput = document.getElementById('html-output');
+            output.style.display = 'block';
+            htmlOutput.textContent = editorFrame.contentDocument.body.innerHTML;
+        });
+
+        // Clear button
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            editorFrame.contentDocument.body.innerHTML = '';
+            updateWordCount();
+            document.getElementById('editor-output').style.display = 'none';
+        });
+
+        // --- Nested Iframe ---
+        // Outer and inner frames are loaded via src attributes (iframe-outer.html, iframe-inner.html)
+    </script>
+</body>
+</html>

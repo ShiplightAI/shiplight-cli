@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Elements - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .dynamic-area {
+            min-height: 200px;
+            padding: var(--spacing-xl);
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+        }
+
+        .dynamic-button {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .color-1 {
+            background: var(--primary);
+            color: white;
+        }
+
+        .color-2 {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .color-3 {
+            background: var(--success);
+            color: white;
+        }
+
+        .color-4 {
+            background: var(--warning);
+            color: white;
+        }
+
+        .color-5 {
+            background: var(--danger);
+            color: white;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Dynamic Elements</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Dynamic Data Test ID Test</h2>
+                <p>The button below regenerates with a new random <code>data-testid</code> each time it's clicked.</p>
+
+                <div class="dynamic-area" id="dynamic-area">
+                    <button class="dynamic-button color-1" data-testid="dynamic-button-init">
+                        Click Me
+                    </button>
+                    <p id="click-count" style="font-size: 0.875rem; color: var(--text-secondary);">Clicks: 0</p>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let colorIndex = 1;
+
+        const dynamicArea = document.getElementById('dynamic-area');
+        const clickCountDisplay = document.getElementById('click-count');
+
+        function generateTestId() {
+            return 'dynamic-button-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function regenerateButton() {
+            const oldButton = dynamicArea.querySelector('.dynamic-button');
+            if (oldButton) {
+                oldButton.remove();
+            }
+
+            const newButton = document.createElement('button');
+            const newTestId = generateTestId();
+            newButton.className = `dynamic-button color-${colorIndex}`;
+            newButton.setAttribute('data-testid', newTestId);
+            newButton.textContent = 'Click Me';
+
+            newButton.addEventListener('click', handleDynamicClick);
+
+            dynamicArea.insertBefore(newButton, clickCountDisplay);
+
+            colorIndex = (colorIndex % 5) + 1;
+        }
+
+        function handleDynamicClick() {
+            clickCount++;
+            clickCountDisplay.textContent = `Clicks: ${clickCount}`;
+            regenerateButton();
+        }
+
+        dynamicArea.querySelector('.dynamic-button').addEventListener('click', handleDynamicClick);
+    </script>
+</body>
+</html>

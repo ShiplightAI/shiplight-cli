@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Updated - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .app-container {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        /* Top navigation bar - this replaced the old sidebar navigation */
+        .top-nav {
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .top-nav .app-logo {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-inverse);
+            padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 0;
+            border-right: 1px solid var(--gray-700);
+            margin-right: var(--spacing-md);
+        }
+
+        .top-nav .nav-tabs {
+            display: flex;
+            list-style: none;
+            gap: 0;
+        }
+
+        .top-nav .nav-tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .top-nav .nav-tab:hover {
+            color: var(--gray-200);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .top-nav .nav-tab.active {
+            color: var(--text-inverse);
+            border-bottom-color: var(--primary-light);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .top-nav .nav-tab .tab-icon {
+            margin-right: var(--spacing-sm);
+        }
+
+        .nav-spacer {
+            flex-grow: 1;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--gray-300);
+            font-size: 0.875rem;
+        }
+
+        .nav-user .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--text-inverse);
+        }
+
+        /* Content panels */
+        .panel-container {
+            padding: var(--spacing-2xl);
+            min-height: 400px;
+        }
+
+        .panel {
+            display: none;
+            animation: panelFadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes panelFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .panel .panel-description {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Dashboard panel */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .dash-stat {
+            background: var(--bg-secondary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .dash-stat .label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dash-stat .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: var(--spacing-xs);
+        }
+
+        /* Settings panel */
+        .settings-grid {
+            display: grid;
+            gap: var(--spacing-lg);
+            max-width: 600px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .setting-item .setting-label {
+            font-weight: 500;
+        }
+
+        .setting-item .setting-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gray-300);
+            border-radius: 13px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--primary);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(22px);
+        }
+
+        /* Profile panel */
+        .profile-card {
+            display: flex;
+            gap: var(--spacing-xl);
+            align-items: flex-start;
+            max-width: 600px;
+        }
+
+        .profile-avatar {
+            width: 96px;
+            height: 96px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-inverse);
+            flex-shrink: 0;
+        }
+
+        .profile-details h3 {
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .profile-details .profile-email {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .profile-details .profile-field {
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9375rem;
+        }
+
+        .profile-details .profile-field strong {
+            color: var(--text-secondary);
+            margin-right: var(--spacing-sm);
+        }
+
+        /* Notifications panel */
+        .notification-list {
+            max-width: 600px;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .notif-icon.info {
+            background: #eff6ff;
+        }
+
+        .notif-icon.success {
+            background: #ecfdf5;
+        }
+
+        .notif-icon.warning {
+            background: #fef3c7;
+        }
+
+        .notif-content .notif-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .notif-content .notif-time {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                flex-wrap: wrap;
+            }
+
+            .top-nav .nav-tabs {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>UI Updated</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>UI Updated</h1>
+            <p class="description">Navigation was redesigned from a sidebar to a top navigation bar. An old test that clicks a sidebar link for "Settings" will fail because the sidebar no longer exists.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: ui_changed</h4>
+                <p>The navigation structure was completely redesigned. Settings was previously accessed via a sidebar menu link.</p>
+                <ul>
+                    <li><strong>Old UI:</strong> Left sidebar with navigation links including a "Settings" link element</li>
+                    <li><strong>New UI:</strong> Top navigation bar with tabs (Dashboard, Settings, Profile, Notifications)</li>
+                    <li><strong>Old test behavior:</strong> Clicks <code>.sidebar-nav a[href="#settings"]</code> or a sidebar link labeled "Settings"</li>
+                    <li><strong>Expected fix:</strong> Click the "Settings" tab in the top navigation bar instead</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <!-- NOTE: There is no sidebar anymore - navigation is now in the top nav bar -->
+                <div class="app-container">
+                    <nav class="top-nav">
+                        <div class="app-logo">AppName</div>
+                        <ul class="nav-tabs">
+                            <li class="nav-tab active" data-panel="dashboard">
+                                <span class="tab-icon">&#x1F4CA;</span>Dashboard
+                            </li>
+                            <li class="nav-tab" data-panel="settings">
+                                <span class="tab-icon">&#x2699;&#xFE0F;</span>Settings
+                            </li>
+                            <li class="nav-tab" data-panel="profile">
+                                <span class="tab-icon">&#x1F464;</span>Profile
+                            </li>
+                            <li class="nav-tab" data-panel="notifications">
+                                <span class="tab-icon">&#x1F514;</span>Notifications
+                            </li>
+                        </ul>
+                        <div class="nav-spacer"></div>
+                        <div class="nav-user">
+                            <div class="user-avatar">JD</div>
+                            <span>Jane Doe</span>
+                        </div>
+                    </nav>
+
+                    <div class="panel-container">
+                        <!-- Dashboard Panel -->
+                        <div class="panel active" id="panel-dashboard">
+                            <h2>Dashboard</h2>
+                            <p class="panel-description">Overview of your account activity and key metrics.</p>
+                            <div class="dashboard-stats">
+                                <div class="dash-stat">
+                                    <div class="label">Total Projects</div>
+                                    <div class="value">24</div>
+                                </div>
+                                <div class="dash-stat">
+                                    <div class="label">Active Tasks</div>
+                                    <div class="value">156</div>
+                                </div>
+                                <div class="dash-stat">
+                                    <div class="label">Team Members</div>
+                                    <div class="value">12</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Panel -->
+                        <div class="panel" id="panel-settings">
+                            <h2>Settings</h2>
+                            <p class="panel-description">Manage your application preferences and configuration.</p>
+                            <div class="settings-grid">
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Email Notifications</div>
+                                        <div class="setting-desc">Receive email alerts for important updates</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Two-Factor Authentication</div>
+                                        <div class="setting-desc">Add an extra layer of security to your account</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Dark Mode</div>
+                                        <div class="setting-desc">Use dark theme across the application</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Auto-save Drafts</div>
+                                        <div class="setting-desc">Automatically save your work every 30 seconds</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Panel -->
+                        <div class="panel" id="panel-profile">
+                            <h2>Profile</h2>
+                            <p class="panel-description">View and edit your personal information.</p>
+                            <div class="profile-card">
+                                <div class="profile-avatar">JD</div>
+                                <div class="profile-details">
+                                    <h3>Jane Doe</h3>
+                                    <p class="profile-email">jane.doe@company.com</p>
+                                    <div class="profile-field"><strong>Role:</strong> Product Manager</div>
+                                    <div class="profile-field"><strong>Team:</strong> Engineering</div>
+                                    <div class="profile-field"><strong>Location:</strong> San Francisco, CA</div>
+                                    <div class="profile-field"><strong>Joined:</strong> March 2024</div>
+                                    <div style="margin-top: var(--spacing-md);">
+                                        <button class="btn btn-primary btn-sm">Edit Profile</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notifications Panel -->
+                        <div class="panel" id="panel-notifications">
+                            <h2>Notifications</h2>
+                            <p class="panel-description">Recent activity and alerts.</p>
+                            <div class="notification-list">
+                                <div class="notification-item">
+                                    <div class="notif-icon info">&#x1F4E7;</div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">New comment on "Q4 Planning"</div>
+                                        <div class="notif-time">2 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notif-icon success">&#x2705;</div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Deployment completed successfully</div>
+                                        <div class="notif-time">1 hour ago</div>
+                                    </div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notif-icon warning">&#x26A0;&#xFE0F;</div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Storage usage at 85%</div>
+                                        <div class="notif-time">3 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notif-icon info">&#x1F464;</div>
+                                    <div class="notif-content">
+                                        <div class="notif-title">Alex invited you to "New Project"</div>
+                                        <div class="notif-time">Yesterday</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var tabs = document.querySelectorAll('.nav-tab');
+        var panels = document.querySelectorAll('.panel');
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var panelId = this.getAttribute('data-panel');
+
+                // Deactivate all tabs and panels
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                panels.forEach(function(p) { p.classList.remove('active'); });
+
+                // Activate clicked tab and corresponding panel
+                this.classList.add('active');
+                var panel = document.getElementById('panel-' + panelId);
+                if (panel) {
+                    panel.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

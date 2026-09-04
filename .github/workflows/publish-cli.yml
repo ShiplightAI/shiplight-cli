@@ -1,0 +1,960 @@
+name: Publish shiplightai
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run all gates but skip npm publish and bump push (test the workflow itself)"
+        type: boolean
+        default: false
+      promote_run_id:
+        description: "Promote: publish the already-validated tarball from this prior dry-run's run id (skips ALL gates). Leave empty for a normal run."
+        type: string
+        default: ""
+
+# Two mutually-exclusive paths, selected by promote_run_id:
+#   empty   → sdk-tests + full publish pipeline (dry_run still gates the actual
+#             publish/bump). A dry-run uploads a `release-candidate` artifact
+#             (validated tarball + meta.env) that a later promote consumes.
+#   non-empty → the lean `promote` job: download that validated tarball, guard
+#             it (source run succeeded, main hasn't moved, version still free),
+#             publish it, push the bump. No build, no tests, no examples suite.
+jobs:
+  # Hard gate: the shared web-agent SDK (001) this CLI bundles must pass its
+  # own quality-map evidence before we can publish. Keyless; runs unconditionally
+  # on a normal run, skipped on a promote (the promoted tarball already passed it).
+  sdk-tests:
+    if: ${{ inputs.promote_run_id == '' }}
+    uses: ./.github/workflows/sdk-tests.yml
+
+  publish:
+    if: ${{ inputs.promote_run_id == '' }}
+    needs: sdk-tests
+    # shiplight-medium (e2-standard-8, 8 vCPU / 32 GB) — a cloud-dispatched
+    # self-hosted runner. The live-AI browser E2E gates below run 4-wide
+    # (--workers=4) here instead of serially on a 2-vCPU GitHub-hosted runner,
+    # mirroring the cloud service's E2E CI. Requires monots to stay a connected repo in
+    # the cloud service runner control plane, else the job queues without a runner.
+    runs-on: shiplight-medium
+    permissions:
+      contents: write
+      # TWO independent consumers — dropping this breaks publishing, not just the
+      # E2E gates: (1) npm trusted publishing, which is the ONLY npm credential
+      # this workflow has; (2) WIF OIDC → GCP Vertex AI (ADC) for the live-AI E2E
+      # gates below.
+      id-token: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Catches the commonest misconfiguration — a job without `id-token: write`
+      # — before the gates below spend their time. npm authenticates this
+      # workflow by OIDC (trusted publishing); there is no NPM_TOKEN fallback,
+      # so a missing id-token surfaces as a bare ENEEDAUTH at the very last step.
+      - name: Assert the OIDC id-token is available to this job
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            printf '::%s::%s\n' error "No OIDC id-token in this job — trusted publishing needs 'permissions: id-token: write'"
+            exit 1
+          fi
+          echo "OIDC id-token endpoint present."
+
+      - name: Configure git identity
+        run: |
+          git config user.name "shiplight-release-bot"
+          git config user.email "release-bot@shiplight.ai"
+
+      - run: pnpm install
+
+      # Google auth for the live-AI E2E gates below. The org moved off
+      # GOOGLE_API_KEY (AI Studio) to ADC/Vertex; auth here mints short-lived
+      # credentials via workload-identity federation and exports
+      # GOOGLE_APPLICATION_CREDENTIALS for every later step (google-auth-library
+      # picks it up ambiently; the SDK routes to Vertex via GOOGLE_GENAI_USE_VERTEXAI).
+      # Placed before the Vertex auth so an unset variable fails here, with a
+      # readable message, rather than surfacing later as an opaque GenAI SDK
+      # error inside a live-AI E2E gate.
+      - name: Guard — GCP_PROJECT_ID must be configured
+        run: |
+          if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
+            printf '::%s::%s\n' error "Repository variable GCP_PROJECT_ID is not set. The live-AI E2E gates route through Vertex AI and need the GCP project to bill and route to. Set it under Settings > Secrets and variables > Actions > Variables."
+            exit 1
+          fi
+          echo "GCP_PROJECT_ID is set."
+
+      - name: Authenticate to GCP (Vertex AI via workload identity)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      # Belt-and-suspenders: resolveWebAgentModelFromEnv checks GOOGLE_API_KEY
+      # BEFORE Vertex/ADC, so a stray GOOGLE_API_KEY in the env would shadow ADC
+      # and force the retired AI-Studio path (dead key -> "API key not valid").
+      # Fail fast if one is ever reintroduced into this job's environment.
+      - name: Guard — GOOGLE_API_KEY must not shadow ADC
+        run: |
+          if [ -n "${GOOGLE_API_KEY:-}" ]; then
+            printf '::%s::%s\n' error "GOOGLE_API_KEY is set; it takes precedence over Vertex/ADC in resolveWebAgentModelFromEnv and forces the retired AI-Studio path. Unset it — the org runs live-AI via Vertex/ADC."
+            exit 1
+          fi
+          echo "GOOGLE_API_KEY not set — live-AI routes through Vertex/ADC."
+
+      - name: Compute OLD (live npm) and NEW (patch+1) versions
+        id: versions
+        run: |
+          set -euo pipefail
+          OLD=$(npm view shiplightai version)
+          NEW=$(node -p "const v='${OLD}'.split('.').map(Number); v[2]++; v.join('.')")
+          echo "OLD=$OLD"
+          echo "NEW=$NEW"
+          echo "old=$OLD" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Assert NEW not already on npm
+        run: |
+          if npm view shiplightai@${{ steps.versions.outputs.new }} version > /dev/null 2>&1; then
+            printf '::%s::%s\n' error "shiplightai@${{ steps.versions.outputs.new }} already exists on npm"
+            exit 1
+          fi
+
+      - name: Bump apps/cli/package.json to NEW
+        working-directory: apps/cli
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.NEW_VERSION;fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');"
+          node -p "require('./package.json').version"
+
+      # Generate the CHANGELOG.md entry BEFORE pack so it ships inside the tarball
+      # (CHANGELOG.md is listed in apps/cli/package.json `files`). Entries are
+      # derived from commits since the previous shiplightai bump, scoped to the
+      # paths bundled into the tarball. Runs on dry-runs too — the entry is baked
+      # into the staged release-candidate tarball a later promote publishes.
+      - name: Generate CHANGELOG entry
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        run: |
+          node scripts/gen-changelog.mjs \
+            --app-dir apps/cli \
+            --package shiplightai \
+            --version "$NEW_VERSION" \
+            --out apps/cli/CHANGELOG.md \
+            --prev-bump-grep "bump shiplightai to"
+
+      - name: Build CLI with dependencies
+        run: pnpm turbo run build --filter=shiplightai
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Unit + logic tests (hard gate)
+        id: unit_logic_gate
+        run: pnpm turbo run test:unit test:logic --filter=shiplightai
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Emit CLI unit JUnit (canonical observation input)
+        # Same unit suite as the gate above, re-run with a JUnit reporter so the
+        # canonical conversion step can carry per-test runtime proof for the 002
+        # CLI expectations. Mirrors apps/cli `test:unit` exactly —
+        # including its .tpl text loader (scaffold templates are .tpl imports;
+        # without the loader, scaffold-touching tests die with
+        # ERR_UNKNOWN_FILE_EXTENSION). Keep in lockstep with the package script.
+        working-directory: apps/cli
+        run: |
+          mkdir -p /tmp/qc-observations/cli
+          files=$(find src -name '*.test.ts' ! -name '*.e2e.test.ts')
+          if [ -z "$files" ]; then printf '::%s::%s\n' error "no unit test files found"; exit 1; fi
+          # $files is intentionally unquoted: word-splitting passes each test path
+          # as a separate arg (paths have no spaces). Same pattern as the existing
+          # "Browser e2e — keyless lane" step. Quoting would pass one bad arg.
+          pnpm exec tsx --test --import ./tpl-loader.mjs \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/cli/unit.junit.xml \
+            $files
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Emit CLI logic Playwright JSON (canonical observation input)
+        # Same browser-free logic suite as the `test:logic` portion of the gate
+        # above (playwright.logic.config.ts: tests/{unit,integration,conformance}),
+        # re-run with the JSON reporter so the canonical conversion step can carry
+        # runtime proof for the 002 CLI expectations under tests/integration/.
+        # The unit emission above only covers src/**, so without this step those
+        # integration proofs stay unobserved.
+        working-directory: apps/cli
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          PLAYWRIGHT_JSON_OUTPUT_FILE: /tmp/qc-observations/cli/logic.playwright.json
+        run: |
+          mkdir -p /tmp/qc-observations/cli
+          # list -> stdout (readable failures in the CI log), json -> the artifact
+          # file via PLAYWRIGHT_JSON_OUTPUT_FILE (mirrors the dual spec+junit
+          # reporters the node:test emission steps use).
+          pnpm exec playwright test -c playwright.logic.config.ts --reporter=list,json
+
+      - name: Assert build artifacts present
+        working-directory: apps/cli
+        run: |
+          set -euo pipefail
+          for d in dist/static/assets dist/static-embedded/assets; do
+            if [ ! -d "$d" ] || [ -z "$(ls -A "$d")" ]; then
+              printf '::%s::%s\n' error "Missing or empty build artifact: $d"
+              exit 1
+            fi
+          done
+
+      - name: Pack candidate tarball
+        working-directory: apps/cli
+        run: pnpm pack
+
+      - name: Download baseline tarball (shiplightai@OLD)
+        run: |
+          mkdir -p /tmp/baseline-tarball
+          cd /tmp/baseline-tarball
+          npm pack shiplightai@${{ steps.versions.outputs.old }}
+
+      - name: Tarball size delta (fail if > +1%)
+        id: size
+        run: |
+          set -euo pipefail
+          BASELINE=$(stat -c%s "/tmp/baseline-tarball/shiplightai-${{ steps.versions.outputs.old }}.tgz")
+          CANDIDATE=$(stat -c%s "apps/cli/shiplightai-${{ steps.versions.outputs.new }}.tgz")
+          DELTA=$((CANDIDATE - BASELINE))
+          PCT=$(awk -v d="$DELTA" -v b="$BASELINE" 'BEGIN { printf "%.4f", (d / b) * 100 }')
+          echo "baseline_bytes=$BASELINE" >> "$GITHUB_OUTPUT"
+          echo "candidate_bytes=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          echo "delta_bytes=$DELTA" >> "$GITHUB_OUTPUT"
+          echo "delta_pct=$PCT" >> "$GITHUB_OUTPUT"
+          echo "baseline ${{ steps.versions.outputs.old }}: $BASELINE B"
+          echo "candidate ${{ steps.versions.outputs.new }}: $CANDIDATE B"
+          echo "delta: $DELTA B ($PCT%)"
+          if awk -v p="$PCT" 'BEGIN { exit (p > 1) ? 0 : 1 }'; then
+            printf '::%s::%s\n' error "Tarball grew $PCT% (threshold +1%)"
+            exit 1
+          fi
+
+      - name: Baseline install (shiplightai@OLD in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/baseline-smoke && cd /tmp/baseline-smoke
+          npm init -y > /dev/null
+          npm install --no-audit shiplightai@${{ steps.versions.outputs.old }} 2> baseline.warn
+
+      - name: Candidate install (./tarball in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/candidate-smoke && cd /tmp/candidate-smoke
+          npm init -y > /dev/null
+          npm install --no-audit "${{ github.workspace }}/apps/cli/shiplightai-${{ steps.versions.outputs.new }}.tgz" 2> candidate.warn
+
+      - name: Diff filtered warnings (deprecated | peer | audit)
+        id: warn_diff
+        run: |
+          set -uo pipefail
+          PATTERN='deprecated|npm warn peer|npm error|vulnerabilit'
+          grep -E "$PATTERN" /tmp/baseline-smoke/baseline.warn | sort -u > /tmp/baseline.filtered || true
+          grep -E "$PATTERN" /tmp/candidate-smoke/candidate.warn | sort -u > /tmp/candidate.filtered || true
+          NEW_LINES=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+          if [ -n "$NEW_LINES" ]; then
+            printf '::%s::%s\n' error "New filtered warnings vs. baseline ${{ steps.versions.outputs.old }}:"
+            echo "$NEW_LINES"
+            exit 1
+          fi
+          echo "No new filtered warnings."
+
+      - name: Functional smoke (npx shiplight --version / --help)
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          INSTALLED=$(node -p "require('./node_modules/shiplightai/package.json').version")
+          if [ "$INSTALLED" != "${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "Installed version $INSTALLED != expected ${{ steps.versions.outputs.new }}"
+            exit 1
+          fi
+          for d in node_modules/shiplightai/dist/static/assets node_modules/shiplightai/dist/static-embedded/assets; do
+            if [ ! -d "$d" ] || [ -z "$(ls -A "$d")" ]; then
+              printf '::%s::%s\n' error "Installed package missing $d"
+              exit 1
+            fi
+          done
+          npm audit --omit=dev
+          node "${{ github.workspace }}/scripts/verify-sharp-install.mjs"
+          npx shiplight --version
+          npx shiplight --help
+
+      - name: CUJ smoke — shiplight create
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          npx shiplight create scaffold-smoke > /tmp/cuj-create.log 2>&1
+          for f in scaffold-smoke/package.json scaffold-smoke/playwright.config.ts scaffold-smoke/.gitignore scaffold-smoke/.env.example; do
+            if [ ! -s "$f" ]; then
+              printf '::%s::%s\n' error "shiplight create did not produce $f"
+              cat /tmp/cuj-create.log
+              exit 1
+            fi
+          done
+          echo "shiplight create OK"
+
+      - name: CUJ smoke — shiplight inspect
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          cp "${{ github.workspace }}/apps/cli/fixtures/release/inspect.test.yaml" ./inspect.test.yaml
+          npx shiplight inspect inspect.test.yaml > /tmp/cuj-inspect.json 2> /tmp/cuj-inspect.err
+          # Validate JSON shape: must parse and contain a testFlow with statements
+          node -e "const r=require('/tmp/cuj-inspect.json'); if(!r.testFlow || !Array.isArray(r.testFlow.statements) || r.testFlow.statements.length===0) { console.error('inspect output missing testFlow.statements'); process.exit(1); }"
+          echo "shiplight inspect OK"
+
+      - name: CUJ smoke — shiplight transpile (exercises babel deps)
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          # Reuse the inspect fixture
+          npx shiplight transpile inspect.test.yaml > /tmp/cuj-transpile.log 2>&1
+          if [ ! -s inspect.yaml.spec.ts ]; then
+            printf '::%s::%s\n' error "shiplight transpile did not produce inspect.yaml.spec.ts"
+            cat /tmp/cuj-transpile.log
+            exit 1
+          fi
+          # Confirm output is a parseable TS file that imports from shiplightai
+          # and defines a test. (shiplight transpile emits `import { test, expect }
+          # from 'shiplightai/fixture'`, not the raw @playwright/test import.)
+          if ! grep -q "from 'shiplightai/fixture'" inspect.yaml.spec.ts; then
+            printf '::%s::%s\n' error "transpiled spec missing shiplightai/fixture import"
+            head -5 inspect.yaml.spec.ts
+            exit 1
+          fi
+          if ! grep -q "^test(" inspect.yaml.spec.ts; then
+            printf '::%s::%s\n' error "transpiled spec missing test() declaration"
+            head -20 inspect.yaml.spec.ts
+            exit 1
+          fi
+          echo "shiplight transpile OK"
+
+      - name: CUJ smoke — shiplight report
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          mkdir -p smoke-report
+          cp "${{ github.workspace }}/apps/cli/fixtures/release/report-data.json" smoke-report/report-data.json
+          npx shiplight report smoke-report > /tmp/cuj-report.log 2>&1
+          if [ ! -s smoke-report/index.html ]; then
+            printf '::%s::%s\n' error "shiplight report did not produce index.html"
+            cat /tmp/cuj-report.log
+            exit 1
+          fi
+          # Sanity: rendered HTML should contain the fixture's test title
+          if ! grep -q "Release-gate smoke" smoke-report/index.html; then
+            printf '::%s::%s\n' error "rendered index.html missing fixture test title"
+            exit 1
+          fi
+          echo "shiplight report OK"
+
+      - name: Install Chromium for e2e
+        working-directory: apps/cli
+        # No --with-deps: the shiplight-medium runner image has the browser OS
+        # libraries pre-baked, and --with-deps shells out to `sudo apt-get`,
+        # which fails on the self-hosted runner (its user has no passwordless
+        # sudo). The plain install is a no-op when the baked Chromium already
+        # matches Playwright 1.60.0, otherwise it fetches the right revision to
+        # the user cache — neither path needs sudo.
+        run: pnpm exec playwright install chromium
+
+      - name: Browser e2e — keyless lane (hard gate)
+        id: browser_e2e_gate
+        # Real-Chromium lane the quality map relies on: `shiplight create`,
+        # `shiplight debug` server boot, real `shiplight test` pass/fail
+        # exit-code propagation, CLI->env->fixture->testContext vars wiring,
+        # and headed-only extension action popup coverage under xvfb.
+        # Keyless and deterministic — runs before the live-AI example e2e below.
+        working-directory: apps/cli
+        run: |
+          mkdir -p /tmp/qc-observations/cli
+          files=$(find src -name '*.e2e.test.ts')
+          if [ -z "$files" ]; then printf '::%s::%s\n' error "no *.e2e.test.ts files found — hard gate would falsely pass"; exit 1; fi
+          xvfb-run -a pnpm exec tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/cli/browser-e2e.junit.xml $files
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: E2E — example-homepage (hard gate)
+        id: example_homepage_gate
+        working-directory: apps/cli
+        env:
+          GOOGLE_GENAI_USE_VERTEXAI: "true"
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          GOOGLE_CLOUD_LOCATION: global
+          PLAYWRIGHT_JSON_OUTPUT_FILE: /tmp/qc-observations/cli/example-homepage.playwright.json
+        run: pnpm exec playwright test -c playwright.config.ts tests/examples/example-homepage.yaml.spec.ts
+
+      - name: E2E — google-search (soft, live-AI flake tolerated)
+        continue-on-error: true
+        working-directory: apps/cli
+        env:
+          GOOGLE_GENAI_USE_VERTEXAI: "true"
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          GOOGLE_CLOUD_LOCATION: global
+          PLAYWRIGHT_JSON_OUTPUT_FILE: /tmp/qc-observations/cli/google-search.playwright.json
+        run: pnpm exec playwright test -c playwright.config.ts tests/examples/google-search.yaml.spec.ts
+
+      # Dogfood the candidate tarball against the public examples repo users
+      # actually clone (ShiplightAI/examples). Repo is public, so no token is
+      # needed for the checkout.
+      - name: Checkout public examples (ShiplightAI/examples)
+        uses: actions/checkout@v6
+        with:
+          repository: ShiplightAI/examples
+          path: examples-repo
+
+      - name: Start local test server (showcase tests that use localhost:3000)
+        # Showcase tests added after 0.1.84 navigate to /testing/interactions/*.html.
+        # Those fixtures live in apps/cli/tests/fixtures/web in this repo (moved
+        # there from the deleted apps/frontend/public in August 2026). Serve that
+        # tree at localhost:3000 so tests with base_url: http://localhost:3000 can
+        # reach them. Python's http.server is always available on ubuntu runners.
+        run: |
+          python3 -m http.server 3000 \
+            --directory "${{ github.workspace }}/apps/cli/tests/fixtures/web" \
+            > /tmp/test-server.log 2>&1 &
+          echo $! > /tmp/test-server.pid
+          for i in $(seq 1 10); do
+            curl -sf http://localhost:3000/testing/interactions/non-standard-clickable.html \
+              > /dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -sf http://localhost:3000/testing/interactions/non-standard-clickable.html \
+            > /dev/null || {
+            printf '::%s::%s\n' error "local test server failed to start on port 3000"
+            exit 1
+          }
+          echo "Local test server running (pid $(cat /tmp/test-server.pid))"
+
+      - name: E2E — public examples suite (hard gate, all must pass)
+        id: public_examples_gate
+        # Installs the freshly-built shiplightai over the examples' pinned dep and
+        # runs the full demo + showcase suite (saucedemo auth creds are hardcoded
+        # in demo/auth.setup.ts; live-AI DRAFT resolution runs on Vertex via ADC).
+        #
+        # Split into two shiplight test invocations so demo tests run immediately
+        # after the auth setup step — showcase tests can take 10+ minutes and may
+        # outlive short-lived saucedemo session cookies if they run in between.
+        # Showcase gets --retries 1 for AI-driven tests that are inherently variable
+        # (e.g. cloud-feature tests against app.shiplight.ai).
+        working-directory: examples-repo/yaml-examples
+        env:
+          GOOGLE_GENAI_USE_VERTEXAI: "true"
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          GOOGLE_CLOUD_LOCATION: global
+        run: |
+          set -euo pipefail
+          # Record which examples commit this gate ran against (checkout is HEAD
+          # of the default branch — intentionally tracks what users clone — so
+          # log the SHA for reproducibility when a failure needs diagnosing).
+          echo "Testing against ShiplightAI/examples@$(git rev-parse HEAD)"
+          # npm ci needs an in-sync lockfile; fall back to npm install so a
+          # lockfile drift in the external examples repo doesn't fail-close the
+          # publish on something unrelated to the CLI.
+          npm ci || npm install
+          # Overlay the candidate tarball without touching package.json/lockfile.
+          npm install --no-save "${{ github.workspace }}/apps/cli/shiplightai-${{ steps.versions.outputs.new }}.tgz"
+          INSTALLED=$(node -p "require('./node_modules/shiplightai/package.json').version")
+          if [ "$INSTALLED" != "${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "examples running shiplightai $INSTALLED, expected ${{ steps.versions.outputs.new }}"
+            exit 1
+          fi
+          # Discovery guard: fail loudly if the suite is empty so a restructure
+          # of the examples repo can't make this hard gate pass vacuously
+          # (mirrors the "no test files found" guards on the other hard gates).
+          YAML_COUNT=$(find . -path ./node_modules -prune -o -name '*.test.yaml' -print | wc -l | tr -d ' ')
+          if [ "$YAML_COUNT" -eq 0 ]; then
+            printf '::%s::%s\n' error "no *.test.yaml found in examples — hard gate would falsely pass"
+            exit 1
+          fi
+          # Ensure the Chromium revision is present (the examples' pinned
+          # Playwright may differ from apps/cli; browsers are cached per-revision).
+          # No --with-deps: the shiplight-medium image has the OS libraries
+          # pre-baked, and --with-deps' `sudo apt-get` fails on the self-hosted
+          # runner (no passwordless sudo). The plain install needs no sudo.
+          npx playwright install chromium
+          # Run demo project first (auth setup → demo immediately, session is fresh).
+          npx shiplight test --project=setup --project=demo --workers=4
+          # Run showcase project separately (localhost:3000 is up for fixture tests).
+          npx shiplight test --project=showcase --retries 1 --workers=4
+
+      - name: Stop local test server
+        if: always()
+        run: |
+          if [ -f /tmp/test-server.pid ]; then
+            kill "$(cat /tmp/test-server.pid)" 2>/dev/null || true
+          fi
+
+      - name: Build canonical CLI observations
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qc-observations/cli/shards
+
+          manifests=()
+          convert_junit() {
+            local source="$1"
+            local output="$2"
+            if [ ! -s "$source" ]; then
+              printf '::%s::%s\n' warning "Canonical observation input is unavailable: $source"
+              return
+            fi
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations from-junit \
+              "$source" --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical observation input was rejected: $source"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+          convert_playwright() {
+            local source="$1"
+            local output="$2"
+            if [ ! -s "$source" ]; then
+              printf '::%s::%s\n' warning "Canonical observation input is unavailable: $source"
+              return
+            fi
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations from-playwright \
+              "$source" --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical observation input was rejected: $source"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+          record_gate() {
+            local test_case="$1"
+            local outcome="$2"
+            local output="$3"
+            local status
+            case "$outcome" in
+              success) status=pass ;;
+              failure) status=fail ;;
+              cancelled) status=error ;;
+              ""|skipped) status=skipped ;;
+              *) status=error ;;
+            esac
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations record \
+              --path .github/workflows/publish-cli.yml \
+              --test-case "$test_case" \
+              --status "$status" \
+              --note "GitHub Actions step outcome: $outcome" \
+              --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical gate outcome was rejected: $test_case"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+
+          convert_junit \
+            /tmp/qc-observations/cli/unit.junit.xml \
+            /tmp/qc-observations/cli/shards/unit.json
+          convert_playwright \
+            /tmp/qc-observations/cli/logic.playwright.json \
+            /tmp/qc-observations/cli/shards/logic.json
+          convert_junit \
+            /tmp/qc-observations/cli/browser-e2e.junit.xml \
+            /tmp/qc-observations/cli/shards/browser-e2e.json
+          convert_playwright \
+            /tmp/qc-observations/cli/example-homepage.playwright.json \
+            /tmp/qc-observations/cli/shards/example-homepage.json
+          convert_playwright \
+            /tmp/qc-observations/cli/google-search.playwright.json \
+            /tmp/qc-observations/cli/shards/google-search.json
+          record_gate \
+            "Unit + logic tests (hard gate)" \
+            "${{ steps.unit_logic_gate.outcome }}" \
+            /tmp/qc-observations/cli/shards/unit-logic-gate.json
+          record_gate \
+            "Browser e2e — keyless lane (hard gate)" \
+            "${{ steps.browser_e2e_gate.outcome }}" \
+            /tmp/qc-observations/cli/shards/browser-e2e-gate.json
+          record_gate \
+            "E2E — example-homepage (hard gate)" \
+            "${{ steps.example_homepage_gate.outcome }}" \
+            /tmp/qc-observations/cli/shards/example-homepage-gate.json
+          record_gate \
+            "E2E — public examples suite (hard gate, all must pass)" \
+            "${{ steps.public_examples_gate.outcome }}" \
+            /tmp/qc-observations/cli/shards/public-examples-gate.json
+
+          if [ ${#manifests[@]} -eq 0 ]; then
+            printf '::%s::%s\n' warning "No canonical observation shard survived; nothing to merge"
+            exit 0
+          fi
+          npx --yes @shiplightai/quality-tools@0.3.2 observations merge \
+            "${manifests[@]}" \
+            --output /tmp/qc-observations/cli/quality-observations.json
+          npx --yes @shiplightai/quality-tools@0.3.2 observations validate \
+            /tmp/qc-observations/cli/quality-observations.json
+
+      - name: Upload CLI observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-cli-observations
+          path: /tmp/qc-observations/cli/quality-observations.json
+
+      # Stage the validated tarball + provenance so a later `promote` run can
+      # publish this exact artifact without re-running the gates. Reached only
+      # after every hard gate above passed (no `if: always()`), so the artifact's
+      # mere existence already implies a clean validation; the promote job still
+      # re-checks the source run's conclusion as belt-and-suspenders. SHA is the
+      # main tip this candidate was built from — promote refuses to publish it if
+      # main has advanced since (else it would ship unvalidated/stale code).
+      - name: Stage release candidate (tarball + provenance)
+        working-directory: apps/cli
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/release-candidate
+          cp "shiplightai-${NEW_VERSION}.tgz" /tmp/release-candidate/
+          {
+            echo "VERSION=${NEW_VERSION}"
+            echo "SHA=$(git rev-parse HEAD)"
+          } > /tmp/release-candidate/meta.env
+          cat /tmp/release-candidate/meta.env
+
+      - name: Upload release candidate (for promote)
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-candidate
+          path: /tmp/release-candidate/**
+
+      - name: npm publish --dry-run
+        working-directory: apps/cli
+        run: pnpm publish --dry-run --no-git-checks --access public
+
+      - name: npm publish
+        if: ${{ !inputs.dry_run }}
+        working-directory: apps/cli
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit bump and push main
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          git add apps/cli/package.json apps/cli/CHANGELOG.md
+          git commit -m "chore(cli): bump shiplightai to ${{ steps.versions.outputs.new }}"
+          # main can move while this ~7min job runs; rebase the bump commit onto
+          # the latest main and retry so a concurrent push doesn't fail the release.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed bump on attempt $attempt"
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) — rebasing onto latest main and retrying"
+            sleep $((attempt * 3))
+            git pull --rebase origin main || {
+              git rebase --abort 2>/dev/null || true
+              printf '::%s::%s\n' error "Rebase onto main failed (attempt $attempt) — aborting"
+              exit 1
+            }
+          done
+          # Push once more after the final rebase so the last rebase isn't wasted.
+          if git push origin HEAD:main; then
+            echo "Pushed bump after final rebase"
+            exit 0
+          fi
+          printf '::%s::%s\n' error "Failed to push version bump to main after all rebase-and-retry attempts"
+          exit 1
+
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-diagnostics-${{ steps.versions.outputs.new }}
+          path: |
+            apps/cli/shiplightai-*.tgz
+            /tmp/baseline-tarball/shiplightai-*.tgz
+            /tmp/baseline-smoke/baseline.warn
+            /tmp/candidate-smoke/candidate.warn
+            /tmp/baseline.filtered
+            /tmp/candidate.filtered
+            /tmp/cuj-*.log
+            /tmp/cuj-*.json
+            /tmp/cuj-*.err
+            /tmp/qc-observations/cli/**
+            examples-repo/yaml-examples/test-results/**
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## shiplightai release"
+            echo ""
+            echo "- Version: \`${{ steps.versions.outputs.old }}\` → \`${{ steps.versions.outputs.new }}\`"
+            echo "- Tarball: \`${{ steps.size.outputs.baseline_bytes }} B\` → \`${{ steps.size.outputs.candidate_bytes }} B\` (\`${{ steps.size.outputs.delta_pct }}%\`)"
+            echo "- Dry run: \`${{ inputs.dry_run }}\`"
+            echo ""
+            echo "### Filtered warnings — new vs. baseline"
+            echo '```'
+            if [ -f /tmp/baseline.filtered ] && [ -f /tmp/candidate.filtered ]; then
+              NEW=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+              if [ -z "$NEW" ]; then
+                echo "(no new filtered warnings)"
+              else
+                echo "$NEW"
+              fi
+            else
+              echo "(warning diff not produced — earlier step failed)"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Promote: publish the exact tarball a prior dry-run already validated, without
+  # re-running the ~30-min gate suite. Runs ONLY when promote_run_id is set, in
+  # which case sdk-tests + publish are skipped. Safety comes from three guards,
+  # not from re-testing: (1) the source run must have succeeded, (2) main must
+  # still point at the SHA the candidate was built from — otherwise the tarball
+  # predates merged commits and would ship stale/unvalidated code, and (3) the
+  # version must still be free on npm. The tarball itself is byte-identical to the
+  # one the gates ran against (same artifact, downloaded, not rebuilt).
+  promote:
+    if: ${{ inputs.promote_run_id != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the version bump to main
+      actions: read # download the candidate artifact from the source run
+      # REQUIRED to publish. npm authenticates this workflow by OIDC (trusted
+      # publishing) — there is no NPM_TOKEN to fall back on — so without an
+      # id-token the publish step has no credential at all and dies with
+      # ENEEDAUTH. Omitting it is why the first promote ever attempted
+      # (run 32774879615) failed after every guard had passed.
+      id-token: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Catches the commonest misconfiguration — a job without `id-token: write`
+      # — before the download and guard steps spend their time. npm authenticates
+      # this workflow by OIDC (trusted publishing); there is no NPM_TOKEN
+      # fallback, so a missing id-token surfaces as a bare ENEEDAUTH at the very
+      # last step, which is exactly how run 32774879615 failed.
+      - name: Assert the OIDC id-token is available to this job
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            printf '::%s::%s\n' error "No OIDC id-token in this job — trusted publishing needs 'permissions: id-token: write'"
+            exit 1
+          fi
+          echo "OIDC id-token endpoint present."
+
+      - name: Configure git identity
+        run: |
+          git config user.name "shiplight-release-bot"
+          git config user.email "release-bot@shiplight.ai"
+
+      - name: Download validated candidate from the dry-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # promote_run_id is a free-form dispatch input — pass it via env, never
+          # inline ${{ }} into the script, or a crafted value would inject shell.
+          PROMOTE_RUN_ID: ${{ inputs.promote_run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/promote
+          gh run download "$PROMOTE_RUN_ID" -R "$GITHUB_REPOSITORY" \
+            -n release-candidate -D /tmp/promote
+          ls -la /tmp/promote
+
+      - name: Guard the candidate (source ok, main unmoved, version free)
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Free-form dispatch input — env, never inlined into the script.
+          PROMOTE_RUN_ID: ${{ inputs.promote_run_id }}
+        run: |
+          set -euo pipefail
+          # meta.env is trusted provenance produced by this same workflow's
+          # publish job; it defines VERSION and SHA.
+          . /tmp/promote/meta.env
+          if [ -z "${VERSION:-}" ] || [ -z "${SHA:-}" ]; then
+            printf '::%s::%s\n' error "candidate meta.env missing VERSION/SHA"
+            exit 1
+          fi
+
+          # 1. The source run must have fully succeeded (all gates green).
+          CONC=$(gh run view "$PROMOTE_RUN_ID" -R "$GITHUB_REPOSITORY" --json conclusion --jq .conclusion)
+          if [ "$CONC" != "success" ]; then
+            printf '::%s::%s\n' error "source run $PROMOTE_RUN_ID did not succeed (conclusion=$CONC) — cannot promote"
+            exit 1
+          fi
+
+          # 2. main must still be the exact commit the candidate was built from,
+          #    or the tarball is stale relative to what would be published now.
+          HEAD=$(git rev-parse HEAD)
+          if [ "$HEAD" != "$SHA" ]; then
+            printf '::%s::%s\n' error "main advanced since the validated dry-run (built from $SHA, now $HEAD) — re-run a dry-run before promoting"
+            exit 1
+          fi
+
+          # 3. Version must not already be published.
+          if npm view "shiplightai@${VERSION}" version > /dev/null 2>&1; then
+            printf '::%s::%s\n' error "shiplightai@${VERSION} already exists on npm"
+            exit 1
+          fi
+
+          # 4. The tarball itself must be present.
+          TARBALL="/tmp/promote/shiplightai-${VERSION}.tgz"
+          if [ ! -s "$TARBALL" ]; then
+            printf '::%s::%s\n' error "validated tarball $TARBALL missing from artifact"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          echo "Promoting shiplightai@${VERSION} (built from $SHA)"
+
+      # The quality scanner reads the NEWEST run of this workflow and ingests the
+      # canonical files that run uploaded. A promote skips `sdk-tests` and
+      # `publish`, so it must carry forward the exact canonical observations that
+      # proved its validated tarball.
+      #
+      # The tarball this job publishes IS the one the source dry-run built and
+      # gated, so that run's observations are the correct proof for it.
+      # Re-upload them under artifact names the observation profile already selects
+      # (`.quality/config/observation-sources.yaml`, profile monots-cli-publish)
+      # so a promote run describes itself. Observation transfer is best-effort:
+      # the release safety contract is the validated tarball plus the three
+      # guards above, and the optional quality viewer must not block publishing.
+      # Held in place by scripts/__tests__/publish-workflow-observations.test.mjs.
+      - name: Restage the validated dry-run's canonical observations
+        id: observation_restage
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Free-form dispatch input — env, never inlined into the script.
+          PROMOTE_RUN_ID: ${{ inputs.promote_run_id }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/promote-observations
+          mkdir -p /tmp/promote-observations/cli-artifact \
+                   /tmp/promote-observations/sdk-artifact \
+                   /tmp/promote-observations/cli-source \
+                   /tmp/promote-observations/sdk-source
+
+          gh run download "$PROMOTE_RUN_ID" -R "$GITHUB_REPOSITORY" \
+            -n quality-cli-observations -D /tmp/promote-observations/cli-source
+          gh run download "$PROMOTE_RUN_ID" -R "$GITHUB_REPOSITORY" \
+            -n sdk-tests-observations -D /tmp/promote-observations/sdk-source
+
+          cli_src=/tmp/promote-observations/cli-source/quality-observations.json
+          sdk_src=/tmp/promote-observations/sdk-source/quality-observations.json
+          if [ ! -s "$cli_src" ] || [ ! -s "$sdk_src" ]; then
+            printf '::%s::%s\n' warning "Canonical observations are unavailable in source run ${PROMOTE_RUN_ID}; promotion will continue without restaging them"
+            exit 1
+          fi
+          cp "$cli_src" /tmp/promote-observations/cli-artifact/quality-observations.json
+          cp "$sdk_src" /tmp/promote-observations/sdk-artifact/quality-observations.json
+          npx --yes @shiplightai/quality-tools@0.3.2 observations validate \
+            /tmp/promote-observations/cli-artifact/quality-observations.json
+          npx --yes @shiplightai/quality-tools@0.3.2 observations validate \
+            /tmp/promote-observations/sdk-artifact/quality-observations.json
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload promoted CLI observations
+        if: steps.observation_restage.outputs.available == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-cli-observations
+          path: /tmp/promote-observations/cli-artifact/quality-observations.json
+
+      - name: Upload promoted SDK observations
+        if: steps.observation_restage.outputs.available == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdk-tests-observations
+          path: /tmp/promote-observations/sdk-artifact/quality-observations.json
+
+      - name: npm publish (validated tarball)
+        # Publishing a pre-packed tarball uploads it as-is — npm does NOT re-pack
+        # or re-resolve workspace:* here (that resolution already happened when the
+        # publish job ran `pnpm pack`), so the CLAUDE.md "never npm publish" rule —
+        # which is about npm re-packing workspace protocols — does not apply to an
+        # already-pnpm-packed tarball.
+        run: npm publish "${{ steps.guard.outputs.tarball }}" --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump apps/cli/package.json and push main
+        env:
+          NEW_VERSION: ${{ steps.guard.outputs.version }}
+        run: |
+          set -euo pipefail
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('apps/cli/package.json','utf8'));p.version=process.env.NEW_VERSION;fs.writeFileSync('apps/cli/package.json', JSON.stringify(p, null, 2) + '\n');"
+          # Sync the committed CHANGELOG to the exact one inside the promoted
+          # tarball (npm packs files under package/), so the repo history matches
+          # what was published byte-for-byte. The tarball's CHANGELOG was
+          # generated during the validated dry-run.
+          tar -xzf "/tmp/promote/shiplightai-${NEW_VERSION}.tgz" -C /tmp/promote package/CHANGELOG.md
+          cp /tmp/promote/package/CHANGELOG.md apps/cli/CHANGELOG.md
+          git add apps/cli/package.json apps/cli/CHANGELOG.md
+          git commit -m "chore(cli): bump shiplightai to ${NEW_VERSION}"
+          # main can move between the guard check and here; rebase-and-retry so a
+          # concurrent push doesn't strand the bump (mirrors the publish job).
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed bump on attempt $attempt"
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) — rebasing onto latest main and retrying"
+            sleep $((attempt * 3))
+            git pull --rebase origin main || {
+              git rebase --abort 2>/dev/null || true
+              printf '::%s::%s\n' error "Rebase onto main failed (attempt $attempt) — aborting"
+              exit 1
+            }
+          done
+          if git push origin HEAD:main; then
+            echo "Pushed bump after final rebase"
+            exit 0
+          fi
+          printf '::%s::%s\n' error "Failed to push version bump to main after all rebase-and-retry attempts"
+          exit 1
+
+      - name: Step summary
+        if: always()
+        env:
+          # Free-form dispatch input — env, never inlined into the script.
+          PROMOTE_RUN_ID: ${{ inputs.promote_run_id }}
+          PROMOTED_VERSION: ${{ steps.guard.outputs.version }}
+        run: |
+          {
+            echo "## shiplightai promote"
+            echo ""
+            echo "- Promoted from run: \`${PROMOTE_RUN_ID}\`"
+            echo "- Version: \`${PROMOTED_VERSION}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

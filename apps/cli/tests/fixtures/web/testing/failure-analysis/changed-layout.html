@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changed Layout - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .layout-note {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .layout-note .note-card {
+            flex: 1;
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .layout-note .note-card.old-layout {
+            background: #fef2f2;
+            border: 2px dashed var(--danger);
+        }
+
+        .layout-note .note-card.new-layout {
+            background: #ecfdf5;
+            border: 2px solid var(--success);
+        }
+
+        .layout-note .note-card h4 {
+            margin-bottom: var(--spacing-sm);
+            font-size: 1rem;
+        }
+
+        .layout-note .note-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-lg);
+        }
+
+        .product-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .product-image {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .product-card:nth-child(1) .product-image {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .product-card:nth-child(2) .product-image {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .product-card:nth-child(3) .product-image {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .product-card:nth-child(4) .product-image {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        .product-info {
+            padding: var(--spacing-lg);
+        }
+
+        .product-info h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .product-info .product-category {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .product-info .product-description {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .product-info .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .product-info .product-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .grid-position-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--spacing-md);
+            font-size: 0.875rem;
+        }
+
+        .grid-position-table th,
+        .grid-position-table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .grid-position-table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .grid-position-table .highlight {
+            background: #fef3c7;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .layout-note {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Changed Layout</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Changed Layout</h1>
+            <p class="description">The product grid was changed from 3 columns to 2 columns. Position-based selectors like <code>nth-child(3)</code> in the first row now target a different product than expected.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: layout_changed</h4>
+                <p>The product grid layout was redesigned from 3 columns to 2 columns for better readability.</p>
+                <ul>
+                    <li><strong>Old layout (3 columns):</strong> Row 1 = [Widget Pro, Gadget Plus, Tool Master], Row 2 = [Device X]</li>
+                    <li><strong>New layout (2 columns):</strong> Row 1 = [Widget Pro, Gadget Plus], Row 2 = [Tool Master, Device X]</li>
+                    <li><strong>Old test behavior:</strong> Clicks <code>.product-card:nth-child(3)</code> expecting "Tool Master" in the first visual row</li>
+                    <li><strong>Expected fix:</strong> The 3rd card is still "Tool Master" by DOM order, but it is now in the second row visually. A test checking visual row position needs updating.</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <h2>Our Products</h2>
+                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">Browse our latest product lineup.</p>
+
+                <div class="layout-note">
+                    <div class="note-card old-layout">
+                        <h4>Old Layout (3 columns)</h4>
+                        <p>Widget Pro | Gadget Plus | Tool Master</p>
+                        <p>Device X</p>
+                    </div>
+                    <div class="note-card new-layout">
+                        <h4>Current Layout (2 columns)</h4>
+                        <p>Widget Pro | Gadget Plus</p>
+                        <p>Tool Master | Device X</p>
+                    </div>
+                </div>
+
+                <div class="product-grid" data-old-columns="3" data-current-columns="2">
+                    <div class="product-card" data-product="widget-pro">
+                        <div class="product-image">&#x2699;&#xFE0F;</div>
+                        <div class="product-info">
+                            <div class="product-category">Hardware</div>
+                            <h3>Widget Pro</h3>
+                            <p class="product-description">Professional-grade widget with advanced features for power users and teams.</p>
+                            <div class="product-price">$299.00</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                <button class="btn btn-outline btn-sm">Learn More</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card" data-product="gadget-plus">
+                        <div class="product-image">&#x1F4F1;</div>
+                        <div class="product-info">
+                            <div class="product-category">Electronics</div>
+                            <h3>Gadget Plus</h3>
+                            <p class="product-description">Enhanced gadget with built-in connectivity and smart features for everyday use.</p>
+                            <div class="product-price">$199.00</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                <button class="btn btn-outline btn-sm">Learn More</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card" data-product="tool-master">
+                        <div class="product-image">&#x1F527;</div>
+                        <div class="product-info">
+                            <div class="product-category">Tools</div>
+                            <h3>Tool Master</h3>
+                            <p class="product-description">All-in-one tool solution designed for professionals who demand precision and reliability.</p>
+                            <div class="product-price">$149.00</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                <button class="btn btn-outline btn-sm">Learn More</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-card" data-product="device-x">
+                        <div class="product-image">&#x1F4BB;</div>
+                        <div class="product-info">
+                            <div class="product-category">Devices</div>
+                            <h3>Device X</h3>
+                            <p class="product-description">Next-generation device with cutting-edge technology and seamless integration.</p>
+                            <div class="product-price">$449.00</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                <button class="btn btn-outline btn-sm">Learn More</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>Grid Position Reference</h3>
+                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">Comparison of product positions between old and new layouts:</p>
+                <table class="grid-position-table">
+                    <thead>
+                        <tr>
+                            <th>nth-child</th>
+                            <th>Product</th>
+                            <th>Old Row (3-col)</th>
+                            <th>New Row (2-col)</th>
+                            <th>Position Changed?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Widget Pro</td>
+                            <td>Row 1, Col 1</td>
+                            <td>Row 1, Col 1</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Gadget Plus</td>
+                            <td>Row 1, Col 2</td>
+                            <td>Row 1, Col 2</td>
+                            <td>No</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td>3</td>
+                            <td>Tool Master</td>
+                            <td>Row 1, Col 3</td>
+                            <td>Row 2, Col 1</td>
+                            <td><strong>Yes</strong></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Device X</td>
+                            <td>Row 2, Col 1</td>
+                            <td>Row 2, Col 2</td>
+                            <td><strong>Yes</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add to cart functionality
+        var addButtons = document.querySelectorAll('.product-actions .btn-primary');
+        addButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var card = this.closest('.product-card');
+                var name = card.querySelector('h3').textContent;
+                this.textContent = 'Added!';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+                this.disabled = true;
+                setTimeout(function() {
+                    btn.textContent = 'Add to Cart';
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-primary');
+                    btn.disabled = false;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

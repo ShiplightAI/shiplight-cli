@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changed Selectors - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .table-toolbar h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .search-filter input {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9375rem;
+            width: 250px;
+            font-family: inherit;
+        }
+
+        .search-filter input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-lightest);
+        }
+
+        /* NEW class names - the old ones (#data-table, .row, .old-table-row) no longer exist */
+        .data-grid {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-grid thead {
+            background: var(--bg-dark);
+        }
+
+        .data-grid thead th {
+            padding: var(--spacing-md) var(--spacing-lg);
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-inverse);
+        }
+
+        .data-grid .data-row {
+            transition: background 0.15s;
+        }
+
+        .data-grid .data-row:hover {
+            background: var(--primary-lightest);
+        }
+
+        .data-grid .data-row:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        .data-grid .data-row:nth-child(even):hover {
+            background: var(--primary-lightest);
+        }
+
+        .data-grid td {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9375rem;
+        }
+
+        .data-grid .user-cell {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .data-grid .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-inverse);
+            flex-shrink: 0;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .role-badge.admin {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .role-badge.editor {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .role-badge.viewer {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .role-badge.manager {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background: var(--success);
+        }
+
+        .status-dot.inactive {
+            background: var(--gray-400);
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-lg);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .pagination button {
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover {
+            background: var(--primary-lightest);
+            border-color: var(--primary);
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+            color: var(--text-inverse);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Changed Selectors</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Changed Selectors</h1>
+            <p class="description">The data table was refactored with new CSS class names. Old selectors like <code>#data-table .row</code> or <code>.old-table-row</code> no longer exist in the DOM.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: selector_changed</h4>
+                <p>The table component was rebuilt during a CSS framework migration. All class names changed:</p>
+                <ul>
+                    <li><code>#data-table</code> changed to <code>.data-grid</code></li>
+                    <li><code>.row</code> / <code>.old-table-row</code> changed to <code>.data-row</code></li>
+                    <li><code>.cell</code> changed to standard <code>td</code> elements</li>
+                    <li><strong>Old test behavior:</strong> Uses selector <code>#data-table .row</code> to find table rows</li>
+                    <li><strong>Expected fix:</strong> Use selector <code>.data-grid .data-row</code> instead</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="table-toolbar">
+                    <h2>User Management</h2>
+                    <div class="search-filter">
+                        <input type="text" id="tableSearch" placeholder="Search users..." aria-label="Search users">
+                        <button class="btn btn-primary btn-sm">Add User</button>
+                    </div>
+                </div>
+
+                <!-- NOTE: Old ID was "data-table", old row class was "row" or "old-table-row" -->
+                <!-- New class is "data-grid" with rows using "data-row" -->
+                <table class="data-grid" role="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr class="data-row" data-old-class="row" data-user-id="1">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: var(--primary);">AS</div>
+                                    <span>Alice Smith</span>
+                                </div>
+                            </td>
+                            <td>alice.smith@company.com</td>
+                            <td><span class="role-badge admin">Admin</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot active"></span>
+                                    <span>Active</span>
+                                </div>
+                            </td>
+                            <td>2 minutes ago</td>
+                        </tr>
+                        <tr class="data-row" data-old-class="row" data-user-id="2">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: var(--secondary);">BJ</div>
+                                    <span>Bob Johnson</span>
+                                </div>
+                            </td>
+                            <td>bob.johnson@company.com</td>
+                            <td><span class="role-badge editor">Editor</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot active"></span>
+                                    <span>Active</span>
+                                </div>
+                            </td>
+                            <td>15 minutes ago</td>
+                        </tr>
+                        <tr class="data-row" data-old-class="row" data-user-id="3">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: var(--success);">CW</div>
+                                    <span>Carol Williams</span>
+                                </div>
+                            </td>
+                            <td>carol.williams@company.com</td>
+                            <td><span class="role-badge manager">Manager</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot active"></span>
+                                    <span>Active</span>
+                                </div>
+                            </td>
+                            <td>1 hour ago</td>
+                        </tr>
+                        <tr class="data-row" data-old-class="row" data-user-id="4">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: var(--warning);">DB</div>
+                                    <span>David Brown</span>
+                                </div>
+                            </td>
+                            <td>david.brown@company.com</td>
+                            <td><span class="role-badge viewer">Viewer</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot inactive"></span>
+                                    <span>Inactive</span>
+                                </div>
+                            </td>
+                            <td>3 days ago</td>
+                        </tr>
+                        <tr class="data-row" data-old-class="row" data-user-id="5">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: var(--danger);">ED</div>
+                                    <span>Eve Davis</span>
+                                </div>
+                            </td>
+                            <td>eve.davis@company.com</td>
+                            <td><span class="role-badge editor">Editor</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot active"></span>
+                                    <span>Active</span>
+                                </div>
+                            </td>
+                            <td>30 minutes ago</td>
+                        </tr>
+                        <tr class="data-row" data-old-class="row" data-user-id="6">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar" style="background: #8b5cf6;">FM</div>
+                                    <span>Frank Miller</span>
+                                </div>
+                            </td>
+                            <td>frank.miller@company.com</td>
+                            <td><span class="role-badge viewer">Viewer</span></td>
+                            <td>
+                                <div class="status-indicator">
+                                    <span class="status-dot active"></span>
+                                    <span>Active</span>
+                                </div>
+                            </td>
+                            <td>5 minutes ago</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="table-footer">
+                    <span>Showing 1-6 of 6 users</span>
+                    <div class="pagination">
+                        <button disabled>&laquo; Prev</button>
+                        <button class="active">1</button>
+                        <button disabled>Next &raquo;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple search filter
+        var searchInput = document.getElementById('tableSearch');
+        var rows = document.querySelectorAll('.data-row');
+
+        searchInput.addEventListener('input', function() {
+            var term = this.value.toLowerCase();
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        // Row click handler
+        rows.forEach(function(row) {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                rows.forEach(function(r) { r.style.outline = 'none'; });
+                this.style.outline = '2px solid var(--primary)';
+            });
+        });
+    </script>
+</body>
+</html>

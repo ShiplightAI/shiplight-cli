@@ -1,0 +1,16 @@
+{
+  // Separate from the package tsconfig because that one sets rootDir to ./src;
+  // pulling smoke/ into it would trip TS6059. Without this file the smoke tests
+  // would run under tsx but never be type-checked, which is how a broken
+  // release gate goes unnoticed.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false,
+    // The suite imports sibling modules by explicit .ts path so node --import tsx
+    // resolves them directly.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["**/*.ts"]
+}

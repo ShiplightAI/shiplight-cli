@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright Common Elements Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #34495e;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            font-weight: 600;
+        }
+        
+        .item-row {
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .item-code {
+            width: 50%;
+            padding: 15px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 13px;
+            border-right: 2px solid #3c3c3c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .item-code .code {
+            color: #ce9178;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .item-code .description {
+            color: #858585;
+            font-size: 11px;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        
+        .item-element {
+            width: 50%;
+            padding: 15px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 0;
+            width: 100%;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .notification {
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            width: 100%;
+        }
+        
+        .error {
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            width: 100%;
+        }
+        
+        .card {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            width: 100%;
+        }
+        
+        .checkbox-group {
+            margin: 0;
+        }
+        
+        .checkbox-group label {
+            display: inline-block;
+            margin-left: 5px;
+            font-weight: normal;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            margin: 0;
+        }
+        
+        p, span, div {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Playwright Common Elements Test Page</h1>
+        
+        <!-- getByRole('button') -->
+        <div class="section">
+            <div class="section-title">getByRole('button')</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: 'Submit' })</div>
+                    <div class="description">Primary submit button</div>
+                </div>
+                <div class="item-element">
+                    <button class="btn-primary">Submit</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: 'Cancel' })</div>
+                    <div class="description">Secondary cancel button</div>
+                </div>
+                <div class="item-element">
+                    <button class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: 'Save Changes' })</div>
+                    <div class="description">Save action button</div>
+                </div>
+                <div class="item-element">
+                    <button class="btn-success">Save Changes</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: 'Delete' })</div>
+                    <div class="description">Delete action button</div>
+                </div>
+                <div class="item-element">
+                    <button class="btn-danger">Delete</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: "Don't click me" })</div>
+                    <div class="description">Button with apostrophe</div>
+                </div>
+                <div class="item-element">
+                    <button>Don't click me</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button', { name: 'Create New Account' })</div>
+                    <div class="description">Multi-word button text</div>
+                </div>
+                <div class="item-element">
+                    <button>Create New Account</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button')</div>
+                    <div class="description">Button without accessible name (Playwright may use this)</div>
+                </div>
+                <div class="item-element">
+                    <button type="button" aria-label="Close">×</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('button').filter({ hasText: 'Click Me' })</div>
+                    <div class="description">Button with text filter (alternative Playwright approach)</div>
+                </div>
+                <div class="item-element">
+                    <button>Click Me</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByRole('link') -->
+        <div class="section">
+            <div class="section-title">getByRole('link')</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('link', { name: 'Home' })</div>
+                    <div class="description">Simple navigation link</div>
+                </div>
+                <div class="item-element">
+                    <a href="#home">Home</a>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('link', { name: 'example-org/MyNewTestRepo' })</div>
+                    <div class="description">GitHub-style link</div>
+                </div>
+                <div class="item-element">
+                    <a href="https://github.com/example-org/MyNewTestRepo">example-org/MyNewTestRepo</a>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('link', { name: 'Home > Products > Details' })</div>
+                    <div class="description">Breadcrumb navigation</div>
+                </div>
+                <div class="item-element">
+                    <a href="#details">Home > Products > Details</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByRole('heading') -->
+        <div class="section">
+            <div class="section-title">getByRole('heading')</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('heading', { name: 'Main Heading' })</div>
+                    <div class="description">H1 heading element</div>
+                </div>
+                <div class="item-element">
+                    <h1>Main Heading</h1>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('heading', { name: 'Section Title' })</div>
+                    <div class="description">H2 heading element</div>
+                </div>
+                <div class="item-element">
+                    <h2>Section Title</h2>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByLabel() - Text inputs with labels -->
+        <div class="section">
+            <div class="section-title">getByLabel() - Text inputs</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByLabel('Username:')</div>
+                    <div class="description">Text input with label (Playwright prefers getByLabel)</div>
+                </div>
+                <div class="item-element">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByLabel('Email Address:')</div>
+                    <div class="description">Email input with label</div>
+                </div>
+                <div class="item-element">
+                    <div class="form-group">
+                        <label for="email">Email Address:</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByRole('textbox') - Without label -->
+        <div class="section">
+            <div class="section-title">getByRole('textbox') - Without label</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('textbox')</div>
+                    <div class="description">Text input without label (Playwright uses getByRole)</div>
+                </div>
+                <div class="item-element">
+                    <input type="text" name="search">
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByRole('checkbox') -->
+        <div class="section">
+            <div class="section-title">getByRole('checkbox')</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('checkbox', { name: 'I agree to terms' })</div>
+                    <div class="description">Checkbox with label</div>
+                </div>
+                <div class="item-element">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agree" name="agree">
+                        <label for="agree">I agree to terms</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByLabel() - Select dropdowns -->
+        <div class="section">
+            <div class="section-title">getByLabel() - Select dropdowns</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByLabel('Country:')</div>
+                    <div class="description">Select dropdown with label (Playwright prefers getByLabel)</div>
+                </div>
+                <div class="item-element">
+                    <div class="form-group">
+                        <label for="country">Country:</label>
+                        <select id="country" name="country">
+                            <option value="">Select a country</option>
+                            <option value="us">United States</option>
+                            <option value="uk">United Kingdom</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByRole('combobox') - Without label -->
+        <div class="section">
+            <div class="section-title">getByRole('combobox') - Without label</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('combobox')</div>
+                    <div class="description">Select dropdown without label</div>
+                </div>
+                <div class="item-element">
+                    <select name="language">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByText() -->
+        <div class="section">
+            <div class="section-title">getByText()</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByText('Sign in')</div>
+                    <div class="description">Simple text content</div>
+                </div>
+                <div class="item-element">
+                    <p>Sign in</p>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByText('Price: $99.99')</div>
+                    <div class="description">Text with special characters</div>
+                </div>
+                <div class="item-element">
+                    <p>Price: $99.99</p>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByText("O'Connor, John")</div>
+                    <div class="description">Text with apostrophe</div>
+                </div>
+                <div class="item-element">
+                    <p>O'Connor, John</p>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByText('Product details', { exact: true })</div>
+                    <div class="description">Text with exact option (Playwright common pattern)</div>
+                </div>
+                <div class="item-element">
+                    <p>Product details</p>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByText('Loading...')</div>
+                    <div class="description">Loading text</div>
+                </div>
+                <div class="item-element">
+                    <span>Loading...</span>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('span').filter({ hasText: 'Error occurred' })</div>
+                    <div class="description">Text in span with filter (Playwright alternative)</div>
+                </div>
+                <div class="item-element">
+                    <span>Error occurred</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByPlaceholder() -->
+        <div class="section">
+            <div class="section-title">getByPlaceholder()</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByPlaceholder('Enter your email')</div>
+                    <div class="description">Email placeholder</div>
+                </div>
+                <div class="item-element">
+                    <input type="text" placeholder="Enter your email">
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByPlaceholder('Search...')</div>
+                    <div class="description">Search placeholder</div>
+                </div>
+                <div class="item-element">
+                    <input type="text" placeholder="Search...">
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByPlaceholder("Enter your name's value")</div>
+                    <div class="description">Placeholder with apostrophe</div>
+                </div>
+                <div class="item-element">
+                    <input type="text" placeholder="Enter your name's value">
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByLabel() - Additional examples -->
+        <div class="section">
+            <div class="section-title">getByLabel() - Additional examples</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByLabel('Full Name:')</div>
+                    <div class="description">Form label with colon</div>
+                </div>
+                <div class="item-element">
+                    <label for="fullname">Full Name:</label>
+                    <input type="text" id="fullname" name="fullname">
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByLabel("User's Email")</div>
+                    <div class="description">Label with apostrophe</div>
+                </div>
+                <div class="item-element">
+                    <label for="useremail">User's Email</label>
+                    <input type="email" id="useremail" name="useremail">
+                </div>
+            </div>
+        </div>
+        
+        <!-- filter({ hasText: ... }) -->
+        <div class="section">
+            <div class="section-title">locator().filter({ hasText: ... })</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ hasText: 'Product details' })</div>
+                    <div class="description">Div with text filter (Playwright common pattern)</div>
+                </div>
+                <div class="item-element">
+                    <div class="card">
+                        <div>Product details</div>
+                        <p>iPhone 15 Pro Max - 256GB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('.notification').filter({ hasText: 'Your changes have been saved' })</div>
+                    <div class="description">Notification with text (CSS selector + filter)</div>
+                </div>
+                <div class="item-element">
+                    <div class="notification">
+                        <p>Your changes have been saved</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('.error').filter({ hasText: 'Field "email" is required' })</div>
+                    <div class="description">Error with escaped quotes</div>
+                </div>
+                <div class="item-element">
+                    <div class="error">
+                        <p>Field "email" is required</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ hasText: "Let's Create Your Account" })</div>
+                    <div class="description">Text with apostrophe</div>
+                </div>
+                <div class="item-element">
+                    <div>Let's Create Your Account</div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByRole('button').filter({ hasText: 'Save changes' })</div>
+                    <div class="description">Button with text filter (alternative pattern)</div>
+                </div>
+                <div class="item-element">
+                    <button>Save changes</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ hasText: /^For one person/ })</div>
+                    <div class="description">Filter with regex pattern</div>
+                </div>
+                <div class="item-element">
+                    <div>For one person</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- filter({ has: ... }) -->
+        <div class="section">
+            <div class="section-title">locator().filter({ has: ... })</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ has: page.getByText('Required') })</div>
+                    <div class="description">Div containing child text element</div>
+                </div>
+                <div class="item-element">
+                    <div>
+                        <span>Required</span>
+                        <p>This field is required</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ hasNot: page.getByText('Hidden') })</div>
+                    <div class="description">Div not containing text (hasNot filter)</div>
+                </div>
+                <div class="item-element">
+                    <div>
+                        <span>Visible</span>
+                        <p>This should be visible</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chained Locators -->
+        <div class="section">
+            <div class="section-title">Chained Locators</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('div').filter({ hasText: 'Click here' }).getByRole('button')</div>
+                    <div class="description">Filter then getByRole (common Playwright pattern)</div>
+                </div>
+                <div class="item-element">
+                    <div class="card">
+                        <div>Click here</div>
+                        <button>Action Button</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('section').filter({ hasText: /^Welcome/ }).getByRole('heading')</div>
+                    <div class="description">Filter with regex then getByRole</div>
+                </div>
+                <div class="item-element">
+                    <section>
+                        <div>Welcome message</div>
+                        <h3>Welcome</h3>
+                    </section>
+                </div>
+            </div>
+        </div>
+        
+        <!-- locator() with CSS selector -->
+        <div class="section">
+            <div class="section-title">locator() - CSS Selectors</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('#submit-button')</div>
+                    <div class="description">ID selector (Playwright fallback when role/text not available)</div>
+                </div>
+                <div class="item-element">
+                    <button id="submit-button">Submit</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('.btn-primary')</div>
+                    <div class="description">Class selector</div>
+                </div>
+                <div class="item-element">
+                    <button class="btn-primary">Primary Button</button>
+                </div>
+            </div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">locator('input[type="text"]')</div>
+                    <div class="description">Attribute selector</div>
+                </div>
+                <div class="item-element">
+                    <input type="text" name="search">
+                </div>
+            </div>
+        </div>
+        
+        <!-- getByTestId() -->
+        <div class="section">
+            <div class="section-title">getByTestId()</div>
+            
+            <div class="item-row">
+                <div class="item-code">
+                    <div class="code">getByTestId('submit-button')</div>
+                    <div class="description">Button with test ID</div>
+                </div>
+                <div class="item-element">
+                    <button data-testid="submit-button">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

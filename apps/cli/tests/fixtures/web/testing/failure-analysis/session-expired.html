@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Expired - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .session-expired {
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+        .session-expired .icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+        }
+        .session-expired h2 {
+            color: var(--warning);
+            margin-bottom: var(--spacing-md);
+        }
+        .session-expired p {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto var(--spacing-md);
+        }
+        .valid-session {
+            display: none;
+        }
+        .valid-session.visible {
+            display: block;
+        }
+        .session-info {
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        .session-info .indicator {
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .content-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+        .content-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+        }
+        .content-card h3 {
+            margin-bottom: var(--spacing-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Session Expired</span>
+            </div>
+            <span class="badge">Type D: Configuration</span>
+            <h1>Session Expired</h1>
+            <p class="description">This page validates session tokens. Expired or missing sessions show an error message.</p>
+        </div>
+
+        <div class="test-content">
+            <div id="session-expired" class="session-expired">
+                <div class="icon">⏰</div>
+                <h2>Session Expired</h2>
+                <p>Your session has expired or is invalid. Please log in again to continue.</p>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">
+                    Expected URL format: <code>?session=valid</code>
+                </p>
+                <button class="btn btn-primary" onclick="window.location.href='login-form.html'" style="margin-top: var(--spacing-lg);">
+                    Return to Login
+                </button>
+            </div>
+
+            <div id="valid-session" class="valid-session">
+                <div class="session-info">
+                    <div class="indicator"></div>
+                    <div>
+                        <strong>Session Active</strong>
+                        <span style="color: var(--text-secondary); margin-left: var(--spacing-sm);">Token validated successfully</span>
+                    </div>
+                </div>
+
+                <h2>Protected Content</h2>
+                <p>You are viewing this page with a valid session.</p>
+
+                <div class="content-area">
+                    <div class="content-card">
+                        <h3>Recent Activity</h3>
+                        <p style="color: var(--text-secondary);">5 test runs completed today</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Notifications</h3>
+                        <p style="color: var(--text-secondary);">2 new alerts pending review</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Quick Actions</h3>
+                        <p style="color: var(--text-secondary);">Run tests, view reports, manage settings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const session = params.get('session');
+
+        if (session === 'valid') {
+            document.getElementById('session-expired').style.display = 'none';
+            document.getElementById('valid-session').classList.add('visible');
+        }
+    </script>
+</body>
+</html>

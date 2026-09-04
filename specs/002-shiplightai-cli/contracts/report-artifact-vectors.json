@@ -1,0 +1,703 @@
+{
+  "$comment": "Conformance vectors for contracts/report-artifact.md. A READER must turn every case's `encoded` step list into its `resolved` snapshots. A WRITER must turn `resolved` back into `encoded` for cases marked direction 'both'; 'decode' cases are shapes a writer never produces but a reader must handle. A position omitted from a `resolved` step means the reader must produce no snapshot there. `objectCarrier` is separate: it is the `resultJson` shape, and a reader must order its entries by `seq` before resolving them. Copy this file rather than re-deriving the cases — both repos run it as a test.",
+  "contractVersion": 1,
+  "schemaVersion": 3,
+  "cases": [
+    {
+      "name": "full-form passthrough",
+      "why": "R3 — an artifact written before this contract (schemaVersion 2) reads unchanged, with no version negotiation.",
+      "direction": "decode",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta"
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta",
+            "fileId": 42
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta"
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta",
+            "fileId": 42
+          }
+        }
+      ]
+    },
+    {
+      "name": "delta chain from an empty state",
+      "why": "The first step's delta carries the whole store; later steps carry only what changed. There is no separate baseline field.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "user": "a@example.com",
+              "env": "beta"
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "fileId": 42
+            }
+          }
+        },
+        {
+          "stepId": "main.2",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "fileId": 43
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta"
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta"
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta",
+            "fileId": 42
+          }
+        },
+        {
+          "stepId": "main.2",
+          "contextBefore": {
+            "user": "a@example.com",
+            "env": "beta",
+            "fileId": 42
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "env": "beta",
+            "fileId": 43
+          }
+        }
+      ]
+    },
+    {
+      "name": "explicit removal",
+      "why": "R5 — a variable that goes away is read from `removed`, never inferred from its absence in `set`.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "a": 1,
+              "b": 2
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1",
+          "contextBeforeDelta": {
+            "removed": [
+              "b"
+            ]
+          },
+          "contextAfterDelta": {
+            "set": {
+              "c": 3
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "a": 1,
+            "b": 2
+          },
+          "contextAfter": {
+            "a": 1,
+            "b": 2
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "a": 1
+          },
+          "contextAfter": {
+            "a": 1,
+            "c": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "empty delta versus absent field",
+      "why": "R4 — `{}` means a snapshot was taken and nothing changed; an absent field means no snapshot was taken, and the reader must render nothing rather than the last known state.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "a": 1
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1"
+        },
+        {
+          "stepId": "main.2",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "a": 2
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "a": 1
+          },
+          "contextAfter": {
+            "a": 1
+          }
+        },
+        {
+          "stepId": "main.1"
+        },
+        {
+          "stepId": "main.2",
+          "contextBefore": {
+            "a": 1
+          },
+          "contextAfter": {
+            "a": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "one position only",
+      "why": "The two positions are independent; a step may record `after` without `before`.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextAfterDelta": {
+            "set": {
+              "a": 1
+            }
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextAfterDelta": {
+            "set": {
+              "a": 2
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextAfter": {
+            "a": 1
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextAfter": {
+            "a": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed forms — full snapshot resets the state",
+      "why": "R3 — a merged report can combine shards written before and after this contract. The full snapshot replaces everything accumulated, so `fileId` must not survive it.",
+      "direction": "decode",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "user": "a@example.com",
+              "fileId": 42
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "user": "b@example.com"
+          },
+          "contextAfter": {
+            "user": "b@example.com"
+          }
+        },
+        {
+          "stepId": "main.2",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "role": "admin"
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "user": "a@example.com",
+            "fileId": 42
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "fileId": 42
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "user": "b@example.com"
+          },
+          "contextAfter": {
+            "user": "b@example.com"
+          }
+        },
+        {
+          "stepId": "main.2",
+          "contextBefore": {
+            "user": "b@example.com"
+          },
+          "contextAfter": {
+            "user": "b@example.com",
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "value shapes survive unchanged",
+      "why": "Values are arbitrary JSON. A reader must not coerce, reorder, or flatten them, and a value reappearing identically is not re-recorded.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "count": 0,
+              "flag": false,
+              "missing": null,
+              "list": [
+                1,
+                "two",
+                {
+                  "three": 3
+                }
+              ],
+              "nested": {
+                "a": {
+                  "b": [
+                    true
+                  ]
+                }
+              }
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "count": 1
+            }
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "count": 0,
+            "flag": false,
+            "missing": null,
+            "list": [
+              1,
+              "two",
+              {
+                "three": 3
+              }
+            ],
+            "nested": {
+              "a": {
+                "b": [
+                  true
+                ]
+              }
+            }
+          },
+          "contextAfter": {
+            "count": 0,
+            "flag": false,
+            "missing": null,
+            "list": [
+              1,
+              "two",
+              {
+                "three": 3
+              }
+            ],
+            "nested": {
+              "a": {
+                "b": [
+                  true
+                ]
+              }
+            }
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "count": 0,
+            "flag": false,
+            "missing": null,
+            "list": [
+              1,
+              "two",
+              {
+                "three": 3
+              }
+            ],
+            "nested": {
+              "a": {
+                "b": [
+                  true
+                ]
+              }
+            }
+          },
+          "contextAfter": {
+            "count": 1,
+            "flag": false,
+            "missing": null,
+            "list": [
+              1,
+              "two",
+              {
+                "three": 3
+              }
+            ],
+            "nested": {
+              "a": {
+                "b": [
+                  true
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "capped values are plain strings",
+      "why": "§7 — an oversized value is replaced by a string marker, never a truncated object. A reader renders it as-is and must not try to reconstruct it.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "transcript": "aaaaaaaa… [truncated, 41233 chars]",
+              "exportedBuffers": "[truncated, 2182344 chars] {\"md\":{\"type\":\"Buffer\",\"data\":[35,35,32…"
+            }
+          },
+          "contextAfterDelta": {}
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "transcript": "aaaaaaaa… [truncated, 41233 chars]",
+            "exportedBuffers": "[truncated, 2182344 chars] {\"md\":{\"type\":\"Buffer\",\"data\":[35,35,32…"
+          },
+          "contextAfter": {
+            "transcript": "aaaaaaaa… [truncated, 41233 chars]",
+            "exportedBuffers": "[truncated, 2182344 chars] {\"md\":{\"type\":\"Buffer\",\"data\":[35,35,32…"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unknown fields are ignored",
+      "why": "R6 — a step object may carry fields a consumer does not recognize; they must not affect resolution.",
+      "direction": "decode",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "description": "Click login",
+          "status": "success",
+          "someFutureField": {
+            "anything": true
+          },
+          "contextBeforeDelta": {
+            "set": {
+              "a": 1
+            }
+          },
+          "contextAfterDelta": {}
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "a": 1
+          },
+          "contextAfter": {
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "a step list starts from empty",
+      "why": "R1 — this is the second attempt of a retried test. Its state does not inherit from the first attempt's list, so its opening delta carries the whole store again.",
+      "direction": "both",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "user": "a@example.com",
+              "attempt": 2
+            }
+          },
+          "contextAfterDelta": {}
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "user": "a@example.com",
+            "attempt": 2
+          },
+          "contextAfter": {
+            "user": "a@example.com",
+            "attempt": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "a key in both set and removed",
+      "why": "R6 — a conforming writer never emits this, but the resolution must not depend on which member a reader happens to apply first: set is applied, then removed, so the removal wins.",
+      "direction": "decode",
+      "encoded": [
+        {
+          "stepId": "main.0",
+          "contextBeforeDelta": {
+            "set": {
+              "a": 1,
+              "b": 2
+            }
+          },
+          "contextAfterDelta": {}
+        },
+        {
+          "stepId": "main.1",
+          "contextBeforeDelta": {},
+          "contextAfterDelta": {
+            "set": {
+              "b": 99,
+              "c": 3
+            },
+            "removed": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "resolved": [
+        {
+          "stepId": "main.0",
+          "contextBefore": {
+            "a": 1,
+            "b": 2
+          },
+          "contextAfter": {
+            "a": 1,
+            "b": 2
+          }
+        },
+        {
+          "stepId": "main.1",
+          "contextBefore": {
+            "a": 1,
+            "b": 2
+          },
+          "contextAfter": {
+            "a": 1,
+            "c": 3
+          }
+        }
+      ]
+    }
+  ],
+  "objectCarrier": {
+    "why": "R2 — `resultJson` is an object, and a consumer of it (the cloud) visits ids in its own order: merged with actionStepsMap, split by phase, rebuilt as a tree. `seq` is the recorded order, so sorting by it yields the step list the delta chain resolves against. Here the keys are deliberately out of order and `main.1.2` sits between `main.1` and `main.10`, where neither insertion order nor an id sort would put it.",
+    "resultJson": {
+      "main.10": {
+        "seq": 3,
+        "contextAfterDelta": {
+          "set": {
+            "stage": "done"
+          }
+        }
+      },
+      "main.1": {
+        "seq": 1,
+        "contextAfterDelta": {
+          "set": {
+            "stage": "opened"
+          }
+        }
+      },
+      "main.1.2": {
+        "seq": 2,
+        "contextAfterDelta": {
+          "set": {
+            "stage": "expanded"
+          }
+        }
+      },
+      "main.0": {
+        "seq": 0,
+        "contextBeforeDelta": {
+          "set": {
+            "user": "a@example.com"
+          }
+        },
+        "contextAfterDelta": {}
+      }
+    },
+    "expectedOrder": [
+      "main.0",
+      "main.1",
+      "main.1.2",
+      "main.10"
+    ],
+    "expectedResolved": [
+      {
+        "stepId": "main.0",
+        "contextBefore": {
+          "user": "a@example.com"
+        },
+        "contextAfter": {
+          "user": "a@example.com"
+        }
+      },
+      {
+        "stepId": "main.1",
+        "contextAfter": {
+          "user": "a@example.com",
+          "stage": "opened"
+        }
+      },
+      {
+        "stepId": "main.1.2",
+        "contextAfter": {
+          "user": "a@example.com",
+          "stage": "expanded"
+        }
+      },
+      {
+        "stepId": "main.10",
+        "contextAfter": {
+          "user": "a@example.com",
+          "stage": "done"
+        }
+      }
+    ],
+    "legacyNoSeq": {
+      "why": "An artifact written before `seq` existed relied on key insertion order; a reader falls back to it when any entry lacks `seq`.",
+      "resultJson": {
+        "main.0": {},
+        "main.1": {},
+        "main.2": {}
+      },
+      "expectedOrder": [
+        "main.0",
+        "main.1",
+        "main.2"
+      ]
+    }
+  }
+}

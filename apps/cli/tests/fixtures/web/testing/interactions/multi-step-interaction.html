@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Step Interaction - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            display: none;
+            z-index: 100;
+        }
+        .dropdown-menu.open { display: block; }
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .dropdown-menu button:hover {
+            background: var(--bg-secondary);
+        }
+
+        .avatar-trigger {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-panel {
+            display: none;
+            padding: var(--spacing-xl);
+        }
+        .settings-panel.open { display: block; }
+
+        .settings-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 200px;
+        }
+        .settings-sidebar button {
+            text-align: left;
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+        .settings-sidebar button:hover, .settings-sidebar button.active {
+            background: var(--primary-lightest);
+            color: var(--primary);
+        }
+
+        .settings-content {
+            flex: 1;
+            padding-left: var(--spacing-xl);
+        }
+
+        .settings-layout {
+            display: flex;
+        }
+
+        #result {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--success);
+            color: white;
+            border-radius: var(--border-radius);
+            display: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <h1>Multi-Step Interaction Test</h1>
+        <p class="subtitle">Tests that require multiple agent steps: open dropdown → click item → navigate to sub-page.</p>
+
+        <div class="header-bar">
+            <h2>Dashboard</h2>
+            <div class="avatar-trigger" onclick="toggleDropdown()" id="user-menu">
+                Q
+                <div class="dropdown-menu" id="dropdown">
+                    <button onclick="openSettings(); event.stopPropagation();">Settings</button>
+                    <button onclick="handleAction('help'); event.stopPropagation();">Help</button>
+                    <button onclick="handleAction('logout'); event.stopPropagation();">Log out</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-panel" id="settings">
+            <h2>Settings</h2>
+            <div class="settings-layout">
+                <div class="settings-sidebar">
+                    <button class="active" onclick="showTab('account', event)">Account</button>
+                    <button onclick="showTab('security', event)">Security</button>
+                    <button onclick="showTab('billing', event)">Billing</button>
+                </div>
+                <div class="settings-content">
+                    <div id="tab-content">
+                        <h3 id="tab-title">Account</h3>
+                        <p>Manage your account settings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            document.getElementById('dropdown').classList.toggle('open');
+        }
+
+        function openSettings() {
+            document.getElementById('dropdown').classList.remove('open');
+            document.getElementById('settings').classList.add('open');
+            handleAction('settings');
+        }
+
+        function showTab(tab, event) {
+            document.getElementById('tab-title').textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+            document.querySelectorAll('.settings-sidebar button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            handleAction('tab-' + tab);
+        }
+
+        function handleAction(action) {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.textContent = 'Action: ' + action;
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.avatar-trigger')) {
+                document.getElementById('dropdown').classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silent Failure - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .task-list {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .task-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-lightest);
+            color: var(--primary);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .task-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .task-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .message-area {
+            margin-top: var(--spacing-xl);
+            min-height: 60px;
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-area.empty {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .status-message {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status-message.success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid var(--success);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-count {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Silent Failure</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>Silent Failure</h1>
+            <p class="description">A task list where deleting an item removes it from the page but fails to display any confirmation or success message.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Task List</h2>
+                <p>Delete a task by clicking the "Delete" button. A success message should appear in the notification area below.</p>
+
+                <div class="item-count" id="item-count">5 items</div>
+
+                <div class="task-list" id="task-list">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Notifications</h2>
+                <p>Status messages for actions performed on the task list will appear here.</p>
+                <div class="message-area empty" id="message-area">
+                    No notifications yet
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>After deleting an item, a message reading "Item deleted successfully" should appear in the notifications area to confirm the action completed.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var tasks = [
+                { id: 1, name: 'Review pull request #247', category: 'Code Review' },
+                { id: 2, name: 'Update API documentation', category: 'Documentation' },
+                { id: 3, name: 'Fix login timeout issue', category: 'Bug Fix' },
+                { id: 4, name: 'Deploy staging environment', category: 'DevOps' },
+                { id: 5, name: 'Write unit tests for auth module', category: 'Testing' }
+            ];
+
+            function renderTasks() {
+                var listEl = document.getElementById('task-list');
+                listEl.innerHTML = '';
+
+                tasks.forEach(function(task) {
+                    var item = document.createElement('div');
+                    item.className = 'task-item';
+                    item.setAttribute('data-task-id', task.id);
+                    item.innerHTML = '<div class="task-info">' +
+                        '<div class="task-icon">T</div>' +
+                        '<div>' +
+                        '<div class="task-name">' + task.name + '</div>' +
+                        '<div class="task-meta">' + task.category + '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<button class="btn btn-danger btn-sm delete-btn" data-id="' + task.id + '">Delete</button>';
+                    listEl.appendChild(item);
+                });
+
+                document.getElementById('item-count').textContent = tasks.length + ' item' + (tasks.length !== 1 ? 's' : '');
+            }
+
+            function showSuccessMessage(taskName) {
+                // BUG: This function is supposed to display a success message
+                // but it never updates the DOM. The message is constructed but
+                // only logged to the console, not shown to the user.
+                var message = 'Item deleted successfully';
+                console.log(message + ': ' + taskName);
+                // Missing: actually displaying the message in the message-area element
+            }
+
+            document.getElementById('task-list').addEventListener('click', function(e) {
+                var btn = e.target.closest('.delete-btn');
+                if (!btn) return;
+
+                var taskId = parseInt(btn.getAttribute('data-id'), 10);
+                var deletedTask = tasks.find(function(t) { return t.id === taskId; });
+
+                // Remove from data
+                tasks = tasks.filter(function(t) { return t.id !== taskId; });
+
+                // Re-render list (item disappears correctly)
+                renderTasks();
+
+                // BUG: The success message function doesn't actually display anything
+                if (deletedTask) {
+                    showSuccessMessage(deletedTask.name);
+                }
+            });
+
+            // Initial render
+            renderTasks();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renamed Elements - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: var(--spacing-lg);
+            min-height: 500px;
+        }
+
+        .sidebar {
+            background: var(--bg-dark);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+        }
+
+        .sidebar-title {
+            color: var(--gray-400);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--gray-300);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: all 0.2s;
+            font-size: 0.9375rem;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-inverse);
+        }
+
+        .sidebar-nav a .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-card .stat-change {
+            font-size: 0.8125rem;
+            margin-top: var(--spacing-xs);
+        }
+
+        .stat-card .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-card .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .recent-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+        }
+
+        .recent-section h3 {
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .recent-list {
+            list-style: none;
+        }
+
+        .recent-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .recent-list li:last-child {
+            border-bottom: none;
+        }
+
+        .recent-list .item-name {
+            font-weight: 500;
+        }
+
+        .recent-list .item-date {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .action-feedback {
+            display: none;
+            padding: var(--spacing-md);
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            border-radius: var(--border-radius);
+            color: #065f46;
+            margin-top: var(--spacing-md);
+        }
+
+        .action-feedback.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Renamed Elements</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Renamed Elements</h1>
+            <p class="description">Dashboard buttons were renamed in a UI update. The button previously called "Generate Report" is now "Create Report". An old test clicking "Generate Report" will not find the element.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: element_renamed</h4>
+                <p>The action buttons were renamed during a UI refresh. The functionality is identical, only the labels changed.</p>
+                <ul>
+                    <li><strong>"Generate Report"</strong> was renamed to <strong>"Create Report"</strong></li>
+                    <li><strong>"Show Analytics"</strong> was renamed to <strong>"View Analytics"</strong></li>
+                    <li><strong>"Download Data"</strong> was renamed to <strong>"Export Data"</strong></li>
+                    <li><strong>Old test behavior:</strong> Click the button labeled "Generate Report"</li>
+                    <li><strong>Expected fix:</strong> Click the button labeled "Create Report" instead</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="dashboard-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-title">Navigation</div>
+                        <ul class="sidebar-nav">
+                            <li><a href="#" class="active"><span class="nav-icon">&#x1F4CA;</span> Dashboard</a></li>
+                            <li><a href="#"><span class="nav-icon">&#x1F4C4;</span> Reports</a></li>
+                            <li><a href="#"><span class="nav-icon">&#x1F465;</span> Users</a></li>
+                            <li><a href="#"><span class="nav-icon">&#x2699;&#xFE0F;</span> Settings</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="main-content">
+                        <div class="content-header">
+                            <h2>Dashboard Overview</h2>
+                            <div class="action-bar">
+                                <!-- These buttons were RENAMED from the old names -->
+                                <button class="btn btn-primary" id="createReport"
+                                    data-old-label="Generate Report">Create Report</button>
+                                <button class="btn btn-secondary" id="viewAnalytics"
+                                    data-old-label="Show Analytics">View Analytics</button>
+                                <button class="btn btn-outline" id="exportData"
+                                    data-old-label="Download Data">Export Data</button>
+                            </div>
+                        </div>
+
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <div class="stat-label">Total Users</div>
+                                <div class="stat-value">12,847</div>
+                                <div class="stat-change positive">+12.5% from last month</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Active Sessions</div>
+                                <div class="stat-value">3,241</div>
+                                <div class="stat-change positive">+8.2% from last month</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Revenue</div>
+                                <div class="stat-value">$84,320</div>
+                                <div class="stat-change negative">-2.1% from last month</div>
+                            </div>
+                        </div>
+
+                        <div class="recent-section">
+                            <h3>Recent Reports</h3>
+                            <ul class="recent-list">
+                                <li>
+                                    <span class="item-name">Q4 Sales Report</span>
+                                    <span class="item-date">Jan 28, 2026</span>
+                                </li>
+                                <li>
+                                    <span class="item-name">User Growth Analysis</span>
+                                    <span class="item-date">Jan 25, 2026</span>
+                                </li>
+                                <li>
+                                    <span class="item-name">Monthly Revenue Summary</span>
+                                    <span class="item-date">Jan 20, 2026</span>
+                                </li>
+                                <li>
+                                    <span class="item-name">Marketing Campaign Results</span>
+                                    <span class="item-date">Jan 15, 2026</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="action-feedback" id="actionFeedback"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var feedback = document.getElementById('actionFeedback');
+
+        function showFeedback(message) {
+            feedback.textContent = message;
+            feedback.classList.add('visible');
+            setTimeout(function() {
+                feedback.classList.remove('visible');
+            }, 3000);
+        }
+
+        document.getElementById('createReport').addEventListener('click', function() {
+            showFeedback('Report creation initiated. Your new report is being generated...');
+        });
+
+        document.getElementById('viewAnalytics').addEventListener('click', function() {
+            showFeedback('Loading analytics dashboard. Please wait...');
+        });
+
+        document.getElementById('exportData').addEventListener('click', function() {
+            showFeedback('Data export started. Your file will be ready for download shortly.');
+        });
+    </script>
+</body>
+</html>

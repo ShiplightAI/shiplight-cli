@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Class Names - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .class-display {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .class-display strong {
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.875rem;
+        }
+
+        .class-entry {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .class-entry:last-child {
+            border-bottom: none;
+        }
+
+        .class-entry .element-name {
+            min-width: 140px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .class-entry .class-value {
+            color: var(--danger);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-message {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .result-message.visible {
+            display: block;
+        }
+
+        .result-message.success {
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            color: #065f46;
+        }
+
+        .result-message.error {
+            background: #fef2f2;
+            border: 1px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .reload-hint {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: #fffbeb;
+            border: 1px solid var(--warning);
+            border-radius: var(--border-radius);
+            color: #92400e;
+            font-size: 0.9375rem;
+            margin-bottom: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Dynamic Class Names</span>
+            </div>
+            <span class="badge">Flaky Test</span>
+            <h1>Dynamic Class Names</h1>
+            <p class="description">Form elements receive randomly generated CSS class names on every page load, breaking class-based selectors.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Registration Form</h2>
+                <p>This form looks normal, but every element has a randomly generated CSS class that changes on each page load. A test using class-based selectors (e.g., <code>.btn-a7f3x</code>) would fail on the next load when the class changes.</p>
+
+                <div class="reload-hint">
+                    Reload this page to see the class names change. Each load generates new random suffixes.
+                </div>
+
+                <form id="registration-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" class="form-control" placeholder="Enter first name" data-dynamic="input">
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" class="form-control" placeholder="Enter last name" data-dynamic="input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="you@example.com" data-dynamic="input">
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select id="role" class="form-control" data-dynamic="select">
+                            <option value="">Select a role</option>
+                            <option value="developer">Developer</option>
+                            <option value="designer">Designer</option>
+                            <option value="manager">Manager</option>
+                            <option value="qa">QA Engineer</option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary" id="submit-btn" data-dynamic="button">Submit Registration</button>
+                        <button type="button" class="btn btn-secondary" id="validate-btn" data-dynamic="button">Validate Fields</button>
+                        <button type="reset" class="btn btn-outline" id="reset-btn" data-dynamic="button">Clear Form</button>
+                    </div>
+                </form>
+
+                <div id="result-message" class="result-message"></div>
+            </div>
+
+            <div class="test-section">
+                <h2>Generated Class Names</h2>
+                <p>These are the randomly generated class names applied to elements on this page load. Reload to see them change.</p>
+                <div class="class-display" id="class-list">
+                    <strong>Current Dynamic Classes:</strong>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <h4>Why This Causes Flaky Tests</h4>
+                <p>Many test frameworks locate elements by CSS class selectors. When class names are dynamically generated (common in CSS-in-JS libraries like styled-components or CSS Modules), the class names change between builds or page loads. A test selecting <code>.btn-a7f3x</code> works once but fails the next time when the class becomes <code>.btn-k9m2p</code>.</p>
+                <ul>
+                    <li>Class names change on every page load</li>
+                    <li>Tests using <code>document.querySelector('.btn-a7f3x')</code> break intermittently</li>
+                    <li>Fix: Use stable selectors like <code>data-testid</code>, <code>id</code>, or semantic roles</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            function randomSuffix() {
+                return Math.random().toString(36).substring(2, 7);
+            }
+
+            var classMap = {};
+            var dynamicElements = document.querySelectorAll('[data-dynamic]');
+
+            dynamicElements.forEach(function(el) {
+                var type = el.getAttribute('data-dynamic');
+                var suffix = randomSuffix();
+                var dynamicClass;
+
+                if (type === 'button') {
+                    dynamicClass = 'btn-' + suffix;
+                } else if (type === 'input') {
+                    dynamicClass = 'input-' + suffix;
+                } else if (type === 'select') {
+                    dynamicClass = 'select-' + suffix;
+                } else {
+                    dynamicClass = 'el-' + suffix;
+                }
+
+                el.classList.add(dynamicClass);
+                var identifier = el.id || el.tagName.toLowerCase();
+                classMap[identifier] = dynamicClass;
+            });
+
+            // Display the generated classes
+            var classListEl = document.getElementById('class-list');
+            Object.keys(classMap).forEach(function(key) {
+                var entry = document.createElement('div');
+                entry.className = 'class-entry';
+                entry.innerHTML = '<span class="element-name">#' + key + '</span>' +
+                    '<span class="class-value">.' + classMap[key] + '</span>';
+                classListEl.appendChild(entry);
+            });
+
+            // Form submission handler
+            document.getElementById('registration-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var firstName = document.getElementById('first-name').value.trim();
+                var lastName = document.getElementById('last-name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                var role = document.getElementById('role').value;
+
+                var resultEl = document.getElementById('result-message');
+
+                if (firstName && lastName && email && role) {
+                    resultEl.className = 'result-message visible success';
+                    resultEl.textContent = 'Registration submitted successfully for ' + firstName + ' ' + lastName + ' (' + email + ') as ' + role + '.';
+                } else {
+                    resultEl.className = 'result-message visible error';
+                    resultEl.textContent = 'Please fill in all fields before submitting.';
+                }
+            });
+
+            // Validate button handler
+            document.getElementById('validate-btn').addEventListener('click', function() {
+                var fields = ['first-name', 'last-name', 'email', 'role'];
+                var allValid = true;
+                var resultEl = document.getElementById('result-message');
+
+                fields.forEach(function(fieldId) {
+                    var field = document.getElementById(fieldId);
+                    if (!field.value.trim()) {
+                        field.style.borderColor = 'var(--danger)';
+                        allValid = false;
+                    } else {
+                        field.style.borderColor = 'var(--success)';
+                    }
+                });
+
+                if (allValid) {
+                    resultEl.className = 'result-message visible success';
+                    resultEl.textContent = 'All fields are valid.';
+                } else {
+                    resultEl.className = 'result-message visible error';
+                    resultEl.textContent = 'Some fields are missing. Please complete all required fields.';
+                }
+            });
+
+            // Reset handler
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                var resultEl = document.getElementById('result-message');
+                resultEl.className = 'result-message';
+                resultEl.textContent = '';
+                ['first-name', 'last-name', 'email', 'role'].forEach(function(fieldId) {
+                    document.getElementById(fieldId).style.borderColor = '';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

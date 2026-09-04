@@ -1,0 +1,7 @@
+goal: Verify Google homepage loads
+base_url: https://www.google.com
+statements:
+  - URL: /
+  - VERIFY: There is a search box on the page
+  - intent: Enter shiplight into the search box
+  - VERIFY: The search box contains shiplight

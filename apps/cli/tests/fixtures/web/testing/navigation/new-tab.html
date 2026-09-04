@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Tab - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Navigation</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>New Tab</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Open New Tab</h2>
+                <p>Click the button below to open the form page in a new tab.</p>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="open-new-tab" onclick="openNewTab()">
+                        Open New Tab
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function openNewTab() {
+            window.open('../forms/basic-form.html', '_blank');
+        }
+    </script>
+</body>
+</html>
+

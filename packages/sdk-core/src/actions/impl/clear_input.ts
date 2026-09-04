@@ -1,0 +1,156 @@
+/**
+ * clear_input action - Clear the contents of an input field
+ */
+
+import { z } from 'zod';
+import { Page } from 'playwright';
+import type { AgentServices } from '../../agent/agentServices';
+import { IAction, ActionEntity } from '../types';
+import { getActionTimeoutMs, getLocator } from '../utils';
+import { ToolRegistry } from '../../llm_tools/registry';
+import { getActionEntityLocatorInfo, getDomElementByIndex } from '../../llm_tools/utils';
+
+// ============================================================================
+// Action Implementation
+// ============================================================================
+
+export class ClearInputAction implements IAction {
+  async execute(page: Page, actionEntity: ActionEntity, agentServices: AgentServices): Promise<void> {
+    const locator = getLocator(page, actionEntity);
+    const timeout = getActionTimeoutMs(agentServices, actionEntity.action_data?.kwargs?.timeout_ms);
+    if (locator) {
+      await locator.click({ timeout });
+      await page.keyboard.press('ControlOrMeta+a');
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Backspace');
+      await page.waitForTimeout(200);
+    } else {
+      throw new Error('No locator found for clear_input action');
+    }
+  }
+
+  transpile(actionEntity: ActionEntity): string[] {
+    const parts: string[] = [];
+    if (actionEntity.locator) {
+      parts.push(`locator: ${JSON.stringify(actionEntity.locator)}`);
+    } else if (actionEntity.xpath) {
+      parts.push(`xpath: ${JSON.stringify(actionEntity.xpath)}`);
+    }
+    if (actionEntity.frame_path && actionEntity.frame_path.length > 0) {
+      parts.push(`frame_path: ${JSON.stringify(actionEntity.frame_path)}`);
+    }
+
+    if (parts.length === 0) {
+      return [`await agent.execAction("clear_input", page, {});`];
+    }
+
+    return [
+      `await agent.execAction("clear_input", page, {`,
+      ...parts.map(p => `  ${p},`),
+      `});`
+    ];
+  }
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+async function createInputActionEntity(
+  actionName: string,
+  description: string,
+  domElement: any,
+  page: Page,
+  kwargs: any = {}
+): Promise<ActionEntity> {
+  const locatorInfo = await getActionEntityLocatorInfo(page, domElement);
+
+  return {
+    ...locatorInfo,
+    action_description: description,
+    action_data: {
+      action_name: actionName,
+      kwargs: { ...kwargs },
+    },
+  };
+}
+
+function createErrorActionEntity(
+  description: string,
+  actionName: string,
+  kwargs: any
+): ActionEntity {
+  return {
+    action_description: `${description} (failed - element not found)`,
+    action_data: {
+      action_name: actionName,
+      kwargs,
+    },
+    feedback: 'Element not found in DOM',
+  };
+}
+
+// ============================================================================
+// LLM Tool Schema & Registration
+// ============================================================================
+
+export const ClearInputToolSchema = z.object({
+  element_index: z.number().int().describe('Index of the input element to clear'),
+  timeout_ms: z.number().optional().describe('Per-action timeout in ms. Overrides the default 5s action timeout. Set this only when the instruction states a timeout; otherwise leave it unset so the configured default applies.'),
+});
+
+export function registerClearInputTool(registry: ToolRegistry, action: IAction) {
+  registry.register({
+    name: 'clear_input',
+    description: 'Clear the contents of an input field, textarea, or other editable element.',
+    schema: ClearInputToolSchema,
+    usesElementIndex: true,
+
+    async execute(args, ctx) {
+      const { element_index } = args;
+      const { page, agentServices, actionDescription } = ctx as any;
+
+      try {
+        const domElement = await getDomElementByIndex(ctx, element_index);
+
+        if (!domElement) {
+          return {
+            success: false,
+            error: `Input element with index ${element_index} not found`,
+            actionEntity: createErrorActionEntity(
+              actionDescription || `Clear element ${element_index}`,
+              'clear_input',
+              { index: element_index }
+            ),
+          };
+        }
+
+        const description = actionDescription || `Clear element ${element_index}`;
+        const actionEntity = await createInputActionEntity(
+          'clear_input',
+          description,
+          domElement,
+          page
+        );
+
+        await action.execute(page, actionEntity, agentServices);
+
+        return {
+          success: true,
+          actionEntity,
+          message: `Cleared element ${element_index}`,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: (error as Error).message,
+          actionEntity: createErrorActionEntity(
+            `Clear element ${element_index}`,
+            'clear_input',
+            { index: element_index }
+          ),
+        };
+      }
+    },
+  });
+}

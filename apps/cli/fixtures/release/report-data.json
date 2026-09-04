@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "title": "Release-gate smoke",
+      "file": "fixtures/inspect.test.yaml",
+      "status": "passed",
+      "duration": 100,
+      "steps": [
+        {
+          "stepId": "1",
+          "description": "URL: /",
+          "status": "success",
+          "duration": 50
+        },
+        {
+          "stepId": "2",
+          "description": "VERIFY: The page title contains Example Domain",
+          "status": "success",
+          "duration": 50
+        }
+      ]
+    }
+  ],
+  "totalDuration": 100,
+  "timestamp": "2026-05-19T00:00:00.000Z"
+}

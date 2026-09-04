@@ -1,0 +1,5 @@
+goal: Release-gate smoke fixture
+base_url: https://example.com
+statements:
+  - URL: /
+  - VERIFY: The page title contains Example Domain

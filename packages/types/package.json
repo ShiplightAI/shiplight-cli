@@ -1,0 +1,47 @@
+{
+  "name": "shiplight-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for Shiplight test framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "pnpm typecheck && rimraf dist && tsup",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts",
+    "test:unit": "tsx --test src/**/*.test.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "shiplight",
+    "types",
+    "typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0",
+    "yaml": "^2.8.3",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/diff": "^8.0.0",
+    "@types/node": "^24.0.0",
+    "@types/uuid": "^9.0.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone Input - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator.inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-indicator.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .visualizer-container {
+            background: #1a1a1a;
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #audioVisualizer {
+            width: 100%;
+            height: 150px;
+            border-radius: var(--border-radius);
+        }
+
+        .volume-meter {
+            width: 100%;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .volume-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-item {
+            background: var(--bg-secondary);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+        }
+
+        .info-item value {
+            display: block;
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Media & Devices</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Microphone Input</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+
+            <section class="test-section">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-lg);">
+                    <h2 style="margin: 0;">Microphone Test</h2>
+                    <span id="statusIndicator" class="status-indicator inactive">
+                        <span class="status-dot"></span>
+                        <span id="statusText">Inactive</span>
+                    </span>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Permission</label>
+                        <value id="permissionStatus">Not requested</value>
+                    </div>
+                    <div class="info-item">
+                        <label>Stream Active</label>
+                        <value id="streamStatus">No</value>
+                    </div>
+                </div>
+
+                <div class="button-group mt-3">
+                    <button id="startBtn" class="btn btn-primary">Start Microphone</button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>Stop Microphone</button>
+                </div>
+            </section>
+
+            <section class="test-section">
+                <h2>Audio Visualization</h2>
+                <div class="volume-meter">
+                    <div id="volumeLevel" class="volume-level"></div>
+                    <div class="volume-text" id="volumeText">Volume: 0%</div>
+                </div>
+                <div class="visualizer-container">
+                    <canvas id="audioVisualizer"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let mediaStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let animationId = null;
+
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const permissionStatus = document.getElementById('permissionStatus');
+        const streamStatus = document.getElementById('streamStatus');
+        const volumeLevel = document.getElementById('volumeLevel');
+        const volumeText = document.getElementById('volumeText');
+        const canvas = document.getElementById('audioVisualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // Initialize canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Update status UI
+        function updateStatus(status) {
+            if (status === 'active') {
+                statusIndicator.className = 'status-indicator active';
+                statusText.textContent = 'Active';
+            } else {
+                statusIndicator.className = 'status-indicator inactive';
+                statusText.textContent = 'Inactive';
+            }
+        }
+
+        // Start microphone
+        async function startMicrophone() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                permissionStatus.textContent = 'Granted';
+                streamStatus.textContent = 'Yes';
+                updateStatus('active');
+
+                // Setup audio context and analyser
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(mediaStream);
+                analyser.fftSize = 2048;
+                microphone.connect(analyser);
+
+                // Start visualization
+                visualize();
+
+                // Update UI
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                permissionStatus.textContent = error.name === 'NotAllowedError' ? 'Denied' : 'Error';
+                alert(`Failed to access microphone: ${error.message}`);
+            }
+        }
+
+        // Stop microphone
+        function stopMicrophone() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            analyser = null;
+            microphone = null;
+
+            permissionStatus.textContent = 'Not requested';
+            streamStatus.textContent = 'No';
+            updateStatus('inactive');
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+
+            // Clear visualizer
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            volumeLevel.style.width = '0%';
+            volumeText.textContent = 'Volume: 0%';
+        }
+
+        // Visualize audio
+        function visualize() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const timeDataArray = new Uint8Array(bufferLength);
+
+            function draw() {
+                animationId = requestAnimationFrame(draw);
+
+                analyser.getByteFrequencyData(dataArray);
+                analyser.getByteTimeDomainData(timeDataArray);
+
+                // Calculate average volume
+                const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+                const volumePercent = Math.round((average / 255) * 100);
+                volumeLevel.style.width = `${volumePercent}%`;
+                volumeText.textContent = `Volume: ${volumePercent}%`;
+
+                // Draw waveform
+                canvasCtx.fillStyle = '#1a1a1a';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = '#667eea';
+                canvasCtx.beginPath();
+
+                const sliceWidth = canvas.width / bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = timeDataArray[i] / 128.0;
+                    const y = v * canvas.height / 2;
+
+                    if (i === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        canvasCtx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                canvasCtx.lineTo(canvas.width, canvas.height / 2);
+                canvasCtx.stroke();
+            }
+
+            draw();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startMicrophone);
+        stopBtn.addEventListener('click', stopMicrophone);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopMicrophone();
+        });
+    </script>
+</body>
+</html>

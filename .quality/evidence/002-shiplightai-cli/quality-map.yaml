@@ -1,0 +1,744 @@
+# How this map's STRUCTURE (its check list) was produced. Reconstructed from the
+# shipped CLI (every check is source_type IMPLEMENTATION), not from an accepted spec
+# or a human-authored check list — so structure_provenance stays
+# inferred_brownfield. That field records where the checks came from, and an
+# owner's approval does not rewrite their origin.
+#
+# checks_reviewed: the owner reviewed the whole check list on 2026-08-10 and
+# approved it, including exp-local-references, re-homed here from 003 the same
+# day. That approval is what lifts these checks' structure confidence; the
+# origin above deliberately stays as it was.
+structure_provenance: "inferred_brownfield"
+checks_reviewed: true
+target:
+  id: "002-shiplightai-cli"
+  name: "shiplightai CLI & Playwright Library"
+  scope: "feature"
+  aliases: []
+  source_refs:
+    - path: "specs/002-shiplightai-cli/spec.md"
+      label: "Reconstructed feature spec"
+    - path: "project-map.yaml"
+      label: "Project map feature entry"
+    - path: "https://docs.shiplight.ai/local/cli-reference"
+      label: "CLI reference docs (SOURCE)"
+    - path: "apps/cli/README.md"
+      label: "Published package README (observed)"
+    - path: "apps/cli"
+      label: "CLI implementation"
+
+expectations:
+  - id: exp-env-allowlist
+    title: "Only allowlisted env vars reach the agent SDK; shell/CI secrets never leak"
+    description: >-
+      buildSdkEnv copies exactly the env-key allowlist (LLM keys, Vertex routing,
+      Mailgun, SHIPLIGHT_API_*) and strips PATH/HOME/USER/SSH_*/GITHUB_TOKEN/AWS_*/
+      NPM_TOKEN; the agent fixture configures the SDK exclusively via buildSdkEnv(),
+      never from process.env. This is the security boundary for what the AI agent sees.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/fixture.allowlist.test.ts"
+      - path: "apps/cli/src/fixture.allowlist.wiring.test.ts"
+      - path: "apps/cli/src/dotenvSource.ts"
+    category: security
+    priority: P0
+    evidence:
+      - id: ev-allowlist-unit
+        type: unit
+        path: "apps/cli/src/fixture.allowlist.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Pins the exact allowlist copied into the SDK env and the strip of PATH/HOME/SSH_*/GITHUB_TOKEN/AWS_*/NPM_TOKEN."
+      - id: ev-allowlist-wiring-guard
+        type: static
+        path: "apps/cli/src/fixture.allowlist.wiring.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Source-integrity guard: the agent fixture makes exactly one configureSdk call sourced only from buildSdkEnv(), never from process.env."
+      - id: ev-allowlist-runtime-noleak
+        type: integration
+        path: "apps/cli/src/fixture.allowlist.runtime.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Runtime upgrade over the STATIC wiring guard: executes the real startup chain
+          with a polluted process.env (GITHUB_TOKEN/NPM_TOKEN/AWS_*/SSH_AUTH_SOCK) —
+          loadShiplightEnv() seeds the stash from the full process.env, then
+          buildSdkEnv() -> configureSdk() -> getSdkConfig().env — and asserts the SDK
+          stores ONLY the allowlist (allowlisted value flows through; no secret key or
+          value leaks). Mutation-verified: adding GITHUB_TOKEN to the allowlist fails it.
+
+  - id: exp-fixture-context
+    title: "Test context and variable overrides resolve correctly into the run"
+    description: >-
+      The testContext Proxy wraps the VariableStore (property + method access);
+      --vars / --vars-file / env-JSON overrides apply with allowlist + sensitive-flag
+      semantics; auth state loads from user .mjs files.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/fixture.test.ts"
+      - path: "apps/cli/src/commands/test.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-fixture-unit
+        type: unit
+        path: "apps/cli/src/fixture.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers the testContext Proxy over VariableStore and override/allowlist/sensitive-flag semantics."
+      - id: ev-vars-e2e
+        type: e2e
+        path: "apps/cli/src/commands/test.vars.e2e.test.ts"
+        command: "cd apps/cli && pnpm test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "End-to-end CLI->env->fixture->testContext path through the built dist in the keyless browser lane."
+
+  - id: exp-context-options
+    title: "Per-test context options correctly override project use, with PW drift guard"
+    description: >-
+      viewport/colorScheme/locale per-test win over project use; viewport:null drops
+      incompatible deviceScaleFactor/isMobile; a guard test fails if Playwright adds a
+      context option the CLI doesn't classify.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/fixture.contextOptions.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-ctxopts-unit
+        type: unit
+        path: "apps/cli/src/fixture.contextOptions.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers per-test override precedence, viewport:null incompatibility drop, and the Playwright context-option drift guard."
+    proof_gap:
+      summary: "The drift guard parses Playwright internals by file path. Playwright 1.58.2 removed lib/coreBundle.js (the guard now reads lib/server/browserContext.js, with coreBundle.js as a fallback); a future relocation now fails loudly with an 'internals moved' assertion rather than a raw ENOENT, but still needs a path update on such a bump."
+      next_step: "On Playwright upgrades, if the guard asserts 'internals moved', add the new validateBrowserContextOptions source path to the candidates list."
+
+  - id: exp-dotenv-precedence
+    title: "Env discovery walks to project root with closest-wins precedence"
+    description: >-
+      findEnvFiles walks up from cwd; loadShiplightEnv merges closest-first (.env beats
+      process.env); getShiplightEnv falls back to process.env before first load.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/dotenvSource.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-dotenv-unit
+        type: unit
+        path: "apps/cli/src/dotenvSource.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers upward .env discovery, closest-wins merge over process.env, and the pre-load fallback."
+
+  - id: exp-transpile
+    title: "YAML tests transpile to correct Playwright spec files"
+    description: >-
+      YAML -> .yaml.spec.ts produces version header, PW imports, test name from goal,
+      fixture signature, agent.run/assert calls, and execution annotations
+      (skip/fail/only/slow/timeout); invalid YAML fails loudly.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/transpile.test.ts"
+      - path: "apps/cli/tests/integration/transpile-pipeline.test.ts"
+      - path: "apps/cli/tests/conformance/action-parity.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-transpile-unit
+        type: unit
+        path: "apps/cli/src/transpile.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Pins generated header, imports, test name, fixture signature, agent calls, execution annotations, and loud failure on invalid YAML."
+      - id: ev-transpile-logic
+        type: integration
+        path: "apps/cli/tests/integration/transpile-pipeline.test.ts"
+        command: "cd apps/cli && pnpm test:logic"
+        contexts: ["local", "pr-ci"]
+        notes: "Exercises the full YAML->spec pipeline end-to-end as text."
+      - id: ev-standalone-export-logic
+        type: integration
+        path: "apps/cli/tests/integration/standalone-export.test.ts"
+        command: "cd apps/cli && pnpm test:logic"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Standalone-test export equivalence (formerly the MCP export_yaml_to_test
+          surface): transpileYAMLTestFlow output imports resolve from the built
+          shiplightai package; name/starting-url overrides honored.
+      - id: ev-transpile-parity
+        type: integration
+        path: "apps/cli/tests/conformance/action-parity.test.ts"
+        command: "cd apps/cli && pnpm test:logic"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Cross-implementation conformance: the CLI's standalone Playwright action
+          transpiler emits the same code as sdk-core's IAction.transpile() for each
+          action (locator strategy, method, args, ordering), tolerating only the
+          intentional 5s-vs-10s default-timeout divergence — guards against silent
+          drift between the two transpiler copies.
+      - id: ev-transpile-flow-unit
+        type: unit
+        path: "apps/cli/tests/unit/transpiler.test.ts"
+        command: "cd apps/cli && pnpm test:logic"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Direct unit coverage of transpileTestFlow / transpileSuiteFile: fixture
+          import line, draft/step/action/if-else/while emission, suite hooks +
+          try/finally teardown, parameterized variants, and function reference
+          import resolution (file#export -> relative import path) — the surface the
+          recent bare-path / relative-import anchoring fixes hardened.
+    proof_gap:
+      summary: "A transpiled spec is run end-to-end in a real browser by exp-test-command (ev-test-run-e2e), and per-action output is pinned against sdk-core, but the generated .yaml.spec.ts is not separately tsc-type-checked inside the gate."
+      next_step: "Optional: add a gated tsc --noEmit over a transpiled spec to catch type-level regressions the runtime run would miss."
+
+  - id: exp-version-guards
+    title: "Version-behind warning and global-install block behave correctly"
+    description: >-
+      isBehind is semver-aware; freshness check caches latest (1h TTL), suppressed in
+      CI/dev; checkGlobalInstall hard-blocks running from a global npm prefix.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/versionCheck.test.ts"
+    category: ops
+    priority: P3
+    evidence:
+      - id: ev-version-unit
+        type: unit
+        path: "apps/cli/src/versionCheck.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers semver-aware isBehind, cached freshness with CI/dev suppression, and the global-install hard block."
+
+  - id: exp-action-cache
+    title: "Action-entity cache client self-heals locators across runs"
+    description: >-
+      lookupActionStores/updateActionStores no-op without a token, handle HTTP/network
+      errors gracefully, and return correct counts; statement hashes are stable 16-char
+      hex keyed on description + statement-path + file-path.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/cache/actionEntityCacheClient.test.ts"
+      - path: "apps/cli/src/cache/statementHash.test.ts"
+      - path: "apps/cli/src/cache/actionCache.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-cache-unit
+        type: unit
+        path: "apps/cli/src/cache/actionEntityCacheClient.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers no-op without a token, graceful HTTP/network error handling, counts, and stable statement-hash keys."
+      - id: ev-cache-store-unit
+        type: unit
+        path: "apps/cli/src/cache/actionCache.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Local store write/lookup/loadAll + cross-update merge, path escape/unescape roundtrip, and the run-metadata collector."
+    proof_gap:
+      summary: "Local store, hashing, and metadata are proven; the cloud cache path is exercised only via the client no-op/error tests."
+      next_step: "Optional: an integration test for the cloud cache path with a stubbed API."
+
+  - id: exp-create-scaffold
+    title: "`shiplight create` scaffolds safely for humans AND agents (merge contract + --json)"
+    description: >-
+      create writes a runnable project (package.json, playwright.config.ts with
+      shiplightConfig wired, .env.example, .gitignore, example test). Against a
+      populated repo it never modifies an existing file — each conflict is
+      surfaced with template + merge strategy. `--json` emits the same result as
+      one parseable object (the agent contract that replaced the MCP
+      scaffold_project tool; snake_case wire names), with a parseable {error} on
+      every failure path and post-scaffold env guidance offering both credential
+      paths token-first. The scaffolder now lives in-package
+      (apps/cli/src/scaffold/); the CLI has no mcp-tools dependency.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/commands/create.ts"
+      - path: "apps/cli/src/scaffold/index.ts"
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-002 / FR-019 / SC-005"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-scaffold-core-unit
+        type: unit
+        path: "apps/cli/src/scaffold/index.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The relocated scaffolder suite: fresh output, the full non-empty merge
+          contract (no-overwrite + surface-for-merge), path-safety (symlink
+          escape, broken links, directory-at-leaf), name normalization, and the
+          resolveEnvSetupState 5-state ladder incl. an ordering guard.
+      - id: ev-create-command-unit
+        type: unit
+        path: "apps/cli/src/commands/create.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The command seam: --json single-object/non-lossy payload (snake_case
+          merge_key/lines_to_ensure, no camelCase leak), parseable {error} on
+          every failure path regardless of flag order, env_setup_state from real
+          directory shapes, human-output ordering, and no stale MCP-tool pointer.
+      - id: ev-create-e2e
+        type: e2e
+        path: "apps/cli/src/commands/create.e2e.test.ts"
+        command: "cd apps/cli && pnpm test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Spawns the built CLI and asserts scaffolded files, ESM package.json, and shiplightConfig wiring."
+    proof_gap:
+      summary: "The full create -> npm install -> run chain (network install) is intentionally not run in CI."
+      next_step: "Optional: a nightly job that also npm installs and runs the scaffolded example."
+
+  - id: exp-version-pinning
+    title: "Scaffolded projects pin the CLI version that created them — never a floating dist-tag"
+    description: >-
+      The scaffolded package.json depends on `^<running CLI version>` in BOTH the
+      fresh-write and agent-merge-template paths. The previous literal "latest"
+      read as self-updating but was resolved once at install time, so projects
+      sat on stale CLIs while every reader assumed otherwise; a hardcoded ^0.1.0
+      would be worse (caret is minor-locked below 1.0.0). The version comes from
+      the CLI's own package.json — an unresolvable or invalid version fails
+      before any file is written. Spec: 002 FR-002/FR-017.
+    source_type: SOURCE
+    source_refs:
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-017 declaration"
+      - path: "apps/cli/src/scaffold/index.ts"
+      - path: "apps/cli/src/cliVersion.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-dependency-range-unit
+        type: unit
+        path: "apps/cli/src/scaffold/index.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          toDependencyRange caret policy: accepts exact semver (+prerelease/build),
+          rejects latest/next/dev/ranges/empty; a bad version refuses BEFORE any
+          filesystem write (no half-scaffolded tree); the merge template carries
+          the same pin as the fresh write.
+      - id: ev-real-version-seam-unit
+        type: unit
+        path: "apps/cli/src/commands/create.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "The command feeds the REAL running version through: scaffolded dependency equals ^resolveCliVersion(); no floating tag string appears in output."
+      - id: ev-cli-version-resolution-unit
+        type: unit
+        path: "apps/cli/src/cliVersion.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Own-package.json walk-up in bundle and source layouts; never returns a foreign package's version or the 'dev' placeholder; throws actionably on absence."
+
+  - id: exp-transpile-strict
+    title: "`transpile --strict` gates agent-authored tests on action coverage"
+    description: >-
+      The authoring quality gate that replaced the MCP validate_yaml_test tool:
+      default mode warns on low action coverage and still emits the spec; --strict
+      fails (non-zero exit) with the SAME figures and enrichment guidance. The
+      coverage rule has exactly one implementation (isBelowCoverageThreshold in
+      shiplight-types), so an agent and a human cannot get contradictory verdicts
+      on identical YAML. --strict with zero matching files fails rather than
+      passing vacuously. Spec: 002 FR-013 / SC-006.
+    source_type: SOURCE
+    source_refs:
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-013 declaration"
+      - path: "apps/cli/src/commands/transpile.ts"
+      - path: "packages/types/src/test-flow/validateTestYaml.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-coverage-threshold-unit
+        type: unit
+        path: "packages/types/src/test-flow/validateTestYaml.test.ts"
+        command: "pnpm --filter shiplight-types test"
+        contexts: ["local", "pr-ci"]
+        notes: "The single rule: isBelowCoverageThreshold provably agrees with the emitted warning on the same stats; 50% floor passes; empty flows and absent stats are not shortfalls."
+      - id: ev-transpile-verdict-unit
+        type: unit
+        path: "apps/cli/src/commands/transpile.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The verdict wiring over real temp-dir projects: default warns + exit 0;
+          --strict escalates the same file to an error with guidance + exit 1
+          (counted in one bucket); malformed YAML exits 1; --strict with zero
+          matches exits 1; arg parsing keeps a leading --strict out of the glob.
+    proof_gap:
+      summary: "Verdict and rule are proven at the function layer; --strict is not exercised through the built cli.js binary in a gated lane."
+      next_step: "Optional: one e2e invocation of `node dist/cli.js transpile --strict` in the browser lane."
+
+  - id: exp-spec-references
+    title: "`shiplight spec` ships authoring references version-locked to the installed CLI"
+    description: >-
+      `spec yaml` prints the normative YAML language spec and `spec actions` the
+      action vocabulary — both shipped inside the package so they cannot drift
+      from the transpiler that enforces them (the yaml-test-spec MCP resource was
+      retired for this). The rendered action schemas present YAML kwargs:
+      element_index (live-session-only targeting) is never advertised, and
+      shipped docs contain no shiplight:// URI. Spec: 002 FR-014/FR-015/FR-016,
+      SC-008.
+    source_type: SOURCE
+    source_refs:
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-014/FR-015/FR-016 declarations"
+      - path: "apps/cli/src/commands/spec.ts"
+      - path: "apps/cli/src/specRender.ts"
+      - path: "apps/cli/scripts/render-spec-assets.mts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-spec-command-unit
+        type: unit
+        path: "apps/cli/src/commands/spec.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Topic parsing + exit codes; built-asset-over-source resolution (no
+          source fallback for the generated actions doc); ALWAYS-ON source-doc
+          guards (no shiplight:// URI, no removed MCP tool name) plus rendered-doc
+          guards (no element_index kwarg, targeting note) that self-skip pre-build
+          and gate the release lane; tpl-loader lane-wiring pin.
+      - id: ev-spec-transform-unit
+        type: unit
+        path: "apps/cli/src/specRender.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Build-independent proof of the element_index presentation rule: drops the field + its required entry only for element-targeted actions, never mutates input, passes through everything else."
+    proof_gap:
+      summary: "The usesElementIndex WIRING inside the build script (registry flag -> transform call) is proven only by the post-build rendered-doc guards, which self-skip in the pre-build PR unit lane."
+      next_step: "Run test:unit after build in the release lane (guards then execute), or add a build:spec task the PR lane depends on."
+
+  - id: exp-yaml-roundtrip
+    title: "TestFlow <-> YAML conversion is stable, idempotent, and locator-preserving"
+    description: >-
+      The conversion contract behind saved tests: TestFlow -> YAML -> TestFlow is
+      stable and idempotent, and a captured action's concrete locator/xpath and
+      verify assertion survive. Moved here from 003 with the transpiler (spec 002
+      FR-018, formerly 003 FR-007): the artifact that defines the conversion now
+      ships and versions with the parser that runs it.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-018 (moved from 003 FR-007)"
+      - path: "packages/types/src/test-flow/yamlRoundtrip.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-yaml-roundtrip-unit
+        type: unit
+        path: "packages/types/src/test-flow/yamlRoundtrip.test.ts"
+        command: "pnpm --filter shiplight-types test"
+        contexts: ["local", "pr-ci"]
+        notes: "Proves TestFlow -> YAML -> TestFlow is stable and idempotent on the shared conversion primitives, and that a captured action's concrete locator/xpath and verify assertion survive."
+
+  - id: exp-test-command
+    title: "`shiplight test` forwards Playwright flags and runs mixed YAML + .ts suites"
+    description: >-
+      Flags (--headed/--grep/--workers, escaped grep) forward verbatim; --vars/--vars-file
+      parse; YAML transpiles on demand; the actual playwright spawn runs the suite and
+      propagates pass/fail exit codes.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/commands/test.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-test-args-unit
+        type: unit
+        path: "apps/cli/src/commands/test.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers verbatim flag forwarding (incl. escaped grep), --vars/--vars-file parsing, and on-demand YAML transpilation."
+      - id: ev-test-run-e2e
+        type: e2e
+        path: "apps/cli/src/commands/test-run.e2e.test.ts"
+        command: "cd apps/cli && pnpm test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Real keyless Chromium run: a passing spec exits 0 and a failing one propagates a non-zero exit code."
+      - id: ev-test-vars-e2e
+        type: e2e
+        path: "apps/cli/src/commands/test.vars.e2e.test.ts"
+        command: "cd apps/cli && pnpm test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Proves the CLI->env->fixture->testContext variable path end-to-end."
+    proof_gap:
+      summary: "Flag forwarding beyond --config/--reporter is exercised only indirectly."
+      next_step: "Optional: assert a forwarded --grep selects the expected subset end-to-end."
+
+  - id: exp-debug-server
+    title: "`shiplight debug` launches the interactive debugger server"
+    description: >-
+      debug binds a free port (or --port), spawns the inner Playwright process with the
+      target YAML, proxies session APIs, and serves the embedded UI with live streams.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/debugger/manager.test.ts"
+      - path: "apps/cli/src/debugger/playwrightDebug.test.ts"
+      - path: "apps/cli/src/debugger/routes/testFlow.test.ts"
+      - path: "apps/cli/src/debugger/services/playwrightSandbox.test.ts"
+      - path: "apps/cli/src/debugger/index.test.ts"
+      - path: "specs/_archive/004-testbox-debugger"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-debug-manager-unit
+        type: unit
+        path: "apps/cli/src/debugger/manager.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The core session-lifecycle proof: DebuggerManager open/dedup-by-yaml-path
+          (FR-003/004), startSandbox spawn + headed pass-through + idempotency,
+          spawn-error reset (FR-019), stop/restart, idempotent close, concurrent
+          shutdown, and idle->starting->running->ended state transitions.
+      - id: ev-debug-port-unit
+        type: unit
+        path: "apps/cli/src/debugger/portUtils.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Free-port binding: isPortAvailable / findAvailablePort select an open port (or honor --port) — the precondition for a clean session boot."
+      - id: ev-debug-spawn-unit
+        type: unit
+        path: "apps/cli/src/debugger/playwrightDebug.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Inner-process wiring: findPlaywrightConfig discovery, spawnPlaywrightProcess launch of the target YAML, and idempotent temp-file cleanup on teardown."
+      - id: ev-debug-routing-unit
+        type: unit
+        path: "apps/cli/src/debugger/routes/testFlow.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Session-API proxy router (createTestFlowRouter): preserves per-statement settings (skip/fail/only/slow), tags, and template references across the outer->inner hop."
+      - id: ev-debug-sandbox-unit
+        type: unit
+        path: "apps/cli/src/debugger/services/playwrightSandbox.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Inner sandbox that actually drives a statement: PlaywrightSandboxService.generateAction normalization and executeCode evaluation behind the proxied session API."
+      - id: ev-debug-cors-unit
+        type: unit
+        path: "apps/cli/src/debugger/index.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Outer debugger server CORS and request-handling surface."
+      - id: ev-debug-e2e
+        type: e2e
+        path: "apps/cli/src/commands/debug.e2e.test.ts"
+        command: "cd apps/cli && pnpm test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Boots the server end-to-end: binds a port, serves GET /api/debugger/sessions -> 200 [], and tears down cleanly."
+    proof_gap:
+      summary: "Deterministic mechanics (lifecycle, port, inner-process spawn, session-API routing, sandbox action-gen/exec) are each pinned in isolation, but a full live loop — create a session and stream one statement's execution over SSE through the outer->inner proxy — is not exercised end-to-end."
+      next_step: "Add a keyed e2e that creates a session and runs one statement via the debug server, asserting SSE progress events."
+
+  - id: exp-report-merge
+    title: "`shiplight report` merges shard reports and routes cloud upload correctly"
+    description: >-
+      report merges multiple shard report dirs into one HTML report; cloud upload routes
+      shp_pat_*/shp_ctx_* -> the Shiplight proxy, UUID -> v1, honoring SHIPLIGHT_API_URL, and promotes
+      report URLs to absolute web hosts.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/commands/report.test.ts"
+      - path: "apps/cli/src/reporter/cloudUpload.test.ts"
+    category: other
+    priority: P2
+    evidence:
+      - id: ev-cloudupload-unit
+        type: unit
+        path: "apps/cli/src/reporter/cloudUpload.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Direct coverage of token-type cloud routing, SHIPLIGHT_API_URL handling, and absolute report-URL promotion."
+      - id: ev-report-merge-unit
+        type: integration
+        path: "apps/cli/src/commands/report.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Subprocess merge driven against built dist; merge is delegated to Playwright merge-reports."
+    proof_gap:
+      summary: "Cloud URL routing is DIRECT, but the merged-report file structure / HTML content is not asserted."
+      next_step: "Assert the post-merge report contains the combined test count and copied screenshots."
+
+  - id: exp-inspect-command
+    title: "`shiplight inspect` outputs parsed TestFlow JSON"
+    description: "inspect parses a YAML test and emits the TestFlow JSON, handling parse errors gracefully."
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/commands/inspect.ts"
+      - path: "apps/cli/src/commands/inspect.test.ts"
+    category: other
+    priority: P3
+    evidence:
+      - id: ev-inspect-unit
+        type: unit
+        path: "apps/cli/src/commands/inspect.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers JSON output, --stats summary, missing-file exit(1), and malformed-YAML exit(1)."
+    proof_gap:
+      summary: "The suite (testGroup) --stats branch is not separately asserted."
+      next_step: "Optional: add a --stats assertion for a testGroup/suite YAML."
+
+  - id: exp-config-roots
+    title: "shiplightConfig anchors scanDir and projectRoot correctly"
+    description: >-
+      resolveScanRoots keeps projectRoot pinned to the TRUE project root while
+      scanDir narrows what is scanned: with no scanDir and no env both default to
+      cwd; SHIPLIGHT_PROJECT_ROOT sets projectRoot and scanDir falls back to it; an
+      explicit (relative or absolute) scanDir narrows the scan but projectRoot stays
+      the root. .env discovery walks up and stops at the project root with
+      closest-wins precedence. Auth scripts, the Chrome extension, and upload data
+      dirs all anchor to this resolved root, not cwd.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/config.ts"
+      - path: "apps/cli/tests/unit/config.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-config-roots-unit
+        type: unit
+        path: "apps/cli/tests/unit/config.test.ts"
+        command: "cd apps/cli && pnpm test:logic"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Covers resolveScanRoots precedence (default cwd, env-set projectRoot,
+          explicit relative + absolute scanDir narrowing while projectRoot stays the
+          true/env root) and shiplightConfig .env walk-up with stop-at-root and
+          closest-wins precedence.
+    proof_gap:
+      summary: "Root resolution is proven directly; that downstream auth/extension/upload consumers actually anchor to the resolved root is covered by their own checks, not joined here."
+      next_step: "Optional: an integration test asserting an auth script path resolves against projectRoot when run from a nested scanDir."
+
+  - id: exp-usage-summary
+    title: "Per-run LLM usage is aggregated, billing-labeled, and survives shard merge"
+    description: >-
+      The reporter folds a per-run LLM usage summary into report-data.json at
+      report time: each tracked call maps to the right operation (action/draft/
+      verify_ai/evaluate_if/evaluate_while/evaluate_wait_until), buckets by
+      (operation, provider, model, routing), sums correctly across shards
+      without mutating inputs, and rides the run-complete upload. Routing is
+      labeled per bucket provider from the Shiplight .env stash mirroring
+      sdk-core's provider selection (direct key/Vertex flag -> byok, OpenAI
+      key + base URL -> custom_endpoint, token path -> proxy), so the
+      analytics plane can attach cost only to genuinely proxied traffic.
+      Declared as FR-012 in the feature spec; runner half of the cloud service spec 047.
+    source_type: IMPLEMENTATION
+    structure_provenance: "agent_generated"
+    source_refs:
+      - path: "specs/002-shiplightai-cli/spec.md"
+        label: "FR-012 declaration"
+      - path: "specs/002-shiplightai-cli/run-usage-summary/test-spec.md"
+        label: "Change test spec (priorities)"
+      - path: "apps/cli/src/reporter/runUsageAggregate.ts"
+      - path: "packages/sdk-core/src/agent/runUsageSummary.ts"
+    category: ops
+    priority: P1
+    evidence:
+      - id: ev-usage-sdk-unit
+        type: unit
+        path: "packages/sdk-core/src/agent/__tests__/runUsageSummary.test.ts"
+        command: "cd packages/sdk-core && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Pure aggregator: operation mapping incl. the WAIT_UNTIL split, multi-poll counting, provider inference, bucketing, and empty-input handling."
+      - id: ev-usage-aggregate-unit
+        type: unit
+        path: "apps/cli/src/reporter/runUsageAggregate.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Reporter half: shard merge (summing, distinct buckets incl.
+          routing-only differences, no mutation, deterministic order),
+          temp-dir glob/parse aggregation, and per-provider routing labeling —
+          each provider's exact sdk-core truthiness (anthropic isTruthy vs
+          gemini literal True/true), custom_endpoint for OpenAI key+base URL,
+          the dispatcher re-map for chatgpt-*/o-N ids, override precedence,
+          and the conservative unknown-provider fallback.
+      - id: ev-usage-transpiler-emit-unit
+        type: unit
+        path: "apps/cli/src/yaml-transpiler/aiConditionAttribution.test.ts"
+        test_case: "tags AI-mode IF and WHILE conditions with their construct so usage attribution can split them"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Attribution source: AI-mode IF/WHILE transpile with the construct tag
+          that lets the aggregator split evaluate operations. Moved here in
+          August 2026 from testFlowTranspiler.test.ts — that asserted the emit
+          in testFlowTranspiler.ts, an unreachable transpiler deleted with the
+          rest of the dead export surface. This asserts the live statements.ts
+          emit instead, closing the "not separately asserted" gap the
+          run-usage-summary test-report recorded.
+    proof_gap:
+      summary: >-
+        Unit layer proves aggregation, merge, and routing labeling; two gaps
+        remain: the full shard -> merge -> cloud-upload path and runtime
+        conditionKind threading through a live agent.evaluate are not
+        CI-exercised (typecheck-only wiring proof). The third gap — that the
+        transpiler's unit results reached no observation source — is CLOSED and
+        no longer possible: the yaml-transpiler was folded into apps/cli in
+        August 2026, so its tests run in the CLI's own test:unit emission and the
+        dedicated shiplight-tools JUnit step added by PR #2226 was removed.
+      next_step: >-
+        Validate the emitted numbers on a real cloud run (shard merge +
+        upload).
+
+  - id: exp-auth-extension-helpers
+    title: "Auth cookie loading and Chrome extension profile prep are robust"
+    description: >-
+      loadAndExtendCookies extends stored cookie expiry (~1 year), tolerates missing
+      files / missing or non-array cookies keys (returns null + warns), skips
+      malformed cookies, and throws a descriptive error on invalid JSON;
+      prepareProfileDir creates a unique temp profile or copies a base profile and
+      removes the SingletonLock so a persistent Chrome profile can be reused safely.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/extension-helpers.ts"
+      - path: "apps/cli/src/extension-helpers.test.ts"
+    category: auth
+    priority: P2
+    evidence:
+      - id: ev-extension-helpers-unit
+        type: unit
+        path: "apps/cli/src/extension-helpers.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers cookie expiry extension, malformed/missing-cookie tolerance, invalid-JSON error, and unique/base profile dir prep with SingletonLock removal."
+
+  - id: exp-local-references
+    title: "template: and call: references resolve to the right file"
+    description: >-
+      A YAML test can point at another file with `template:` or `call:`. Those
+      paths must resolve to the file the author meant, including a `../` path
+      that walks up out of the test's own directory. This moved here from the
+      MCP server (predecessor check id: 003 exp-local-references) when test
+      authoring moved into the CLI; the MCP-side implementation and its tests
+      were deleted in 736d9e973.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/cli/src/yaml-transpiler/pipeline.ts"
+      - path: "apps/cli/src/yaml-transpiler/actions.ts"
+        label: "path.resolve(projectRoot, importPath) for call: targets"
+      - path: "apps/cli/src/yaml-transpiler/pipeline.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-reference-resolution-unit
+        type: unit
+        path: "apps/cli/src/yaml-transpiler/pipeline.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Covers bare paths resolved against projectRoot, bare paths beside the
+          YAML file, and the `../`-relative case. That last one is a release-gate
+          regression from the public examples repo: re-resolving `../helpers/...`
+          against projectRoot escaped above the root and added an extra `..`,
+          producing a module-not-found error.

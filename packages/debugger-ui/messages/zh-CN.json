@@ -1,0 +1,4954 @@
+{
+  "Common": {
+    "save": "保存",
+    "saveChanges": "保存更改",
+    "apply": "应用",
+    "cancel": "取消",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "createNew": "新建",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "noResults": "未找到结果",
+    "noOptions": "暂无可用选项",
+    "required": "必填",
+    "clear": "清除",
+    "clearAllFilters": "清除所有筛选条件",
+    "saveAsNew": "另存为新项",
+    "or": "或",
+    "duplicate": "复制",
+    "active": "启用",
+    "draft": "草稿",
+    "copied": "已复制！",
+    "copiedToClipboard": "已复制到剪贴板",
+    "failedToCopyUrl": "复制 URL 失败",
+    "filterSearchPlaceholder": "搜索...",
+    "filterPlaceholder": "筛选...",
+    "filterIs": "是",
+    "filterIsAnyOf": "属于任意以下项",
+    "setByCurrentView": "按当前视图设置",
+    "noFiltersFound": "未找到筛选条件",
+    "addLabels": "添加标签",
+    "searchOrCreateLabels": "搜索或创建标签...",
+    "noLabelsFound": "未找到标签",
+    "noLabelsAvailable": "暂无可用标签",
+    "moreLabels": "+{count} 个标签",
+    "pickerLabelColor": "选择标签颜色...",
+    "createNamed": "创建 \"{name}\"",
+    "noMatchingDirectoriesFound": "未找到匹配的目录",
+    "selectDirectory": "选择目录...",
+    "itemsSelected": "已选择 {count} 项",
+    "failedToFetchSensitiveValue": "获取敏感值失败",
+    "enterTag": "输入标签",
+    "createNewItem": "新建项目",
+    "noItemsAvailable": "暂无可用项目",
+    "selectPlaceholder": "请选择...",
+    "clearAllSelections": "清除所有选择",
+    "noImageAvailable": "暂无可用图片",
+    "imageAlt": "图片",
+    "none": "无",
+    "selectEnvironment": "选择环境",
+    "clickToAddText": "点击添加文本",
+    "disabled": "已禁用",
+    "beforeTest": "测试前",
+    "afterTest": "测试后",
+    "saving": "保存中",
+    "recordCount": "{count}个{label}"
+  },
+  "ThemeToggle": {
+    "light": "浅色",
+    "lightTheme": "浅色主题",
+    "dark": "深色",
+    "darkTheme": "深色主题",
+    "auto": "自动",
+    "followSystemPreference": "跟随系统偏好"
+  },
+  "LocaleToggle": {
+    "en": "EN",
+    "zhCN": "中文"
+  },
+  "BreadcrumbsActions": {
+    "entities": {
+      "testCase": "测试用例",
+      "testSuite": "测试套件",
+      "schedule": "计划",
+      "view": "视图",
+      "issue": "问题"
+    },
+    "deleteTitle": "删除{entityType}？",
+    "deleteConfirm": "确定要删除此{entityType}吗？此操作无法撤销。",
+    "deletedSuccessfully": "{entityType}删除成功",
+    "failedToDelete": "删除{entityType}失败",
+    "testCaseDuplicatedSuccessfully": "测试用例复制成功",
+    "failedToDuplicateTestCase": "复制测试用例失败",
+    "testCaseExportedSuccessfully": "测试用例导出成功",
+    "failedToExportTestCase": "导出测试用例失败",
+    "regeneratingTestCaseTitle": "正在重新生成测试用例",
+    "regeneratingTestCase": "正在重新生成测试用例",
+    "regeneratingTestCaseSubText": "正在使用相同设置创建新的测试用例，可能需要一些时间。",
+    "testCaseRegeneratedSuccessfully": "测试用例重新生成成功",
+    "failedToRegenerateTestCase": "重新生成测试用例失败",
+    "linkCopied": "链接已复制",
+    "viewLinkCopied": "视图链接已复制到剪贴板",
+    "viewDuplicatedAs": "视图已复制为“{name}”",
+    "failedToDuplicateView": "复制视图失败",
+    "exportingTestSuiteTitle": "正在导出测试套件",
+    "exportingTestSuite": "正在导出测试套件",
+    "exportingTestSuiteSubText": "根据测试用例数量可能需要一些时间。你可以关闭此对话框并继续工作。",
+    "testSuiteExportedSuccessfully": "测试套件导出成功",
+    "failedToExportTestSuite": "导出测试套件失败",
+    "regenerate": "重新生成",
+    "export": "导出",
+    "copyLink": "复制链接"
+  },
+  "StartingUrlSelector": {
+    "titleDesktop": "起始 URL",
+    "titleNative": "应用",
+    "descriptionDesktop": "环境 URL + 路径 = 起始 URL（例如：https://app.example.com/your/path）",
+    "descriptionNative": "应用包名 / Bundle ID + Activity",
+    "pathPlaceholderAndroid": ".MainActivity（可选）",
+    "pathPlaceholderDefault": "your/path（可选）",
+    "selectEnvironment": "选择环境"
+  },
+  "Utilities": {
+    "loadingSpinner": {
+      "text": "正在加载测试用例",
+      "subText": "这不会花太久"
+    }
+  },
+  "Webhooks": {
+    "form": {
+      "titleEdit": "编辑 Webhook 端点",
+      "titleCreate": "创建 Webhook 端点",
+      "fields": {
+        "name": {
+          "label": "名称",
+          "placeholder": "例如：生产服务器"
+        },
+        "url": {
+          "label": "URL",
+          "placeholder": "https://your-server.com/webhook"
+        },
+        "secret": {
+          "label": "密钥",
+          "placeholder": "whsec_...",
+          "helpText": "该密钥将用于使用 HMAC-SHA256 对 webhook 请求进行签名"
+        },
+        "enabled": {
+          "label": "启用",
+          "description": "禁用后，任何测试计划都不会向此端点发送 webhook"
+        }
+      },
+      "actions": {
+        "generate": "生成",
+        "createEndpoint": "创建端点"
+      },
+      "note": {
+        "title": "注意",
+        "description": "更改 URL 或密钥会影响所有使用此端点的测试计划。"
+      },
+      "validation": {
+        "nameRequired": "名称为必填项",
+        "urlRequired": "URL 为必填项",
+        "secretRequired": "密钥为必填项",
+        "httpsRequired": "生产环境中的 Webhook URL 必须使用 HTTPS",
+        "localhostNotAllowed": "生产环境中不允许使用 localhost URL",
+        "invalidUrl": "URL 格式无效"
+      }
+    },
+    "listItem": {
+      "deleteModal": {
+        "title": "删除 Webhook 端点？",
+        "description": "此端点将被永久删除。所有使用此端点的测试计划订阅都将被移除。此操作无法撤销。"
+      },
+      "secretLabel": "密钥：",
+      "actions": {
+        "hide": "隐藏",
+        "show": "显示",
+        "copySecret": "复制密钥"
+      }
+    }
+  },
+  "Search": {
+    "placeholder": "搜索测试、套件、计划、模板和函数...",
+    "noResultsFor": "未找到与 \"{query}\" 相关的结果",
+    "errors": {
+      "invalidResponseFormat": "服务器返回的响应格式无效",
+      "noResultsReturned": "服务器未返回结果",
+      "unknownError": "发生未知错误"
+    }
+  },
+  "Navigation": {
+    "search": "搜索",
+    "analytics": "分析",
+    "knowledge": "知识库",
+    "environments": "环境",
+    "settings": "设置",
+    "sectionCreation": "创建",
+    "sectionExecution": "执行",
+    "tests": "测试",
+    "views": "视图",
+    "functions": "函数",
+    "templates": "模板",
+    "testSuites": "测试套件",
+    "schedules": "计划",
+    "results": "结果",
+    "preferences": "偏好设置",
+    "logout": "退出登录",
+    "createNew": "新建",
+    "createCase": "创建用例",
+    "createSuite": "创建套件",
+    "createSchedule": "创建计划",
+    "createFunction": "创建函数",
+    "helpAndDocs": "帮助与文档",
+    "pinSidebarOpen": "固定侧边栏展开",
+    "dragToResize": "拖动以调整大小",
+    "clickToCollapse": "点击以收起",
+    "agentTasks": "Agent 任务",
+    "dashboard": "仪表盘",
+    "newView": "新建视图",
+    "createTemplate": "创建模板",
+    "hideDetails": "隐藏详情",
+    "showDetails": "显示详情",
+    "sectionQA": "质量中心",
+    "qaDashboard": "仪表板",
+    "specs": "质量规范",
+    "releases": "发布验证"
+  },
+  "SettingsSidebar": {
+    "title": "设置",
+    "navGeneral": "通用",
+    "navMembers": "成员",
+    "navVariables": "全局变量",
+    "navApiTokens": "API 令牌",
+    "navLabels": "标签",
+    "navTestData": "测试数据",
+    "navForwardEmails": "邮件转发",
+    "navUsage": "用量",
+    "navNotifications": "通知",
+    "navIntegrations": "集成",
+    "navAutoFix": "自动修复",
+    "navBrowserSettings": "浏览器"
+  },
+  "Notifications": {
+    "testCase": {
+      "generating": "生成中",
+      "created": "测试用例已创建",
+      "viewTest": "查看测试"
+    },
+    "testRun": {
+      "started": "测试运行已开始",
+      "viewRunResult": "查看运行结果"
+    }
+  },
+  "Login": {
+    "title": "登录",
+    "continueWithGoogle": "使用 Google 继续",
+    "or": "或",
+    "emailLabel": "邮箱",
+    "emailPlaceholder": "输入你的邮箱",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "输入你的密码",
+    "loginButton": "登录"
+  },
+  "OAuth": {
+    "slackCallback": {
+      "loading": "加载中...",
+      "processingLogin": "正在处理登录...",
+      "errorWithMessage": "错误：{error}",
+      "parentClosedWarning": "父窗口在回调前已关闭。"
+    }
+  },
+  "Invite": {
+    "accept": {
+      "loadingInvitation": "正在加载邀请...",
+      "invalidInvitationTitle": "无效邀请",
+      "goToLogin": "前往登录",
+      "acceptedTitle": "已接受邀请！",
+      "memberOfOrganization": "你现在已是 {organization} 的成员",
+      "loginToAccess": "请登录以访问你的组织",
+      "youAreInvitedTitle": "你已被邀请！",
+      "youAreInvitedSubtitle": "你被邀请加入一个组织",
+      "cancel": "取消",
+      "acceptInvitation": "接受邀请",
+      "labels": {
+        "organization": "组织",
+        "invitedEmail": "受邀邮箱",
+        "role": "角色",
+        "invitedBy": "邀请人",
+        "expires": "过期时间"
+      },
+      "roles": {
+        "admin": "管理员",
+        "member": "成员"
+      },
+      "errors": {
+        "failedToLoadInvitation": "加载邀请失败",
+        "invalidInvitation": "无效邀请",
+        "failedToLoadInvitationDetails": "加载邀请详情失败",
+        "failedToAcceptInvitation": "接受邀请失败"
+      }
+    }
+  },
+  "GeneralSettings": {
+    "sectionProfile": "个人资料",
+    "profilePicture": "头像",
+    "profilePictureFormats": "支持格式：PNG/JPEG/JPG。最大文件大小：5MB",
+    "email": "邮箱",
+    "fullName": "姓名",
+    "fullNamePlaceholder": "输入你的姓名",
+    "saveChanges": "保存更改",
+    "clear": "清除",
+    "avatarClearedTitle": "头像已清除",
+    "avatarClearedMessage": "点击“保存更改”以更新你的资料",
+    "sectionAppearance": "外观",
+    "theme": "主题",
+    "language": "语言",
+    "sectionDevelopment": "开发",
+    "experimentalFeatures": "实验性功能",
+    "debugging": "调试",
+    "profileUpdatedMessage": "资料更新成功",
+    "profileUpdateFailedMessage": "资料更新失败",
+    "avatarUpdatedMessage": "头像更新成功",
+    "avatarUpdateFailedMessage": "头像更新失败"
+  },
+  "TestCases": {
+    "cannotUpdateSystemViews": "无法更新系统视图",
+    "viewUpdatedSuccessfully": "视图更新成功",
+    "failedToUpdateView": "更新视图失败",
+    "generateAiTitle": "生成 AI 标题",
+    "revertToOriginalTitle": "恢复为原始标题",
+    "runInCloud": "在云端运行",
+    "hideDetails": "隐藏详情",
+    "showDetails": "显示详情",
+    "testMustBeActiveToRunInCloud": "测试必须为启用状态才能在云端运行",
+    "cannotRunTest": "无法运行测试",
+    "testCaseMustBeActiveToRun": "测试用例必须为启用状态才能运行",
+    "failedToLoadTestCaseDetails": "加载测试用例详情失败",
+    "failedToUpdateTestCaseStatus": "更新测试用例状态失败",
+    "testCaseDuplicatedSuccessfully": "测试用例复制成功",
+    "failedToDuplicateTestCase": "复制测试用例失败",
+    "testCaseStatusUpdated": "测试用例状态已更新",
+    "runTest": "运行测试",
+    "testCaseMustBeActive": "测试用例必须为启用状态才能运行",
+    "viewRecording": "查看录制",
+    "noRecordingAvailable": "暂无可用录制",
+    "deleteTestCaseTitle": "删除测试用例？",
+    "deleteTestCaseInUse": "此测试用例被其他测试作为依赖使用。请先移除依赖。",
+    "deleteTestCaseConfirm": "确定要删除",
+    "deleteTestCaseUndone": "此操作无法撤销。",
+    "setupBadgeLabel": "前置",
+    "setupBadgeTooltip": "此测试被其他测试用作前置测试",
+    "teardownBadgeLabel": "后置",
+    "teardownBadgeTooltip": "此测试被其他测试用作后置测试",
+    "loadingTestCaseDetails": "正在加载测试用例详情",
+    "deleteSelected": "删除所选",
+    "deleteTestCasesTitle": "删除测试用例？",
+    "deleteTestCasesInUse": "部分测试用例被其他测试作为依赖使用。请先移除这些依赖。",
+    "theseTestCases": "这些测试用例",
+    "thisTestCase": "此测试用例",
+    "statusLabel": "状态",
+    "labelsLabel": "标签",
+    "failedToUpdateTestCaseLabel": "更新测试用例标签失败",
+    "detailPage": {
+      "failedToLoadTestCase": "加载测试用例失败",
+      "testCaseNotFound": "未找到测试用例",
+      "returnToTestCases": "返回测试用例",
+      "retry": "重试"
+    },
+    "runTestModal": {
+      "titleSingle": "在云端运行测试",
+      "titleMultiple": "在云端运行 {count} 个测试用例",
+      "titleSuite": "在云端运行测试套件",
+      "titleSchedule": "在云端运行计划",
+      "runButton": "运行测试",
+      "runMultipleButton": "运行 {count} 个测试",
+      "envDescription": "仅显示为此测试用例配置的环境",
+      "envMultiDescription": "测试用例将使用所选环境运行。不支持该环境的测试用例将被跳过。"
+    },
+    "failedToLoadTestAccounts": "加载测试账号失败",
+    "fixAcceptedTitle": "已接受修复",
+    "fixAcceptedMessage": "AI 修复已应用到测试用例。",
+    "fixRejectedTitle": "已拒绝修复",
+    "fixRejectedMessage": "AI 修复已被拒绝，后续运行将不使用该修复。",
+    "testFlowReverted": "测试流程已回滚到此版本",
+    "environmentRequired": "环境为必填项",
+    "environmentSetAsStepEditorEnv": "已成功将环境设为步骤编辑器环境",
+    "deleteEnvironmentConfigTitle": "删除环境配置？",
+    "environmentConfigDeletedSuccessfully": "环境配置删除成功",
+    "knowledgeExtractedTitle": "知识提取完成",
+    "extractionFailedTitle": "提取失败",
+    "saveBLockedTitle": "保存已阻止",
+    "saveBlockedNestedTemplates": "模板不能包含嵌套模板。请在保存前移除嵌套模板引用。",
+    "templateInsertedTitle": "模板已插入",
+    "templateInsertedMessage": "模板内容已作为普通分组插入。由于不允许嵌套模板，内容已复制而非引用。",
+    "sessionTimedOutTitle": "会话超时",
+    "sessionTimedOutMessage": "你的会话因长时间无操作已重置。请重新开始调试以继续。",
+    "testFlowUnsavedChangesTitle": "测试流程有未保存的更改",
+    "testFlowUnsavedChangesMessage": "当前测试流程有未保存的更改。请先保存，或离开此页面并放弃更改。",
+    "continueEditing": "继续编辑",
+    "discardAndLeave": "放弃并离开",
+    "failedToLoadTestAccountsNotification": "加载测试账号失败",
+    "loadingTestCaseDetailsState": "正在加载测试用例详情...",
+    "generatingTestCase": "正在生成测试用例",
+    "stop": "停止",
+    "generatingDescription": "这可能需要几分钟。你可以随时停止该过程。",
+    "agentCouldNotComplete": "Agent 未能完成任务",
+    "dismissWarning": "关闭警告",
+    "nativeTestWarning": "原生应用测试（Android/iOS）只能在桌面应用中编辑和调试。",
+    "convertingTestFormat": "正在转换测试格式...",
+    "selectPlaceholder": "选择 {title}",
+    "viewTestCaseTooltip": "查看测试用例：{title}",
+    "summaryTitle": "摘要",
+    "generateAiSummary": "生成 AI 摘要",
+    "resetToOriginalSummary": "重置为原始摘要",
+    "saving": "保存中...",
+    "clickToAddSummary": "点击添加测试摘要...",
+    "labelsTitle": "标签",
+    "addLabel": "添加标签",
+    "testSuitesTitle": "测试套件",
+    "addToTestSuite": "添加到测试套件",
+    "statusGenerating": "AI agent 正在生成你的测试用例",
+    "statusQueued": "测试用例已排队等待生成",
+    "statusGeneratingLabel": "生成中",
+    "statusQueuedLabel": "已排队",
+    "changeStatus": "更改状态",
+    "searchTestCases": "搜索测试用例...",
+    "columnId": "ID",
+    "columnName": "名称",
+    "columnStatus": "状态",
+    "setupTeardownMenu": {
+      "selectTitle": "选择 {title}"
+    },
+    "parameterSets": {
+      "description": "命名变量集。测试在此计划中运行时，每个启用的变量集都会产生独立的结果行。",
+      "columnLabel": "标签",
+      "columnVariables": "变量",
+      "columnEnabled": "启用",
+      "defaultLabel": "默认",
+      "testCaseVariablesLabel": "测试用例变量",
+      "addParameterSet": "添加参数集",
+      "editParameterSet": "编辑参数集",
+      "editDefaultVariables": "编辑默认变量",
+      "deleteParameterSet": "删除参数集",
+      "labelField": "标签",
+      "labelPlaceholder": "例如：Admin、Guest User",
+      "labelAlreadyExists": "已存在同名参数集。",
+      "deleteConfirm": "确定要删除此参数集吗？此操作无法撤销。",
+      "editDefaultDescription": "这些是测试用例自身变量。此处修改将更新测试用例设置，并应用到所有未被自定义参数集覆盖的计划。",
+      "add": "添加",
+      "update": "更新"
+    },
+    "variables": {
+      "title": "变量",
+      "description": "作用于此测试用例的变量。它们会覆盖同名的环境变量和全局变量。",
+      "columnName": "名称",
+      "columnValue": "值",
+      "addVariable": "添加变量",
+      "namePlaceholder": "名称",
+      "valuePlaceholder": "值",
+      "nameRequired": "必填",
+      "nameAlreadyExists": "已存在",
+      "sensitiveMasked": "敏感：值在界面和日志中会被隐藏",
+      "markSensitive": "标记为敏感，以便在界面和日志中隐藏该值"
+    },
+    "debuggerWarnings": {
+      "heading": "语句在调试期间已被修改",
+      "body": "调试会话中的更改可能无法反映实际执行行为。建议重启调试会话以确保一致性。"
+    },
+    "debuggerButtonBar": {
+      "undoRevert": "撤销回滚",
+      "revertChanges": "回滚更改",
+      "undo": "撤销",
+      "revert": "回滚",
+      "saveChanges": "保存语句的所有更改",
+      "noChanges": "没有可保存的更改",
+      "save": "保存",
+      "saved": "已保存",
+      "disabledDuringGeneration": "测试生成期间已禁用",
+      "startWithOverride": "使用 URL 覆盖初始化调试会话：{url}（Ctrl + R）",
+      "startDebugging": "初始化调试会话并执行第一条语句（Ctrl + R）",
+      "noMoreStatements": "没有更多可执行语句",
+      "executeNext": "按顺序执行下一条语句（Ctrl + R）",
+      "urlOverrideTooltip": "URL 覆盖：{url}",
+      "setUrlOverride": "设置 URL 覆盖",
+      "urlOverrideSection": "URL 覆盖",
+      "urlOverridePlaceholder": "https://example.com/path",
+      "waitingForStep": "正在等待当前步骤完成...",
+      "pauseExecution": "当前步骤后暂停执行",
+      "executeAll": "执行所有剩余语句",
+      "pause": "暂停",
+      "run": "运行",
+      "resetSession": "重置会话",
+      "reset": "重置",
+      "start": "开始",
+      "step": "单步"
+    },
+    "statementBadge": {
+      "unsavedChanges": "未保存的更改"
+    },
+    "ifElseStatement": {
+      "then": "则",
+      "else": "否则",
+      "expandThen": "展开 then 分支",
+      "collapseThen": "收起 then 分支",
+      "expandElse": "展开 else 分支",
+      "collapseElse": "收起 else 分支",
+      "clearThenBranch": "清空 Then 分支",
+      "clearThenTooltip": "移除 THEN 分支中的所有语句。ELSE 分支（如存在）不受影响。此操作无法撤销。",
+      "addElseBranch": "添加 else 分支",
+      "removeElseBranch": "移除 else 分支",
+      "aiCondition": "AI 条件：自然语言判断",
+      "jsCondition": "JS 条件：JavaScript 表达式",
+      "ifElseActions": "If/Else 操作",
+      "clickToAddCondition": "点击添加条件",
+      "disabled": "已禁用",
+      "conditionPlaceholder": "输入条件表达式...",
+      "clearThenItem1": "移除 THEN 分支中的所有语句。",
+      "clearThenItem2": "否则分支（如存在）不受影响。",
+      "clearThenItem3": "此操作无法撤销。"
+    },
+    "whileLoopStatement": {
+      "loopBody": "循环体",
+      "expandLoop": "展开循环体",
+      "collapseLoop": "收起循环体",
+      "secondsMax": "最大秒数",
+      "clearLoopBody": "清空循环体",
+      "clearLoopTooltip": "移除循环体中的所有语句。循环条件将保持不变。此操作无法撤销。",
+      "aiCondition": "AI 条件：自然语言判断",
+      "jsCondition": "JS 条件：JavaScript 表达式",
+      "loopActions": "循环操作",
+      "clickToAddCondition": "点击添加条件",
+      "disabled": "已禁用",
+      "conditionPlaceholder": "输入循环条件...",
+      "clearBodyItem1": "移除循环体中的所有语句。",
+      "clearBodyItem2": "循环条件将保持不变。",
+      "clearBodyItem3": "此操作无法撤销。"
+    },
+    "floatingAddButton": {
+      "addNewStep": "添加新步骤"
+    },
+    "floatingActionBar": {
+      "run": "运行此步骤",
+      "runUntil": "运行到此步骤",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "duplicate": "复制",
+      "edit": "修改",
+      "delete": "删除",
+      "rollback": "回滚到此步骤",
+      "skipTo": "跳过到此步骤"
+    },
+    "saveTemplate": {
+      "title": "保存为模板",
+      "nameLabel": "名称",
+      "namePlaceholder": "e.g., user-registration, checkout-flow",
+      "nameDescription": "为此模板设置唯一名称，便于识别",
+      "nameRequired": "名称为必填项",
+      "nameExists": "名称 \"{name}\" 已存在",
+      "description": "描述",
+      "nameAlreadyExists": "名称已存在"
+    },
+    "selectTemplate": {
+      "title": "选择模板",
+      "searchPlaceholder": "搜索模板...",
+      "noMatch": "没有匹配你搜索的模板",
+      "noTemplates": "暂无可用模板",
+      "columnName": "名称",
+      "columnDescription": "描述",
+      "copyTooltip": "以独立副本插入。后续模板变更不会影响此分组。",
+      "linkTooltip": "链接到模板。此分组将与模板保持同步。",
+      "linkDisabledTooltip": "模板不能链接其他模板。请改用复制。",
+      "copy": "复制",
+      "link": "链接",
+      "copyButton": "复制",
+      "linkButton": "链接",
+      "noTemplatesAvailable": "暂无可用模板",
+      "noTemplatesMatchSearch": "没有匹配搜索的模板"
+    },
+    "statementList": {
+      "noStatements": "无语句",
+      "noStatementsReadOnly": "无语句（只读）"
+    },
+    "suiteSectionDivider": {
+      "skipped": "（已跳过）",
+      "skippedSuffix": "跳过后缀"
+    },
+    "codeEditor": {
+      "cancelTooltip": "取消（Esc）",
+      "confirmTooltip": "确认代码（Ctrl+Enter）",
+      "hint": "按 Ctrl+Enter 确认，Esc 取消",
+      "unsavedChanges": "• 未保存的更改",
+      "clickToOpen": "点击打开代码编辑器"
+    },
+    "actionEntityEditor": {
+      "cancelTooltip": "取消（Esc）",
+      "confirmTooltip": "确认更改（Ctrl+Enter）",
+      "hint": "按 Ctrl+Enter 确认，Esc 取消",
+      "shortcutHint": "{modifier}+↵ 保存 · esc 取消",
+      "unsavedChanges": "• 未保存的更改",
+      "missingActionName": "缺少动作名称",
+      "invalidYaml": "无效的 YAML",
+      "viewTitle": "查看动作实体",
+      "editTitle": "点击编辑动作实体"
+    },
+    "extractContentEditor": {
+      "configurePrompt": "点击配置变量提取...",
+      "extractAndSave": "提取<elem>{element}</elem>并保存到<var>{variable}</var>",
+      "clickToEdit": "点击编辑",
+      "clickToConfigure": "点击配置",
+      "configurePlaceholder": "配置占位",
+      "extractDisplayText": "提取显示文本"
+    },
+    "extractContentModal": {
+      "title": "提取内容配置",
+      "whatToExtract": "要提取的内容",
+      "extractPlaceholder": "例如：订单号、用户名、表格中的价格...",
+      "extractDescription": "描述你想提取的页面元素或内容",
+      "variableName": "变量名",
+      "variablePlaceholder": "例如：orderNumber、userName、tablePrice",
+      "variableDescription": "用于存储提取值的变量名",
+      "extractContent": "提取内容"
+    },
+    "extractEmailContentEditor": {
+      "noConfigured": "未配置邮件内容提取",
+      "configurePrompt": "点击配置邮件内容提取...",
+      "variableTooltip": "该变量名将用于存储提取的内容。",
+      "variableLabel": "变量：{name}",
+      "clickToConfigure": "点击配置",
+      "clickToEdit": "点击编辑",
+      "configurePlaceholder": "配置占位",
+      "noConfig": "未配置"
+    },
+    "extractEmailContentModal": {
+      "title": "邮件内容提取配置",
+      "selectConfig": "选择配置",
+      "selectConfigPlaceholder": "选择已保存的配置",
+      "forwardEmail": "转发邮件",
+      "extractionType": "提取类型",
+      "extractionTypePlaceholder": "选择提取类型",
+      "extractionTypeDescription": "要从邮件中提取的内容类型",
+      "prompt": "提示词",
+      "promptPlaceholder": "输入自定义提取提示词（可选）",
+      "promptDescription": "可选：用于引导提取过程的自定义提示词",
+      "filterFromEmail": "发件人过滤",
+      "filterFromPlaceholder": "输入用于按发件人过滤的邮箱地址",
+      "filterFromDescription": "必填：用于按发件人过滤邮件的邮箱地址",
+      "filterToEmail": "收件人过滤",
+      "filterToPlaceholder": "输入用于按收件人过滤的邮箱地址（可选）",
+      "filterToDescription": "可选：用于按收件人过滤邮件的邮箱地址",
+      "filterSubject": "主题过滤",
+      "filterSubjectPlaceholder": "输入用于过滤的主题文本（可选）",
+      "filterSubjectDescription": "可选：邮件主题中必须包含的文本",
+      "filterBodyContains": "正文包含过滤",
+      "filterBodyPlaceholder": "输入邮件正文必须包含的文本（可选）",
+      "filterBodyDescription": "可选：邮件正文中必须包含的文本",
+      "extractionTypeRequired": "提取类型为必填项",
+      "filterFromEmailRequired": "发件人过滤邮箱为必填项",
+      "selectAddress": "转发地址",
+      "selectAddressPlaceholder": "选择转发地址",
+      "noAddressesTitle": "尚未配置转发地址",
+      "noAddressesDescription": "请前往 Shiplight 平台的 设置 > 邮件转发 中创建转发地址。",
+      "goToPlatform": "打开 Shiplight 平台",
+      "loadingAddresses": "正在加载转发地址...",
+      "tokenNotConfigured": "未配置 SHIPLIGHT_API_TOKEN。请在 .env 文件中设置以使用邮件转发功能。",
+      "loadError": "加载转发地址失败"
+    },
+    "fileUploadEditor": {
+      "uploadFile": "上传文件",
+      "uploadFiles": "上传 {count} 个文件",
+      "noFilesSelected": "未选择文件",
+      "selectFiles": "选择要上传的文件",
+      "clickToChange": "点击更改文件"
+    },
+    "fileUploadModal": {
+      "title": "选择测试数据文件",
+      "targetLabel": "（可选）上传目标描述",
+      "targetSublabel": "（当页面上有多个目标时）",
+      "targetPlaceholder": "目标描述（可选，例如“头像上传”）",
+      "searchPlaceholder": "按文件名搜索...",
+      "loadError": "加载测试数据文件失败",
+      "noFilesMatch": "没有匹配搜索的文件",
+      "noFilesAvailable": "暂无测试数据文件。请先在“测试数据”中上传文件后再使用。",
+      "clearTarget": "清除目标描述",
+      "selectFile": "选择文件",
+      "selectFiles": "选择 {count} 个文件",
+      "pickFromLocal": "选择本地文件"
+    },
+    "functionEditor": {
+      "noParameters": "无参数",
+      "configuredViaModal": "函数通过弹窗进行配置"
+    },
+    "loginEditor": {
+      "configurePrompt": "点击配置登录凭据...",
+      "clickToEdit": "点击编辑登录配置",
+      "clickToConfigure": "点击配置登录",
+      "configurePlaceholder": "配置占位"
+    },
+    "loginModal": {
+      "title": "登录配置",
+      "environment": "环境",
+      "environmentPlaceholder": "选择环境（可选）",
+      "environmentDescription": "可选：要登录的环境。未指定时将使用会话默认环境。",
+      "testAccount": "测试账号",
+      "selectTestAccount": "选择测试账号",
+      "noAccountsForEnv": "该环境暂无可用测试账号",
+      "noGlobalAccounts": "暂无全局测试账号",
+      "testAccountRequired": "测试账号 ID 为必填项",
+      "selectAccountDescription": "选择用于登录的测试账号",
+      "createdPrefix": "创建时间：",
+      "idPrefix": "ID:",
+      "saveConfiguration": "保存配置"
+    },
+    "waitUntilEditor": {
+      "conditionPlaceholder": "条件：例如，加载中的转圈消失",
+      "clickToAdd": "点击添加等待条件",
+      "secondsMaxWait": "最大等待秒数",
+      "maxTimeoutReached": "最多 300 秒"
+    },
+    "jsonViewer": {
+      "base64ImageLabel": "[Base64 图片 - 点击查看]",
+      "imagePreview": "图片预览",
+      "base64ImageAlt": "Base64 图片预览",
+      "imageAlt": "图片预览",
+      "imagePreviewAlt": "图片预览替代文本",
+      "previewTitle": "预览标题"
+    },
+    "codeTab": {
+      "description": "此代码由测试流程动态生成。请在“步骤”标签中编辑步骤以修改测试。",
+      "error": "错误：{error}",
+      "readOnlyPreview": "只读预览"
+    },
+    "settingsTab": {
+      "loadingDetails": "正在加载测试用例详情...",
+      "failedToLoadAccounts": "加载测试账号失败"
+    },
+    "actionStatement": {
+      "showHideDetails": "显示/隐藏详情",
+      "showDebugInfo": "显示调试信息",
+      "removeLocator": "移除定位器",
+      "debugInfoTitle": "动作生成调试信息",
+      "picking": "选取中...",
+      "pickLocator": "选取定位器",
+      "aiAssertion": "AI 断言：自然语言校验",
+      "jsAssertion": "JS 断言：Playwright expect 表达式",
+      "aiGroup": "AI 分组：自然语言描述",
+      "groupContainer": "分组容器：包含嵌套语句",
+      "aiAction": "AI 动作：自动适配页面变化",
+      "regularAction": "使用缓存的元素选择器",
+      "pureVision": "纯视觉：仅使用视觉分析",
+      "hybridMode": "混合模式：使用 DOM + 视觉分析",
+      "settings": "设置",
+      "aiModeLabel": "AI 模式",
+      "pureVisionLabel": "仅使用视觉",
+      "pureVisionOn": "纯视觉：仅使用视觉分析",
+      "pureVisionOff": "混合模式：使用 DOM + 视觉分析",
+      "clearCache": "清除缓存",
+      "cachedAction": "已缓存: {actionName}",
+      "noCache": "无缓存结果。运行此步骤以创建。",
+      "disableCacheLabel": "禁用缓存",
+      "disableCacheInfo": "启用后，该步骤将使用 AI 动态定位元素，而非缓存的选择器。优先使用缓存选择器，若缓存失败则回退到 AI。适用于页面布局频繁变化的场景。",
+      "pureVisionInfo": "启用后，该步骤仅使用视觉（截图）分析，不进行 DOM 检查。适用于 Canvas 或非标准 UI 元素。",
+      "switchType": "操作类型",
+      "usingJsCode": "JS 执行",
+      "usingJsCodeInfo": "启用后，断言使用 JavaScript Playwright expect 表达式。优先执行 JS，若 JS 失败则回退到 AI。禁用后，使用 AI 以自然语言验证条件。"
+    },
+    "actionEditor": {
+      "selectActionType": "从上方下拉框选择动作类型...",
+      "enterAssertion": "输入断言描述...",
+      "functionModal": "函数将通过弹窗配置...",
+      "loginModal": "登录凭据将通过弹窗配置...",
+      "emailModal": "邮件提取将通过弹窗配置...",
+      "waitCondition": "等待条件将在下方配置...",
+      "enterAction": "输入动作描述...",
+      "clickToAdd": "点击添加描述"
+    },
+    "newStepEditor": {
+      "loadingDetails": "正在加载测试用例详情...",
+      "agentCouldNotComplete": "Agent 未能完成",
+      "convertingFormat": "正在转换格式",
+      "dismissWarning": "关闭警告"
+    },
+    "actionWithSwitch": {
+      "aiAction": "AI 动作",
+      "action": "动作",
+      "switchToRegular": "切换为常规动作",
+      "switchToAi": "切换为 AI 动作"
+    },
+    "debugStatusIcon": {
+      "skipped": "已跳过",
+      "streaming": "流式处理中...",
+      "executing": "执行中...",
+      "executionSuccessful": "执行成功",
+      "executionFailed": "执行失败",
+      "nextStatement": "下一条待执行语句",
+      "convertedToAi": "语句已转换为 AI 模式以成功执行"
+    },
+    "conditionInput": {
+      "placeholder": "输入条件表达式...",
+      "disabled": "已禁用",
+      "clickToAddCondition": "点击添加条件"
+    },
+    "environmentConfigForm": {
+      "testAccount": "测试账号",
+      "setAsDefault": "设为测试编辑器默认环境",
+      "setAsDefaultDescription": "编辑测试步骤时将默认使用此环境。",
+      "hooksDescription": "在测试执行前/后运行的模板"
+    },
+    "latestRun": {
+      "notAvailable": "N/A",
+      "invalidDate": "无效日期",
+      "seconds": "{totalSeconds} 秒",
+      "pending": "处理中",
+      "latestResult": "最新结果",
+      "viewRunDetails": "查看运行详情（#{id}）",
+      "result": "结果",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "duration": "持续时间",
+      "environment": "环境",
+      "default": "默认"
+    },
+    "resizableEditor": {
+      "editor": "编辑器",
+      "preview": "预览",
+      "clickToExpand": "点击展开",
+      "clickToCollapse": "点击收起",
+      "dragToResize": "拖动调整大小"
+    },
+    "statementWrapper": {
+      "skipped": "已跳过",
+      "failed": "失败",
+      "passed": "通过",
+      "addedByAiFix": " · 由 AI 修复新增",
+      "modifiedByAiFix": " · 由 AI 修复修改",
+      "movedByAiFix": " · 由 AI 修复移动",
+      "autoHealed": " · 自动修复",
+      "showingHealed": "正在显示修复后的动作步骤。点击切换回原始步骤。",
+      "showingOriginal": "正在显示原始动作步骤。点击切换到修复后步骤。",
+      "added": "新增",
+      "original": "原始",
+      "modified": "修改",
+      "moved": "移动",
+      "draggingDisabled": "调试期间禁用拖拽",
+      "dragToReorder": "拖拽以重新排序",
+      "rollbackToStatement": "回滚到此语句",
+      "skipToStatement": "跳转到此语句",
+      "executeStatement": "执行此语句",
+      "executeUntilStatement": "执行到此语句。",
+      "executeThisStepDescription": "执行当前步骤。",
+      "executeThisStepItem1": "这会执行该步骤本身。",
+      "executeThisStepItem2": "可用于快速验证测试流程中的某一部分。",
+      "runUntilThisStep": "运行到此步骤",
+      "runUntilThisStepDescription": "运行测试流程直到该步骤被执行。",
+      "runUntilThisStepItem1": "这不会执行该步骤本身。",
+      "runUntilThisStepItem2": "可用于快速验证测试流程中的某一部分。",
+      "currentStatement": "这是当前语句。",
+      "editStatement": "编辑语句",
+      "duplicate": "复制",
+      "delete": "删除",
+      "actionsLabel": "操作",
+      "draft": "草稿",
+      "action": "动作",
+      "assertion": "断言",
+      "code": "代码",
+      "function": "函数",
+      "uploadFile": "上传文件",
+      "extract": "提取",
+      "waitUntil": "等待直到",
+      "group": "分组",
+      "template": "模板",
+      "extractEmailContent": "提取邮件内容",
+      "controlFlows": "控制流",
+      "ifElse": "If/Else",
+      "loop": "循环",
+      "draftTooltip": "草稿是一种灵活语句，执行后会转换为动作或分组。当你不确定指令需要一个还是多个步骤时可使用。执行后会根据 AI 产出自动变成动作（单步）或分组（多步）。（Ctrl+Alt+B）",
+      "draftInstruction1": "草稿是一种在执行后会转换的灵活语句。",
+      "draftInstruction2": "如果 AI 产出一个动作，它会变成动作。",
+      "draftInstruction3": "如果 AI 产出多个动作，它会变成分组。",
+      "draftInstruction4": "当你不确定指令需要多少步骤时可使用它。",
+      "actionTooltip": "动作会使用自然语言描述与页面进行交互。示例：“点击提交按钮”、“在邮箱输入框填写 user@example.com”、“从州下拉框选择 California”。AI 代理会理解你的描述并执行对应浏览器操作。（Ctrl+Alt+A）",
+      "actionInstruction1": "动作会使用自然语言描述与页面进行交互。",
+      "actionInstruction2": "AI 代理会理解你的描述并执行对应浏览器操作。",
+      "actionInstruction3": "示例：“点击第一个搜索结果”、“滚动到评论区”、“等待页面加载完成”",
+      "assertionTooltip": "断言用于验证页面内容是否符合预期。示例：“页面标题应包含 Welcome”、“错误提示应可见”、“购物车总价应为 $99.99”。如果断言不满足，测试将失败。（Ctrl+Alt+T）",
+      "assertionInstruction1": "断言用于验证页面内容是否符合预期。",
+      "assertionInstruction2": "如果断言不满足，测试将失败。",
+      "assertionInstruction3": "示例：“页面标题应包含 Welcome”、“错误提示应可见”、“购物车总价应为 $99.99”",
+      "editInstruction1": "编辑该语句的配置、描述或参数。",
+      "editInstruction2": "对于动作和断言，可修改自然语言描述。",
+      "editInstruction3": "对于代码块，可直接编辑 JavaScript。",
+      "duplicateTooltip": "复制此语句及其所有内容。适用于创建相似动作或重复模式。副本将插入在当前语句之后。",
+      "duplicateInstruction1": "复制此语句及其所有内容。",
+      "duplicateInstruction2": "适用于创建细微变化的相似动作或重复模式。",
+      "duplicateInstruction3": "副本将插入在当前语句之后。",
+      "deleteTooltip": "永久删除此语句。对于步骤或 If/Else 等容器，也会删除其中所有嵌套语句。可使用 Ctrl+Alt+D 快速删除。（Ctrl+Alt+D）",
+      "deleteInstruction1": "从测试用例中永久移除此语句。",
+      "deleteInstruction2": "对于步骤或 If/Else 等容器，也会删除其中所有嵌套语句。",
+      "deleteInstruction3": "可使用 Ctrl+Alt+D 快速删除。",
+      "codeTooltip": "代码块会在浏览器上下文中执行自定义 JavaScript。适用于复杂逻辑、数据处理或不易用自然语言表达的操作。示例：计算数值、解析 JSON、设置 Cookie、调用浏览器 API。代码可访问 page 对象及 Playwright API。（Ctrl+Alt+C）",
+      "codeInstruction1": "代码块会在浏览器上下文中执行自定义 JavaScript。",
+      "codeInstruction2": "适用于复杂逻辑、数据处理或不易用自然语言表达的操作。",
+      "codeInstruction3": "代码可访问 page 对象，并可使用 await 执行异步操作。",
+      "codeInstruction4": "示例：计算数值、解析 JSON、设置 Cookie、调用浏览器 API。",
+      "functionTooltip": "函数是可复用的测试组件，支持参数。可避免重复编写常见流程，如登录、表单提交或导航。示例：带用户名和密码参数的“Login”函数可复用于多个测试。（Ctrl+Alt+F）",
+      "functionInstruction1": "函数是可复用的测试组件，支持参数。",
+      "functionInstruction2": "可避免重复编写登录、表单提交或导航等常见流程。",
+      "functionInstruction3": "示例：带用户名和密码参数的“Login”函数可复用于多个测试。",
+      "uploadFileTooltip": "上传文件动作会把测试数据中的文件附加到页面文件输入元素。请先在测试数据中上传文件，再在此选择。适用于文件上传、文档处理或图片提交流程。该动作会自动处理文件输入和拖拽区域。（Ctrl+Alt+U）",
+      "uploadFileInstruction1": "上传文件动作会把测试数据中的文件附加到页面文件输入元素。",
+      "uploadFileInstruction2": "请先在测试数据中上传文件，再在此选择。",
+      "uploadFileInstruction3": "适用于文件上传、文档处理或图片提交流程。",
+      "uploadFileInstruction4": "该动作会自动处理文件输入和拖拽区域。",
+      "extractTooltip": "提取动作会从页面抓取内容并保存到变量供后续步骤使用。示例：“提取订单号并保存到 orderNumber”、“提取用户 ID 并保存到 userId”。这些变量可在后续动作中通过 $variableName 引用。（Ctrl+Alt+E）",
+      "extractInstruction1": "提取动作会从页面抓取内容并保存到变量供后续步骤使用。",
+      "extractInstruction2": "这些变量可在后续动作中通过 $variableName 引用。",
+      "extractInstruction3": "示例：“提取订单号并保存到 orderNumber”、“提取用户 ID 并保存到 userId”。",
+      "waitUntilTooltip": "在继续前等待某个条件满足。可用自然语言描述等待条件，如“加载图标消失”或“成功提示出现”。可设置最大超时，避免测试卡住。（Ctrl+Alt+W）",
+      "waitUntilInstruction1": "在继续前等待某个条件满足。",
+      "waitUntilInstruction2": "可用自然语言描述等待条件。",
+      "waitUntilInstruction3": "示例：“加载图标消失”、“成功提示出现”。",
+      "waitUntilInstruction4": "可设置最大超时，避免测试卡住。",
+      "groupTooltip": "分组是组织相关动作的逻辑容器。可用于把测试结构化为“用户注册”“结账流程”“搜索与筛选”等有意义章节。分组支持展开/收起，便于阅读和维护。（Ctrl+Alt+G）",
+      "groupInstruction1": "分组是组织相关动作的逻辑容器。",
+      "groupInstruction2": "可用于把测试结构化为“用户注册”“结账流程”“搜索与筛选”等有意义章节。",
+      "groupInstruction3": "分组支持展开/收起，便于阅读和维护。",
+      "templateTooltip": "模板是预定义的步骤分组。将当前语句转换为模板引用后，可选择模板自动填充常见流程，如登录、导航或表单提交。（Ctrl+Alt+R）",
+      "templateInstruction1": "模板用于复用预定义步骤分组。",
+      "templateInstruction2": "转换后可选择模板自动填充动作。",
+      "templateInstruction3": "示例：登录流程、导航流程、表单提交、数据校验。",
+      "templateInstruction4": "有助于保持跨测试一致性并减少重复。",
+      "extractEmailContentTooltip": "从邮件中提取验证码、激活链接或自定义数据。可通过发件人、主题或关键词进行筛选。提取结果会自动保存为变量供后续步骤使用。",
+      "extractEmailContentInstruction1": "从邮件中提取验证码、激活链接等内容。",
+      "extractEmailContentInstruction2": "可按发件人或主题等条件筛选目标邮件。",
+      "extractEmailContentInstruction3": "可设置自定义提示词以引导提取。",
+      "extractEmailContentInstruction4": "提取结果会自动保存为变量供后续步骤使用。",
+      "ifElseTooltip": "If/Else 语句会根据条件执行不同动作。条件可以是 JavaScript 或自然语言。示例：\"如果用户已登录\"则执行结账，否则显示登录表单。适用于不同状态、A/B 测试或动态内容处理。（Ctrl+Alt+I）",
+      "ifElseInstruction1": "If/Else 语句会根据条件执行不同动作。",
+      "ifElseInstruction2": "条件可以是 JavaScript 或自然语言。",
+      "ifElseInstruction3": "示例：“如果用户已登录”则执行结账，否则显示登录表单。",
+      "loopTooltip": "While 循环会在条件为真时重复执行动作。示例：“当还有下一页时”点击下一页并提取数据，“当加载图标可见时”继续等待。适用于分页、轮询或未知长度列表处理。建议设置最大迭代次数避免死循环。（Ctrl+Alt+L）",
+      "loopInstruction1": "While 循环会在条件为真时重复执行动作。",
+      "loopInstruction2": "每次迭代前都会检查条件。",
+      "loopInstruction3": "示例：“当还有下一页时”点击下一页并提取数据，“当加载图标可见时”继续等待。"
+    },
+    "stepStatement": {
+      "groupActions": "分组操作",
+      "clearAll": "清空全部",
+      "clearAllTooltip": "移除此分组容器中的所有语句。此操作无法撤销。",
+      "clearAllItem1": "移除此分组容器中的所有语句。",
+      "clearAllItem2": "此操作无法撤销。",
+      "saveAsTemplateTooltip": "将此分组保存为模板，以便在其他测试用例中复用。",
+      "saveAsTemplateItem1": "将此分组保存为模板。",
+      "saveAsTemplateItem2": "该模板可在其他测试用例中使用。",
+      "saveAsTemplateItem3": "当前分组将转换为引用该新模板。"
+    },
+    "createForm": {
+      "titleLabel": "标题",
+      "titlePlaceholder": "输入测试用例标题",
+      "showLess": "收起",
+      "showMore": "展开更多",
+      "startingUrlLabel": "起始 URL",
+      "testAccountLabel": "测试账号",
+      "disableAutoLogin": "禁用自动登录",
+      "targetPlatformLabel": "目标平台与设备",
+      "selectSpecificDevice": "选择指定设备",
+      "loadingDevices": "正在加载设备...",
+      "selectAndroidDevice": "选择 Android 设备",
+      "iosComingSoon": "iOS 设备选择即将支持",
+      "nativeMobileTesting": "通过 Appium 进行原生移动应用测试",
+      "deviceOptimized": "测试将针对所选设备视口和特性进行优化",
+      "folderLabel": "文件夹",
+      "folderOptional": "（可选）",
+      "folderPlaceholder": "选择文件夹（留空则为根目录）",
+      "folderHint": "测试用例将在所选文件夹中创建",
+      "testCreationMode": "测试创建模式",
+      "aiGenerate": "AI 生成",
+      "aiGenerateDescription": "AI 自动生成测试用例",
+      "aiImport": "AI 导入",
+      "aiImportDescription": "通过上传 YAML 导入测试用例",
+      "single": "单个",
+      "batch": "批量",
+      "goalLabel": "目标",
+      "goalOptional": "（可选）",
+      "goalPlaceholder": "描述你想测试的内容。例如：“登录应用并验证已显示仪表盘”。或留空以使用无代码编辑器...",
+      "goalHint": "提供目标后，AI 会自动生成测试步骤。未提供目标时，可使用智能无代码编辑器构建步骤。",
+      "testFlowYamlLabel": "测试流程 YAML",
+      "testFlowYamlRequired": "（必填）",
+      "testFlowYamlHint": "粘贴导出的测试用例 YAML。AI 会自动导入并组织测试流程。",
+      "testFlowYamlPlaceholder": "粘贴导出的测试用例 YAML。例如：\n\ngoal: 验证用户可以登录并看到仪表盘\nurl: https://example.com\nstatements:\n  - Navigate to https://example.com/login\n  - Enter \"test@example.com\" in the email field\n  - Enter \"Password123!\" in the password field\n  - Click the \"Sign in\" button\n  - VERIFY: Dashboard is visible\n\n或粘贴从现有测试用例导出的完整 YAML。",
+      "yamlRequired": "请上传包含测试用例的有效 YAML 文件",
+      "testFlowYamlContentRequired": "测试流程 YAML 为必填项",
+      "csvRequired": "请上传包含测试用例的有效 CSV 文件",
+      "modifyTest": "修改测试",
+      "saveTestCase": "保存测试用例",
+      "creating": "创建中...",
+      "creatingCount": "正在创建 {count} 个测试用例...",
+      "createCount": "创建 {count} 个测试用例",
+      "createTestCases": "创建测试用例",
+      "createTestCase": "创建测试用例",
+      "createNewTestCase": "创建新测试用例",
+      "failedToCreateTestCase": "创建测试用例失败",
+      "retryParamsUnavailable": "无法重试：上传参数不可用",
+      "generatingTestCases": "正在生成测试用例...",
+      "generatingTestCasesSubText": "请稍候，我们正在生成测试用例。完成后将自动跳转到测试用例列表。"
+    },
+    "createCodeForm": {
+      "createNewTestCase": "创建新测试用例",
+      "agentMode": "Agent 模式",
+      "titleLabel": "标题",
+      "titlePlaceholder": "输入测试用例标题",
+      "testAccountLabel": "测试账号",
+      "setupTest": "前置测试",
+      "teardownTest": "后置测试",
+      "saveTestCase": "保存测试用例"
+    },
+    "generalSettings": {
+      "settingsTitle": "设置",
+      "disableAutoLogin": "禁用自动登录",
+      "disableAutoLoginTooltip": "启用后，测试不会使用所选环境自动登录。",
+      "autoDismissModal": "自动关闭弹窗",
+      "autoDismissModalTooltip": "启用后，测试在自修复期间会自动关闭弹窗（如 Cookie 同意框）。",
+      "autoFix": "自动修复",
+      "autoFixTooltip": "覆盖组织对该测试用例的默认设置。启用后，AI 会自动分析并修复测试失败。",
+      "autoFixDefault": "默认（{state}）",
+      "autoFixOn": "开启",
+      "autoFixOff": "关闭",
+      "autoFixStateOn": "开启",
+      "autoFixStateOff": "关闭",
+      "targetDevice": "目标设备",
+      "browserLocale": "浏览器区域设置",
+      "browserLocaleTooltip": "覆盖该测试的浏览器语言和时区。留空则使用浏览器默认值。",
+      "language": "语言",
+      "languagePlaceholder": "默认（en-US）",
+      "timezone": "时区",
+      "timezonePlaceholder": "默认（America/Los_Angeles）",
+      "browserMedia": "浏览器媒体",
+      "browserMediaTooltip": "为 Chromium 启用虚拟摄像头/麦克风并自动接受媒体权限提示。其他浏览器会忽略这些设置。",
+      "enableCamera": "启用摄像头",
+      "enableMicrophone": "启用麦克风",
+      "fileIdNameNotLoaded": "FILE-{id}（名称未加载）",
+      "selectAudioFile": "为麦克风选择音频文件",
+      "audioFileHint": "从测试数据中选择音频文件作为虚拟麦克风输入",
+      "selectAudioFileModalTitle": "为麦克风选择音频文件",
+      "noAudioFiles": "测试数据中未找到音频文件（.wav 或 .mp3）。请上传音频文件后使用。",
+      "browserExtension": "浏览器扩展",
+      "browserExtensionTooltip": "从测试数据加载 Chrome 扩展（.crx 或 .zip）。仅在 Chromium 且有界面模式下支持。",
+      "enableExtension": "启用扩展",
+      "selectExtensionFile": "选择扩展文件",
+      "extensionFileHint": "来自测试数据的扩展包（.crx 或 .zip）",
+      "selectExtensionFileModalTitle": "选择扩展文件",
+      "noExtensionFiles": "测试数据中未找到扩展文件（.crx 或 .zip）。请上传扩展包后使用。",
+      "extraHeaders": "额外 HTTP 请求头",
+      "extraHeadersTooltip": "添加随每个浏览器请求发送的自定义 HTTP 请求头（如授权令牌、功能标志）。请求头以明文发送。",
+      "extraHeadersAddButton": "添加请求头",
+      "extraHeadersNamePlaceholder": "请求头名称",
+      "extraHeadersValuePlaceholder": "请求头值",
+      "extraHeadersColumnName": "名称",
+      "extraHeadersColumnValue": "值",
+      "extraHeadersNameRequired": "请求头名称不能为空",
+      "extraHeadersNameInvalid": "请求头名称无效，只允许字母、数字、连字符和下划线",
+      "extraHeadersNameDuplicate": "请求头名称已存在",
+      "environmentConfigurations": "环境配置"
+    },
+    "environmentSelection": {
+      "environment": "环境",
+      "overrideUrl": "覆盖 URL（可选）",
+      "overrideUrlDefaultPrefix": "默认：{url}",
+      "overrideUrlPlaceholder": "输入自定义 URL",
+      "overrideTestAccount": "覆盖测试账号（可选）",
+      "overrideTestAccountDescription": "默认会使用为每个测试用例环境配置的测试账号",
+      "overrideVariables": "覆盖变量（可选）",
+      "overrideVariablesDescription": "此处定义的变量会覆盖本次运行的环境变量",
+      "accountsSelectedInfo": "已选择 {count} 个账号。每个账号将分别运行，为每个测试用例创建 {count} 次测试运行{plural}。",
+      "addVariable": "添加变量",
+      "keyPlaceholder": "键",
+      "valuePlaceholder": "值",
+      "removeVariable": "移除变量"
+    },
+    "environmentConfigsList": {
+      "unknownEnvironment": "未知环境",
+      "notConfigured": "未配置",
+      "specificAccountsNoneSelected": "指定账号（未选择）",
+      "unknown": "未知",
+      "testEditorEnvironmentTooltip": "编辑测试步骤时将默认使用该环境。",
+      "testEditorEnvironment": "测试编辑器环境",
+      "setAsStepEditorEnv": "设为步骤编辑器环境",
+      "startingUrl": "起始 URL",
+      "testAccount": "测试账号",
+      "hooks": "钩子",
+      "addEnvironmentConfig": "添加环境配置",
+      "allEnvironmentsConfigured": "所有环境均已配置",
+      "editEnvironmentConfig": "编辑环境配置",
+      "updateConfig": "更新配置",
+      "addConfig": "添加配置"
+    },
+    "explorer": {
+      "loadingTestCases": "正在加载测试用例",
+      "loadingSubText": "这不会花太久",
+      "emptyTitle": "测试",
+      "emptyDescription1": "测试是自动化检查，用于验证你的产品如何运行，从登录流程到复杂用户路径。",
+      "emptyDescription2": "每个测试都是由动作与校验组成的序列，可由 AI 驱动或逐步编写，帮助你在用户发现前捕获问题。",
+      "createFirstTest": "创建你的第一个测试",
+      "documentation": "文档",
+      "newRootFolder": "新建根目录文件夹",
+      "columnName": "名称",
+      "columnStatus": "状态",
+      "columnPlatform": "平台",
+      "columnLatestResult": "最新结果",
+      "columnCreatedBy": "创建者",
+      "filterStatus": "状态",
+      "filterLabels": "标签",
+      "filterCreatedBy": "创建者",
+      "filterDevice": "设备",
+      "filterEnvironment": "环境",
+      "filterTestAccount": "测试账号",
+      "filterTestAccountDescription": "显示至少有一个环境配置包含所选测试账号的测试用例。",
+      "filterLatestResult": "最新结果",
+      "filterHasAutoFix": "自动修复",
+      "filterOptionActive": "启用",
+      "filterOptionDraft": "草稿",
+      "filterOptionPassed": "通过",
+      "filterOptionFailed": "失败",
+      "filterOptionNotStarted": "未开始",
+      "filterOptionHasAutoFix": "有自动修复",
+      "filterActive": "筛选启用",
+      "filterAutoFix": "筛选自动修复",
+      "filterDraft": "筛选草稿",
+      "filterFailed": "筛选失败",
+      "filterNotStarted": "筛选未开始",
+      "filterPassed": "筛选通过"
+    },
+    "filterBar": {
+      "statusDisplay": "状态",
+      "labelsDisplay": "标签",
+      "statusMore": "{first} + 另外 {count} 项",
+      "labelMore": "{first} + 另外 {count} 项",
+      "devicesPlaceholder": "设备",
+      "clearAllFilters": "清除所有筛选条件",
+      "clearShort": "清除",
+      "filterActive": "筛选启用",
+      "filterDraft": "筛选草稿"
+    },
+    "liveView": {
+      "liveViewTab": "实时视图",
+      "videoTab": "视频",
+      "previewsTab": "预览",
+      "previewsWithCount": "预览（{count}）",
+      "deviceTooltip": "设备：{name}",
+      "reload": "重新加载",
+      "reloading": "重新加载中...",
+      "exitFullScreen": "退出全屏",
+      "fullScreen": "全屏",
+      "liveViewNotAvailable": "实时视图不可用",
+      "liveViewNotAvailableDesc": "代码模式下无法使用实时测试预览。请在设置中切换到 Agent 模式。",
+      "testLiveView": "测试实时视图",
+      "waitingForGeneration": "正在等待开始生成...",
+      "initializingDebug": "正在初始化调试会话...",
+      "clickToStart": "点击左侧面板中的“开始”或“运行”按钮以启动浏览器并实时查看自动化过程。",
+      "noVideoRecording": "暂无可用视频录制",
+      "generationScreenshot": "生成截图",
+      "waitingForScreenshot": "正在等待生成截图...",
+      "livePreviewTitle": "实时预览标题"
+    },
+    "userSelection": {
+      "noneOption": "无",
+      "anyOption": "任意",
+      "unknownAccount": "未知账号",
+      "selectedAccounts": "已选择 {count} 个账号",
+      "searchPlaceholder": "搜索账号...",
+      "createdLabel": "创建时间：{date}"
+    },
+    "viewRecordingModal": {
+      "title": "测试录制：{title}",
+      "noRecordingAvailable": "该测试用例暂无可用录制",
+      "failedToLoad": "加载录制失败",
+      "noVideoRecording": "暂无可用视频录制",
+      "browserNotSupported": "你的浏览器不支持 video 标签。"
+    },
+    "simpleList": {
+      "searchPlaceholder": "搜索测试用例...",
+      "columnId": "ID",
+      "columnName": "名称",
+      "columnUpdated": "更新时间"
+    },
+    "sidebar": {
+      "testCaseInfo": "测试用例信息",
+      "createdAt": "创建时间",
+      "lastUpdated": "最后更新",
+      "createdBy": "创建者",
+      "updatedBy": "更新者",
+      "targetDevice": "目标设备",
+      "actions": "操作",
+      "extractKnowledge": "提取知识",
+      "extractingKnowledge": "正在提取知识...",
+      "knowledgeExtractedMessage": "已成功从该测试用例提取知识",
+      "failedToExtractKnowledge": "提取知识失败",
+      "failedToExtractKnowledgeFromTestCase": "从测试用例提取知识失败",
+      "notAvailable": "N/A"
+    },
+    "statementChanges": {
+      "added": "新增（{count}）",
+      "deleted": "删除（{count}）",
+      "modified": "修改（{count}）",
+      "moved": "移动（{count}）"
+    },
+    "assertions": {
+      "placeholder": "输入断言描述...",
+      "emptyText": "点击添加断言"
+    },
+    "basicAction": {
+      "placeholder": "输入动作描述...",
+      "emptyText": "点击添加描述",
+      "findElement": "查找元素"
+    },
+    "infoView": {
+      "variablesTab": "变量",
+      "consoleTab": "日志",
+      "noVariables": "暂无可用变量。开始运行测试后可在此查看变量。",
+      "noConsoleOutput": "暂无日志输出。测试执行期间日志将显示在这里。",
+      "clickToExpand": "点击展开",
+      "dragToResize": "拖动调整大小",
+      "configTab": "配置",
+      "noConfig": "暂无配置信息。选择测试文件后可在此查看配置。"
+    },
+    "resultPopup": {
+      "latestRunResult": "最新运行结果",
+      "status": "状态：",
+      "started": "开始：",
+      "ended": "结束：",
+      "duration": "耗时：",
+      "environment": "环境：",
+      "summary": "摘要：",
+      "notStarted": "未开始",
+      "passedWithAutofix": "自动修复后通过"
+    },
+    "testDataSelector": {
+      "selectTestData": "选择测试数据",
+      "needToUpload": "需要上传测试数据文件吗？",
+      "goToSettings": "前往 设置 → 测试数据",
+      "selectTestDataModalTitle": "选择测试数据",
+      "confirmUploadTitle": "确认上传测试数据",
+      "confirmUploadDesc": "上传文件 {filename} 并附加到测试。",
+      "done": "完成",
+      "cancel": "取消",
+      "confirm": "确认"
+    },
+    "testDataSelectionList": {
+      "searchPlaceholder": "搜索测试数据文件名...",
+      "columnId": "ID",
+      "columnName": "名称",
+      "columnLastUpdated": "最后更新",
+      "done": "完成"
+    },
+    "templateSelector": {
+      "placeholder": "选择一个模板"
+    },
+    "simpleExplorer": {
+      "searchPlaceholder": "搜索测试用例...",
+      "loadingTestCases": "正在加载测试用例...",
+      "selectedCount": "已选择 {count} 个",
+      "columnName": "名称",
+      "columnStatus": "状态",
+      "columnCreatedBy": "创建者"
+    },
+    "layout": {
+      "overviewTab": "概览",
+      "settingsTab": "设置",
+      "historyTab": "历史",
+      "runRecordsTab": "运行记录",
+      "codeTab": "代码",
+      "playgroundTab": "UX 练习场",
+      "autofixAvailable": "该测试用例有可用自动修复。",
+      "viewResult": "查看结果",
+      "closeDetails": "关闭详情"
+    },
+    "runRecordsTab": {
+      "loadError": "加载运行记录失败，请重试。",
+      "empty": "暂无运行记录",
+      "emptyHint": "测试用例执行后，运行记录将显示在此处。",
+      "columnRunId": "运行 ID",
+      "columnResult": "结果",
+      "columnStarted": "开始时间",
+      "columnDuration": "耗时",
+      "columnEnvironment": "环境",
+      "paginationInfo": "共 {total} 条 · 第 {page} / {totalPages} 页"
+    },
+    "diffViewer": {
+      "modalTitle": "测试流程变更"
+    },
+    "flowEditor": {
+      "teardownTitle": "后置",
+      "removeTeardown": "移除",
+      "addTeardown": "添加后置"
+    },
+    "plansSection": {
+      "schedulesTitle": "计划",
+      "noSchedulesLinked": "未关联计划",
+      "viaSuiteBadge": "经由套件"
+    },
+    "suitesSection": {
+      "testSuitesTitle": "测试套件",
+      "noTestSuitesLinked": "未关联测试套件"
+    },
+    "csvSection": {
+      "uploadCsvFile": "上传 CSV 文件",
+      "downloadTemplate": "下载模板",
+      "selectCsvFile": "选择 CSV 文件",
+      "csvFormatTitle": "CSV 格式要求",
+      "formatDescription": "你的 CSV 文件必须包含 \"title\" 和 \"goal\" 列。goal 列应描述你希望测试的内容。AI 会基于每个 goal 自动生成测试步骤。点击上方“下载模板”获取正确格式的示例文件。",
+      "exampleFormat": "示例格式（包含逗号或换行的字段请使用引号）：",
+      "exampleCsv": "title,goal\n登录测试,\"使用有效凭证测试登录\"\n结账测试,\"测试包含多个商品的结账流程\"",
+      "tipCommasAndNewlines": "提示：处理逗号和换行：包含逗号或换行的字段请用双引号包裹",
+      "tipIncludingQuotes": "提示：包含引号：使用双引号（\"\"）在文本中表示实际引号",
+      "tipGoalFormat": "提示：goal 格式：请清晰描述你要测试的内容（例如“测试登录功能”或“验证结账流程”）",
+      "parsingCsv": "正在解析 CSV 文件...",
+      "previewCount": "预览（{count} 个测试用例{plural}）",
+      "columnTitle": "标题",
+      "columnGoal": "目标",
+      "columnTestFlow": "测试流程",
+      "errors": {
+        "fileTooLarge": "文件过大。请上传小于 5MB 的文件",
+        "emptyFile": "CSV 文件为空。请上传包含测试用例数据的文件",
+        "missingHeaderOrData": "CSV 文件至少需要包含表头和一行数据，请检查文件格式",
+        "missingRequiredColumns": "CSV 文件必须包含 \"title\" 和 \"goal\" 列。当前列：{columns}",
+        "rowMissingRequiredColumns": "第 {row} 行：缺少必填列（至少需要 {minColumns} 列）",
+        "rowMissingTitle": "第 {row} 行：缺少 title",
+        "rowMissingGoal": "第 {row} 行：缺少 goal",
+        "rowTitleTooLong": "第 {row} 行：title 过长（最多 200 个字符）",
+        "rowGoalTooLong": "第 {row} 行：goal 过长（最多 2000 个字符）",
+        "noValidRowsWithDetails": "未找到有效测试用例。错误：\n{errors}{more}",
+        "noValidRows": "CSV 文件中未找到有效测试用例，请检查文件格式",
+        "tooManyRows": "测试用例过多。每次上传最多 100 条",
+        "parseFailed": "CSV 解析失败，请检查文件格式后重试",
+        "readFailed": "读取 CSV 文件失败，请重试或更换文件",
+        "invalidExtension": "请上传 CSV 文件"
+      }
+    },
+    "yamlSection": {
+      "uploadYamlFile": "上传 YAML 文件",
+      "downloadTemplate": "下载模板",
+      "selectYamlFile": "选择 YAML 文件（.yaml 或 .yml）",
+      "yamlFormatTitle": "YAML 格式要求",
+      "parsingYaml": "正在解析 YAML 文件...",
+      "previewCount": "预览（{count} 个测试用例{plural}）",
+      "columnTitle": "标题",
+      "columnGoal": "目标"
+    },
+    "screencast": {
+      "connecting": "正在连接屏幕广播...",
+      "failedToConnect": "连接屏幕广播失败",
+      "disconnected": "屏幕广播已断开",
+      "browserScreencast": "浏览器屏幕广播"
+    },
+    "multiPageViewer": {
+      "noPagesOpen": "没有打开的页面",
+      "connectingToBrowser": "正在连接浏览器...",
+      "closeInspector": "关闭检查器",
+      "openInspector": "打开检查器",
+      "pickingLocator": "正在选取定位器...",
+      "cancelLocatorPicking": "取消选取定位器",
+      "failedToConstructUrl": "构建 DevTools URL 失败",
+      "recording": "录制中",
+      "record": "录制",
+      "clickToStopRecording": "点击停止录制",
+      "clickToStartRecording": "点击开始录制",
+      "picking": "选取中",
+      "pick": "选取",
+      "clickToStopPicking": "点击停止选取元素",
+      "clickToStartPicking": "点击开始选取元素"
+    },
+    "agentFixDiffViewer": {
+      "diffSummaryTitle": "差异摘要",
+      "originalTestFlow": "原始测试流程",
+      "agentFixedTestFlow": "Agent 修复后的测试流程",
+      "changedCount": "已变更 {count} 项",
+      "statementsCount": "{count} 条语句",
+      "changeLabel": "变更",
+      "noChanges": "无变更",
+      "noStatements": "没有可显示的语句",
+      "changeDetails": "变更详情",
+      "deletedInModified": "在修改版本中已删除",
+      "addedInModified": "在修改版本中已新增"
+    },
+    "videoPreview": {
+      "creatingTestCase": "正在创建测试用例",
+      "recordingWillAppearSoon": "测试录制很快会显示在这里",
+      "testRecordingPreview": "测试录制预览",
+      "recordingWillAppear": "测试录制将显示在这里",
+      "browserNotSupported": "你的浏览器不支持 video 标签。"
+    },
+    "imageViewer": {
+      "noImagesAvailable": "暂无可用图片",
+      "noImagesDesc": "当测试执行或调试产生图片时，会显示在这里。"
+    },
+    "actionGenerationDebugView": {
+      "tabSystemPrompt": "系统提示词",
+      "tabUserPrompt": "用户提示词",
+      "tabReasoningContent": "推理内容",
+      "tabRawResponse": "原始响应",
+      "tabKnowledge": "知识（{count}）",
+      "tabCuaInput": "CUA 输入",
+      "tabCuaResponse": "CUA 响应"
+    },
+    "labels": {
+      "labelsTitle": "标签"
+    },
+    "csvImportProgress": {
+      "backgroundInfo": "你可以随时关闭此窗口。导入过程会在后台继续。",
+      "columnTitle": "标题",
+      "columnStatus": "状态",
+      "statusPending": "待处理",
+      "statusCreating": "创建中",
+      "statusGenerating": "生成中",
+      "statusCompleted": "已完成",
+      "statusError": "错误",
+      "goToTestCases": "前往测试用例"
+    },
+    "historyViewer": {
+      "title": "测试流程历史版本",
+      "updatedAt": "{name} 更新于 {timeAgo}"
+    },
+    "generationView": {
+      "queued": "排队中",
+      "regenerating": "（{count}）正在重新生成更好的测试",
+      "generating": "生成中"
+    }
+  },
+  "TestSuites": {
+    "exportingTitle": "正在导出测试套件",
+    "exportedSuccessfully": "测试套件导出成功",
+    "failedToExport": "导出测试套件失败",
+    "urlCopied": "测试套件 URL 已复制到剪贴板",
+    "failedToCopyUrl": "复制 URL 失败",
+    "createdSuccessfully": "测试套件创建成功",
+    "failedToCreate": "创建测试套件失败",
+    "failedToUpdateTitle": "更新测试套件标题失败",
+    "deleteTitle": "删除测试套件？",
+    "properties": "属性",
+    "copyTestSuiteUrl": "复制测试套件 URL",
+    "totalTests": "测试总数",
+    "activeTests": "启用测试",
+    "inactiveTests": "未启用测试",
+    "lastRun": "最近运行",
+    "never": "从未",
+    "selectedCount": "已选择 {count} 个",
+    "latestRun": "最新运行",
+    "viewRunDetails": "查看运行详情",
+    "result": "结果",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "duration": "持续时间",
+    "totalPassed": "通过总数",
+    "totalFailed": "失败总数",
+    "invalidDate": "无效日期",
+    "notAvailable": "N/A",
+    "testSuiteTitle": "测试套件标题",
+    "enterTestSuiteTitle": "输入测试套件标题",
+    "description": "描述",
+    "enterTestSuiteDescription": "输入测试套件描述",
+    "addTestCases": "添加测试用例",
+    "testCases": "测试用例",
+    "selectTestCasesToAddToSuite": "选择要添加到此测试套件的测试用例",
+    "addSelectedWithCount": "添加所选（{count}）",
+    "suiteId": "SUITE ID",
+    "title": "标题",
+    "latestResult": "最新结果",
+    "createdBy": "创建者",
+    "testsCount": "{count} 个测试",
+    "testsFailedCount": "{count} 个{count, plural, one {测试} other {测试}}失败",
+    "notStarted": "未开始",
+    "runTestSuite": "运行测试套件",
+    "deleteSelected": "删除所选",
+    "testSuitesTitle": "测试套件",
+    "emptyDescriptionLine1": "测试套件可以将相关测试用例分组，让你以一个整体进行运行、追踪和管理。",
+    "emptyDescriptionLine2": "可按功能、流程或版本组织测试，并轻松加入计划以定期自动运行。",
+    "createFirstTestSuite": "创建你的第一个测试套件",
+    "documentation": "文档",
+    "testSuiteSingular": "测试套件",
+    "removeFromSuite": "从套件中移除",
+    "githubActionsIntegration": "GitHub Actions 集成",
+    "githubActionsIntegrationDescription": "配置 GitHub 工作流以自动运行此测试套件。运行完成后，将向下方配置的频道发送通知。",
+    "viewSetupGuide": "查看设置指南",
+    "slackNotifications": "Slack 通知",
+    "suiteSlackNotificationsDescription": "当此测试套件通过 GitHub Actions 运行时，在 Slack 频道接收测试结果。选择哪些结果触发通知。",
+    "receiveResultsInSlackChannels": "在 Slack 频道接收测试结果，",
+    "oneTimeSetup": "一次性设置",
+    "requiredSuffix": "必填。",
+    "addNewChannels": "添加新频道",
+    "webhookNotifications": "Webhook 通知",
+    "suiteWebhookNotificationsDescription": "当此测试套件通过 GitHub Actions 运行时，将结果发送到 webhook 端点。可配置与外部系统的集成。",
+    "sendResultsToWebhookEndpoints": "将测试结果发送到 webhook 端点，",
+    "manageWebhookEndpoints": "管理 webhook 端点",
+    "testSuiteDetails": "测试套件详情",
+    "created": "创建时间",
+    "lastUpdated": "最后更新",
+    "byUser": "由 {user}",
+    "latestRunResult": "最新运行结果",
+    "viewDetails": "查看详情",
+    "passed": "通过",
+    "failed": "失败",
+    "successRate": "成功率",
+    "noTestRunsYet": "暂无测试运行。运行此测试套件后可在此查看结果。",
+    "createTestSuite": "创建测试套件",
+    "selectTestCasesToIncludeInSuite": "选择要包含在此测试套件中的测试用例",
+    "latest": "最新",
+    "untitledTestSuite": "未命名测试套件",
+    "failedToLoadTestSuites": "加载测试套件失败",
+    "failedToLoadTestCases": "加载测试用例失败",
+    "testSuiteDeletedSuccessfully": "测试套件删除成功",
+    "failedToDeleteTestSuite": "删除测试套件失败",
+    "testSuitesDeletedSuccessfully": "{count, plural, one {已成功删除 1 个测试套件} other {已成功删除 {count} 个测试套件}}",
+    "failedToDeleteSomeTestSuites": "部分测试套件删除失败",
+    "deleteTestSuiteTitle": "删除测试套件",
+    "deleteTestSuiteConfirmMessage": "确定要删除此测试套件吗？此操作无法撤销。",
+    "deleteMultipleTestSuitesTitle": "删除多个测试套件",
+    "deleteMultipleTestSuitesConfirmMessage": "确定要删除 {count} 个{count, plural, one {测试套件} other {测试套件}}吗？此操作无法撤销。",
+    "failedToLoadTestSuiteData": "加载测试套件数据失败",
+    "returnToTestSuites": "返回测试套件",
+    "removeSelectedTestsTitle": "移除所选测试",
+    "removeSelectedTestsConfirm": "确定要从套件中移除所选测试吗？此操作无法撤销。",
+    "remove": "移除",
+    "removeSelectedCount": "移除所选（{count}）",
+    "tabs": {
+      "overview": "概览",
+      "ciAndNotifications": "CI 与通知"
+    }
+  },
+  "Schedules": {
+    "scheduleUpdatedTitle": "计划已更新",
+    "scheduleUpdatedMessage": "计划更新成功",
+    "updateFailedTitle": "更新失败",
+    "createdSuccessfully": "计划创建成功",
+    "failedToCreate": "创建计划失败，请重试。",
+    "titleRequired": "请输入标题",
+    "switchedToTestsSuitesMode": "已切换到测试与套件模式",
+    "viewUpdatedSuccessfully": "视图更新成功",
+    "failedToUpdate": "更新失败",
+    "scheduleStatusUpdated": "计划状态已更新",
+    "failedToUpdateScheduleStatus": "更新计划状态失败",
+    "failedToSaveParameterSets": "保存参数集失败",
+    "failedToUpdateDefaultParameterSet": "更新默认参数集失败",
+    "failedToSaveDefaultVariables": "保存默认变量失败",
+    "webhookEndpointDisabled": "该端点在 设置/通知 中已全局禁用",
+    "environmentMismatchTooltip": "此计划的环境与其中部分测试用例不匹配。",
+    "totalTestsCount": "共 {count} 个{count, plural, one {测试} other {测试}}",
+    "viewWithId": "视图 #{id}",
+    "suiteCount": "{count} 个{count, plural, one {套件} other {套件}}",
+    "scheduleMustBeActiveToRunInCloud": "计划必须为启用状态才能在云端运行",
+    "runInCloud": "在云端运行",
+    "properties": "属性",
+    "copyScheduleUrl": "复制计划 URL",
+    "created": "创建时间",
+    "notAvailable": "N/A",
+    "lastUpdated": "最后更新",
+    "description": "描述",
+    "addScheduleDescription": "添加计划描述...",
+    "saving": "保存中...",
+    "saved": "已保存",
+    "failedToSave": "保存失败",
+    "addTestCases": "添加测试用例",
+    "loadingTestCases": "正在加载测试用例",
+    "testCaseSelectedCount": "已选择 {count} 个{count, plural, one {测试用例} other {测试用例}}",
+    "addSelected": "添加所选",
+    "addTestSuites": "添加测试套件",
+    "testSuiteSelectedCount": "已选择 {count} 个{count, plural, one {测试套件} other {测试套件}}",
+    "status": "状态",
+    "changeStatus": "更改状态",
+    "schedule": "计划",
+    "schedId": "SCHED ID",
+    "name": "名称",
+    "totalTests": "测试总数",
+    "type": "类型",
+    "environment": "环境",
+    "createdBy": "创建者",
+    "testsCount": "{count} 个测试",
+    "viewBased": "基于视图",
+    "manualSelection": "手动选择",
+    "noUrlAvailable": "无可用 URL",
+    "testPlanMustBeActiveToRun": "测试计划必须为启用状态才能运行",
+    "deleteSchedulesTitle": "删除 {count} 个{count, plural, one {计划} other {计划}}？",
+    "confirmDeleteSchedules": "确定要删除 {target} 吗？此操作无法撤销。",
+    "thisSchedule": "此计划",
+    "theseSchedules": "这些计划",
+    "schedulesDeletedSuccessfully": "{count, plural, one {计划删除成功} other {计划删除成功}}",
+    "failedToDeleteSchedules": "{count, plural, one {删除计划失败} other {删除计划失败}}",
+    "deleteSelected": "删除所选",
+    "deleteFailedTitle": "删除计划失败",
+    "unexpectedError": "发生错误",
+    "schedulesTitle": "计划",
+    "emptyDescriptionLine1": "计划会按周期自动运行测试，让你无需手动运行也能及时发现问题。",
+    "emptyDescriptionLine2": "一个计划可包含单个测试或测试套件，并在指定环境和时间运行。",
+    "createFirstSchedule": "创建你的第一个计划",
+    "documentation": "文档",
+    "scheduleSingular": "计划",
+    "emailNotifications": "邮件通知",
+    "emailNotificationsDescription": "当计划运行测试时，将结果发送到邮箱。可选择组织成员或添加自定义邮箱地址。",
+    "slackNotifications": "Slack 通知",
+    "slackNotificationsDescription": "当计划运行测试时，将结果发送到 Slack 频道。选择接收通知的频道。",
+    "receiveResultsInSlackChannels": "在 Slack 频道接收测试结果，",
+    "requiredSuffix": "必填。",
+    "addNewChannels": "添加新频道",
+    "webhookNotifications": "Webhook 通知",
+    "webhookNotificationsDescription": "当计划运行测试时，将结果发送到 webhook 端点。可配置与外部系统的自定义集成。",
+    "sendResultsToWebhookEndpoints": "将测试结果发送到 webhook 端点，",
+    "manageWebhookEndpoints": "管理 webhook 端点",
+    "addEmails": "添加邮箱",
+    "receiveResultsInSelectedSlackChannels": "在所选 Slack 频道接收测试结果。",
+    "oneTimeSetup": "一次性设置",
+    "emailAddressRequired": "邮箱地址为必填项",
+    "invalidEmailAddress": "邮箱地址无效",
+    "emailAlreadyAdded": "该邮箱已添加",
+    "enterEmailAddress": "输入邮箱地址",
+    "add": "添加",
+    "organizationMembersSubscribed": "组织成员（已订阅 {subscribed}/{total}）",
+    "environmentMismatch": "环境不匹配",
+    "clickToEditParameterSets": "点击编辑参数集",
+    "default": "默认",
+    "parameterSetsCount": "{count} 组",
+    "enabledParameterSetsCount": "{enabled} / {total} 组",
+    "parameterSets": "参数集",
+    "removeFromPlan": "从计划中移除",
+    "removeSelectedCount": "移除所选（{count}）",
+    "searchTestCases": "搜索测试用例...",
+    "searchTestSuites": "搜索测试套件...",
+    "removeTestCase": "移除测试用例",
+    "removeTestSuite": "移除测试套件",
+    "removeFromScheduleConfirm": "确定要从计划中移除此{itemType}吗？此操作无法撤销。",
+    "testCaseLower": "测试用例",
+    "testSuiteLower": "测试套件",
+    "remove": "移除",
+    "parameterSetsTitle": "参数集 - {title}",
+    "failedToLoadTestCases": "加载测试用例失败",
+    "selectEnvironment": "选择环境",
+    "overrideTestAccountOptional": "覆盖测试账号（可选）",
+    "overrideTestAccountDescription": "默认将使用为每个测试用例环境配置的测试账号",
+    "preflightTestOptional": "预检测试（可选）",
+    "preflightTestDescription": "在该计划分发主测试前先运行此测试用例。",
+    "selectPreflightTestCase": "选择预检测试用例",
+    "clearPreflightTestCase": "清除预检测试用例",
+    "startDateOptional": "开始日期（可选）",
+    "pickDateAndTime": "选择日期和时间",
+    "endDateOptional": "结束日期（可选）",
+    "repeat": "重复",
+    "cronTimezoneNotice": "Cron 计划以 UTC 保存/执行。你的浏览器时区为 {browserTz}{browserTzAbbr} {browserOffset}。",
+    "oneTestCaseSelected": "已选择 1 个测试用例",
+    "noTestCaseSelected": "未选择测试用例",
+    "maxParallelRuns": "最大并行数",
+    "maxParallelRunsDescription": "限制同时运行的测试数量。当一个测试完成后，下一个排队的测试会自动开始。留空表示不限制。",
+    "maxParallelRunsPlaceholder": "不限制",
+    "saveSchedule": "保存计划",
+    "title": "标题",
+    "enterScheduleTitle": "输入计划标题",
+    "enterScheduleDescription": "输入计划描述",
+    "testCasesCount": "测试用例（{count}）",
+    "testSuitesCount": "测试套件（{count}）",
+    "viewCount": "视图（{count}）",
+    "viewSelectionMutuallyExclusive": "选择视图与选择测试用例/套件互斥，选择其中之一将清空另一项。",
+    "noPublicViewsAvailable": "暂无公开视图。请先创建公开视图以使用基于视图的计划。",
+    "searchViews": "搜索视图...",
+    "viewWithName": "视图：{name}",
+    "itemsSelectedCount": "已选择 {count} 个{count, plural, one {项目} other {项目}}",
+    "scheduleConfigured": "计划已配置",
+    "noScheduleSet": "未设置计划",
+    "createSchedule": "创建计划",
+    "basicInfo": "基础信息",
+    "enterDetails": "输入详情",
+    "testSelection": "测试选择",
+    "selectTestsOrView": "选择测试或视图",
+    "setUpExecutionSchedule": "设置执行计划",
+    "creatingSchedule": "正在创建计划",
+    "thisWontTakeLong": "这不会花太久",
+    "changeTestSource": "更改测试来源",
+    "useAView": "使用视图",
+    "useTestsAndSuites": "使用测试与套件",
+    "switchToManualDescription": "切换为手动管理测试用例和套件。当前视图关联将被移除。",
+    "testSource": "测试来源",
+    "testsResolvedCount": "（已解析 {count} 个{count, plural, one {测试} other {测试}}）",
+    "testsAndSuites": "测试与套件",
+    "testSuites": "测试套件",
+    "start": "开始",
+    "end": "结束",
+    "from": "从",
+    "to": "至",
+    "untitledTestPlan": "未命名测试计划",
+    "flakyTestRate": "不稳定测试率",
+    "averageDurations": "平均时长",
+    "allTimeStats": "累计统计",
+    "latestRunResult": "最新运行结果",
+    "report": {
+      "failedToLoadReportData": "加载报告数据失败",
+      "loadingReport": "正在加载报告",
+      "fetchingTestRunData": "正在获取测试运行数据和历史...",
+      "noTestRunsExecuted": "该测试计划尚未执行过测试运行。",
+      "latestRunDescription": "最近一次测试运行的通过/失败分布。",
+      "flakyDescription": "首次失败但重试成功的测试。",
+      "averageDurationDescription": "测试用例执行时长指标。",
+      "allTimeDescription": "高通过率表示测试稳定，低通过率可能意味着存在问题。",
+      "casesLabel": "{count} 个测试",
+      "testsLabel": "{count} 个测试",
+      "percentPassed": "{rate}% 通过",
+      "percentFlaky": "{rate}% 不稳定",
+      "runNumber": "运行 #{id}",
+      "startedAt": "开始：{time}",
+      "endedAt": "结束：{time}",
+      "durationWithValue": "时长：{value}",
+      "viewRunDetails": "查看运行详情",
+      "stable": "稳定",
+      "flaky": "不稳定",
+      "passed": "通过",
+      "failed": "失败",
+      "caseDuration": "用例时长",
+      "planDuration": "计划时长",
+      "totalDuration": "总时长",
+      "durationSeconds": "时长（秒）",
+      "runResultsTrendTitle": "运行结果趋势",
+      "runResultsTrendDescription": "跟踪最近 {count} 次测试运行的通过/失败趋势。红色面积扩大可能表示不稳定性增加，持续绿色表示测试较稳定。",
+      "testCaseHistory": "测试用例历史",
+      "flakyDefinitionPrefix": "“",
+      "flakyDefinitionSuffix": "”测试指在同一次运行中首次失败但重试成功的测试，这通常意味着潜在不稳定性，需要尽快处理。"
+    },
+    "detailPage": {
+      "loadingSchedule": "正在加载计划",
+      "fetchingScheduleDetails": "正在获取计划详情...",
+      "scheduleNotFound": "未找到计划",
+      "returnToSchedules": "返回计划",
+      "tabs": {
+        "overview": "概览",
+        "tests": "测试",
+        "report": "报告",
+        "notifications": "通知",
+        "history": "历史"
+      }
+    }
+  },
+  "Functions": {
+    "definitionTitle": "定义",
+    "reloadingFunctions": "正在重新加载函数...",
+    "tryItOutTitle": "试运行",
+    "reset": "重置",
+    "run": "运行",
+    "changeStatus": "更改状态",
+    "tabs": {
+      "overview": "概览",
+      "usage": "使用情况",
+      "settings": "设置",
+      "editor": "编辑器",
+      "preview": "预览",
+      "dragToResize": "拖动调整大小",
+      "clickToExpand": "点击展开",
+      "clickToCollapse": "点击收起"
+    },
+    "header": {
+      "editFunctionTitle": "编辑函数 {name}"
+    },
+    "createModal": {
+      "title": "创建新函数",
+      "nameLabel": "函数名称",
+      "namePlaceholder": "my_function",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "描述该函数的功能及使用方式",
+      "argumentsLabel": "参数",
+      "argumentPlaceholder": "argumentName",
+      "addNewArgument": "+ 添加新参数",
+      "removeArgumentAriaLabel": "移除参数",
+      "creating": "创建中...",
+      "functionNameRequired": "函数名为必填项",
+      "functionNameSnakeCaseError": "函数名必须使用 snake_case：仅允许小写字母、数字和下划线，不允许大写字母、连字符或空格。",
+      "provideValidFunctionName": "请提供有效的函数名"
+    },
+    "codeEditor": {
+      "functionSignature": "函数签名",
+      "nameLabel": "名称：",
+      "namePlaceholder": "my_function",
+      "descriptionLabel": "描述：",
+      "descriptionPlaceholder": "函数描述",
+      "parametersLabel": "参数：",
+      "parameterPlaceholder": "param_name",
+      "addParameter": "添加",
+      "removeParameterAriaLabel": "移除参数",
+      "functionNameRequired": "函数名为必填项",
+      "functionNameSnakeCaseError": "请使用 snake_case：仅允许小写字母、数字和下划线"
+    },
+    "list": {
+      "funcId": "FUNC ID",
+      "name": "名称",
+      "description": "描述",
+      "usedBy": "使用方",
+      "status": "状态",
+      "createdBy": "创建者",
+      "created": "创建时间",
+      "updated": "更新时间",
+      "deleteSelected": "删除所选",
+      "deleteConfirmTitle": "删除{count, plural, one {函数} other {函数}}？",
+      "deleteConfirmMessage": "确定要删除 {count} 个{count, plural, one {函数} other {函数}}吗？此操作无法撤销。",
+      "recordLabelFunction": "函数"
+    },
+    "emptyState": {
+      "title": "函数",
+      "descriptionLine1": "函数是可复用的构建块，可在任意测试中调用，从 API 请求到多步骤流程和数据处理。",
+      "descriptionLine2": "一次编写，处处复用。函数具备完整 Playwright 访问能力，并可将结果存入测试上下文，让测试保持整洁一致。",
+      "createFirstFunction": "创建你的第一个函数",
+      "documentation": "文档"
+    },
+    "usageTab": {
+      "id": "ID",
+      "title": "标题",
+      "recordLabelTestCase": "测试用例"
+    },
+    "settings": {
+      "pathMustStartWithSlash": "路径必须以 / 开头",
+      "loadingFunctionDetails": "正在加载函数详情...",
+      "tryItOutSettings": "试运行设置",
+      "disableAutoLogin": "禁用自动登录",
+      "environmentAndUrl": "环境与 URL",
+      "testAccount": "测试账号"
+    },
+    "createdSuccessfully": "函数创建成功",
+    "failedToSave": "保存函数失败，请重试。",
+    "failedToLoadTestAccounts": "加载测试账号失败",
+    "settingsSavedSuccessfully": "设置保存成功",
+    "failedToSaveSettings": "保存设置失败",
+    "page": {
+      "deleteFunctionTitle": "删除函数？",
+      "deleteFunctionConfirmMessage": "确定要删除此函数吗？此操作无法撤销。",
+      "delete": "删除",
+      "cancel": "取消",
+      "functionDeletedSuccessfully": "函数删除成功",
+      "failedToDeleteFunction": "删除函数失败",
+      "functionNotFound": "未找到函数",
+      "copyName": "{name} (Copy)",
+      "functionDuplicatedAs": "函数已复制为 \"{name} (Copy)\"",
+      "failedToDuplicateFunction": "复制函数失败",
+      "functionStatusUpdated": "函数状态已更新",
+      "failedToUpdateFunctionStatus": "更新函数状态失败",
+      "failedToLoadFunctions": "加载函数失败",
+      "retry": "重试",
+      "testFunctionNotFound": "未找到测试函数",
+      "returnToTestFunctions": "返回测试函数"
+    }
+  },
+  "ResultViews": {
+    "selector": {
+      "copySuffix": "（副本）",
+      "systemViews": {
+        "all": "全部运行",
+        "failed": "失败运行"
+      },
+      "tooltips": {
+        "noFiltersApplied": "未应用过滤器",
+        "result": "结果",
+        "trigger": "触发方式"
+      },
+      "actions": {
+        "copyLink": "复制链接",
+        "createNewView": "创建新视图"
+      },
+      "notifications": {
+        "linkCopied": {
+          "title": "链接已复制",
+          "message": "视图链接已复制到剪贴板"
+        },
+        "duplicated": {
+          "message": "视图已复制为「{name}」"
+        },
+        "duplicateFailed": "复制视图失败",
+        "deleted": {
+          "message": "视图「{name}」已成功删除"
+        },
+        "deleteFailed": "删除视图失败"
+      },
+      "deleteModal": {
+        "title": "删除视图",
+        "description": "确定要删除「{name}」吗？此操作无法撤销。"
+      }
+    },
+    "editPanel": {
+      "fields": {
+        "namePlaceholder": "视图名称",
+        "descriptionPlaceholder": "添加描述...",
+        "saveTo": "保存至"
+      },
+      "visibility": {
+        "shared": "共享",
+        "private": "私有",
+        "sharedDescription": "与团队共享",
+        "privateDescription": "仅您可见"
+      },
+      "validation": {
+        "nameRequired": "视图名称不能为空"
+      },
+      "notifications": {
+        "created": "视图「{name}」已创建",
+        "updated": "视图「{name}」已更新",
+        "saveFailed": "保存视图失败"
+      }
+    },
+    "page": {
+      "title": "结果视图",
+      "copySuffix": "（副本）",
+      "failedToLoadViews": "加载结果视图失败",
+      "retry": "重试",
+      "deleteModal": {
+        "title": "删除结果视图",
+        "description": "确定要删除「{name}」吗？此操作无法撤销。"
+      },
+      "notifications": {
+        "deleted": {
+          "message": "视图「{name}」已删除。"
+        },
+        "deleteFailed": "删除视图失败，请重试。",
+        "duplicated": {
+          "message": "「{name}」已创建。"
+        },
+        "duplicateFailed": "复制视图失败。",
+        "linkCopied": {
+          "title": "链接已复制",
+          "message": "视图链接已复制到剪贴板。"
+        },
+        "copyLinkFailed": "复制链接失败。"
+      }
+    },
+    "list": {
+      "emptyState": {
+        "title": "结果视图",
+        "description": "结果视图是保存的过滤器组合，帮助您快速找到所需的运行结果。创建您的第一个视图以开始使用。",
+        "primaryAction": "创建第一个视图"
+      }
+    }
+  },
+  "RunResults": {
+    "failedToLoadUserInfo": "加载部分用户信息失败，显示为未知。",
+    "runUrlCopied": "运行 URL 已复制到剪贴板",
+    "failedToCopyUrl": "复制 URL 失败",
+    "reAnalysisQueued": "已加入重新分析队列",
+    "failedToTriggerReAnalysis": "触发重新分析失败",
+    "reAnalysisMessage": "该测试的下一次运行将触发新的失败分析。",
+    "failedToUpdateHardCaseStatus": "更新疑难用例状态失败",
+    "overview": {
+      "failedToUpdateFingerprint": "更新指纹失败",
+      "failedToQueueReAnalysis": "加入重新分析队列失败",
+      "failedToUpdateHardCaseSteps": "更新疑难步骤失败",
+      "stepMarkedAsHardCase": "步骤已标记为疑难",
+      "stepRemovedFromHardCases": "步骤已从疑难中移除",
+      "runType": {
+        "runWithoutFix": "无修复运行",
+        "run": "运行",
+        "fixRun": "修复运行",
+        "runWithFix": "带修复运行",
+        "refixRun": "再次修复运行"
+      },
+      "runLabel": {
+        "single": "{type}（{outcome}）",
+        "first": "首次{type}（{outcome}）",
+        "final": "最终{type}（{outcome}）",
+        "indexed": "{type} {index}（{outcome}）"
+      },
+      "outcome": {
+        "passed": "通过",
+        "failed": "失败",
+        "error": "错误",
+        "timedOut": "超时",
+        "unknown": "未知"
+      },
+      "agentFixRunLabel": "Agent 修复运行（{outcome}）",
+      "finalRunLabel": "最终运行（{outcome}）",
+      "firstRunLabel": "首次运行（{outcome}）",
+      "executedWithAiModifiedFlow": "此测试使用 AI 修改后的测试流程执行。",
+      "autoFixTitle": "自动修复",
+      "reusedFailurePatternMessage": "与之前运行的失败模式相同，已跳过分析。编辑测试用例可触发新的分析。",
+      "reAnalysisQueuedShort": "已加入重新分析队列",
+      "reAnalyzeNextRun": "下次运行重新分析",
+      "viewOriginalAnalysis": "查看原始分析",
+      "jumpToFailedStep": "跳转到失败步骤",
+      "autoRevertedMessage": "由于运行失败，原始测试修复已自动回滚。",
+      "timedOutAlert": "测试执行超时。",
+      "dismissedModal": "{count, plural, other {已关闭 # 个弹窗}}",
+      "mainSection": "主流程",
+      "teardownSection": "收尾",
+      "noTestFlow": "无测试流程",
+      "noTestStepsDefined": "该测试用例未定义测试步骤。",
+      "noTestResultData": "该次运行暂无测试结果数据。",
+      "noStepsAvailable": "暂无可用步骤"
+    },
+    "modal": {
+      "breadcrumb": {
+        "results": "结果",
+        "runWithId": "运行 {runId}"
+      },
+      "tabs": {
+        "overview": "概览",
+        "video": "视频",
+        "trace": "追踪",
+        "logs": "日志",
+        "context": "上下文",
+        "console": "控制台",
+        "artifacts": "产物"
+      },
+      "properties": {
+        "collapse": "收起属性",
+        "expand": "展开属性"
+      },
+      "sidebar": {
+        "hideTestCases": "隐藏测试用例",
+        "hideRunHistory": "隐藏运行历史",
+        "showTestCases": "显示测试用例",
+        "showRunHistory": "显示运行历史"
+      }
+    },
+    "propertiesSidebar": {
+      "title": "属性",
+      "copyTestRunUrl": "复制测试运行链接",
+      "status": "状态",
+      "schedule": "计划",
+      "view": "视图",
+      "testCase": "测试用例",
+      "parameterSet": "参数集",
+      "testRun": "测试运行",
+      "startTime": "开始时间",
+      "duration": "时长",
+      "environment": "环境",
+      "testAccount": "测试账号",
+      "platform": "平台",
+      "device": "设备",
+      "notAvailable": "N/A",
+      "desktopChrome": "桌面版 Chrome",
+      "flaky": "不稳定",
+      "aiAnalysisRan": "已运行 AI 分析并生成修复",
+      "previousAiFixApplied": "已应用之前的 AI 修复",
+      "passedWithAiFix": "通过（AI 修复流程）",
+      "result": {
+        "passed": "通过",
+        "failed": "失败",
+        "pending": "处理中",
+        "queued": "排队中",
+        "skipped": "已跳过",
+        "notStarted": "未开始"
+      }
+    },
+    "overviewStep": {
+      "startLabel": "开始：",
+      "durationLabel": "时长：",
+      "autoHealed": "自动修复",
+      "autoDismissedModal": "自动关闭弹窗",
+      "markAsHardCase": "标记为疑难步骤",
+      "removeFromHardCases": "从疑难步骤中移除",
+      "attemptCount": "尝试 {current} / {total}",
+      "screenshot": "截图",
+      "screenshotPreview": "截图预览",
+      "screenshotSection": "截图",
+      "context": {
+        "title": "上下文",
+        "beforeLabel": "执行前",
+        "afterLabel": "执行后",
+        "empty": "无变量。"
+      },
+      "consoleLogs": {
+        "title": "控制台日志",
+        "empty": "该步骤没有控制台日志。"
+      }
+    },
+    "fixAcceptedTitle": "已接受修复",
+    "fixAcceptedMessage": "AI 修复已应用到测试用例。",
+    "fixRejectedTitle": "已拒绝修复",
+    "fixRejectedMessageShort": "AI 修复已被拒绝，后续运行将不使用该修复。",
+    "fixRejectedMessageLong": "AI 修复已被拒绝，并且该测试用例的失败分析已禁用。",
+    "noTestCaseResultForSummary": "没有可用于生成 AI 摘要的测试用例结果",
+    "aiSummaryGeneratedSuccessfully": "AI 摘要生成成功",
+    "testSuiteUrlCopied": "测试套件 URL 已复制到剪贴板",
+    "verificationRunViewer": {
+      "title": "验证运行",
+      "attempt": "第 {attempt} 次尝试",
+      "watchVideo": "观看视频",
+      "openTrace": "打开 Trace",
+      "modified": "已修改",
+      "stepScreenshotAlt": "步骤 {stepId} 截图",
+      "noScreenshotAvailable": "暂无可用截图"
+    },
+    "contextMenu": {
+      "unpin": "取消置顶",
+      "pinToTop": "置顶",
+      "copyLink": "复制链接"
+    },
+    "videoModal": {
+      "title": "测试录制",
+      "videoTagNotSupported": "你的浏览器不支持 video 标签。",
+      "noVideo": "暂无可用视频录制"
+    },
+    "stats": {
+      "passRate": "通过率",
+      "duration": "时长",
+      "trigger": "触发方式"
+    },
+    "summary": {
+      "totalPassed": "通过总数",
+      "totalFailed": "失败总数",
+      "notExecuted": "未执行"
+    },
+    "header": {
+      "manualRun": "手动运行",
+      "apiRun": "API 运行",
+      "scheduledRun": "计划运行",
+      "testRun": "测试运行",
+      "runOfTarget": "{triggerPrefix}：{target}",
+      "runOfTests": "{triggerPrefix}（{count} 个测试）",
+      "duration": "时长：{duration}",
+      "view": "视图：{viewName}",
+      "viewWithTestCount": "视图：{viewName}（{count} 个测试）"
+    },
+    "failBadge": {
+      "noTestsRun": "没有运行测试",
+      "allTestsPassed": "全部测试通过",
+      "testsFailed": "{failedCount} / {totalCount} 个测试失败"
+    },
+    "sidebar": {
+      "runDetails": "运行详情",
+      "duration": "时长：{duration}",
+      "started": "开始于 {time}",
+      "testResults": "测试结果",
+      "testSuites": "测试套件",
+      "testCases": "测试用例"
+    },
+    "aiSummary": {
+      "noDebugInfo": "暂无调试信息",
+      "copy": "复制",
+      "copied": "已复制",
+      "titleLabel": "标题：",
+      "descriptionLabel": "描述：",
+      "rootCauseLabel": "根因：",
+      "suggestedTagsLabel": "建议标签：",
+      "tabs": {
+        "summary": "摘要",
+        "testCaseResult": "测试用例结果",
+        "testCase": "测试用例",
+        "fullReport": "完整报告",
+        "enrichedTestFlow": "增强测试流程",
+        "formattedInput": "格式化输入",
+        "llmRequest": "LLM 请求",
+        "llmPrompt": "LLM 提示词",
+        "llmResponse": "LLM 响应"
+      }
+    },
+    "historyChart": {
+      "title": "测试计划运行历史",
+      "testsCount": "{count} 个测试",
+      "passed": "通过",
+      "failed": "失败"
+    },
+    "summaryChart": {
+      "title": "测试结果分布",
+      "passRate": "通过率：{rate}%",
+      "testsCount": "{count} 个测试",
+      "totalTests": "测试总数",
+      "passed": "通过",
+      "failed": "失败"
+    },
+    "resultItem": {
+      "notStarted": "未开始",
+      "unnamedTest": "未命名测试",
+      "goToTestCase": "前往测试用例",
+      "viewVideo": "查看视频",
+      "viewLogs": "查看日志"
+    },
+    "resultList": {
+      "runLabel": "RUN-{runId}",
+      "goToTestSuite": "前往测试套件",
+      "recordLabel": "运行结果",
+      "pinSelected": "置顶所选",
+      "customRunOfTests": "包含 {count} 个测试的自定义运行",
+      "columns": {
+        "runId": "运行 ID",
+        "target": "目标",
+        "trigger": "触发方式",
+        "status": "状态",
+        "result": "结果",
+        "startTime": "开始时间",
+        "duration": "时长",
+        "totalTests": "测试总数",
+        "failedTests": "失败测试"
+      },
+      "statusLabels": {
+        "running": "运行中",
+        "finished": "已完成",
+        "waitingRerun": "等待重跑",
+        "skipped": "已跳过",
+        "notStarted": "未开始"
+      },
+      "empty": {
+        "filteredTitle": "没有匹配筛选条件的结果",
+        "filteredDescription": "请尝试调整结果或触发方式筛选条件。",
+        "title": "暂无结果",
+        "descriptionLine1": "测试执行后，运行结果会显示在这里。",
+        "descriptionLine2": "每条结果代表一次独立运行，展示测试通过/失败情况、耗时，以及用于排查问题的日志、视频和 Trace。",
+        "documentation": "文档"
+      }
+    },
+    "page": {
+      "filterDefaultResult": "结果",
+      "filterDefaultTrigger": "触发方式",
+      "filterDefaultSchedule": "计划",
+      "filterDefaultContainsSuite": "包含套件",
+      "valueWithMore": "{value} + 另外 {count} 项",
+      "results": {
+        "passed": "通过",
+        "failed": "失败",
+        "pending": "处理中",
+        "queued": "排队中",
+        "skipped": "已跳过"
+      },
+      "triggers": {
+        "API": "API",
+        "Manual": "手动",
+        "Scheduled": "计划",
+        "GITHUB_ACTION": "GitHub Action",
+        "Webhook": "Webhook",
+        "Automation": "自动化",
+        "Local": "本地执行"
+      },
+      "clear": "清除",
+      "noSchedulesAvailable": "暂无可用计划",
+      "loading": "加载中...",
+      "noTestSuitesAvailable": "暂无可用测试套件",
+      "clearAllFilters": "清除所有筛选条件",
+      "clearShort": "清除",
+      "showingResultsFrom": "显示来自 {dateRange} 的结果",
+      "failedToLoadRunResults": "加载运行结果失败",
+      "datePresets": {
+        "today": "今天",
+        "3d": "最近 3 天",
+        "7d": "最近 7 天",
+        "14d": "最近 14 天"
+      },
+      "quickSelect": "快速选择",
+      "maxDaysHint": "最多支持查看过去 {days} 天的数据"
+    },
+    "detailPage": {
+      "pageTitle": "{trigger} 运行 - {target}",
+      "unnamedSuite": "未命名套件",
+      "testSuiteWithId": "测试套件 {id}",
+      "loadingTitle": "正在加载运行结果",
+      "loadingSubtitle": "正在获取你的测试运行结果...",
+      "failedToLoadRunResult": "加载运行结果失败",
+      "runResultNotFound": "未找到运行结果",
+      "returnToRunResults": "返回运行结果",
+      "failedTestsTitle": "失败测试",
+      "preflightTestTitle": "预检测试",
+      "dispatchMainNotice": "预检通过，但主测试尚未分发。",
+      "dispatchMainError": "分发主测试失败，请重试。",
+      "dispatchMainButton": "分发主测试",
+      "testCasesTitle": "测试用例"
+    }
+  },
+  "ReusableGroups": {
+    "contextMenu": {
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "editorDrawer": {
+      "saveBlockedTitle": "保存已阻止",
+      "saveBlockedMessage": "模板不能链接其他模板。嵌套模板请使用“复制”而非“链接”。",
+      "successTitle": "成功",
+      "templateCreated": "模板创建成功",
+      "templateSaved": "模板保存成功",
+      "errorTitle": "错误",
+      "failedToCreate": "创建模板失败",
+      "failedToSave": "保存模板失败",
+      "validationErrorTitle": "校验错误",
+      "templateNameRequired": "模板名称为必填项",
+      "updateTemplateTitle": "更新模板？",
+      "updateTemplatePrompt": "该模板被 {usageCount} 个{usageLabel}使用。保存更改将影响所有使用方。确定继续吗？",
+      "testCaseSingular": "测试用例",
+      "testCasePlural": "测试用例",
+      "save": "保存",
+      "cancel": "取消",
+      "unsavedChangesTitle": "未保存的更改",
+      "unsavedChangesPrompt": "你有未保存的更改。确定要关闭吗？",
+      "close": "关闭",
+      "templateNamePlaceholder": "模板名称",
+      "usedBy": "（被 {count} 个{unit}使用）",
+      "testSingular": "测试",
+      "testPlural": "测试",
+      "descriptionPlaceholder": "添加描述...",
+      "create": "创建"
+    },
+    "list": {
+      "columnTemplateId": "TMPL ID",
+      "columnName": "名称",
+      "columnDescription": "描述",
+      "columnUsedBy": "使用方",
+      "columnCreatedBy": "创建者",
+      "columnCreated": "创建时间",
+      "columnUpdated": "更新时间",
+      "edit": "编辑",
+      "delete": "删除",
+      "cannotDeleteSingle": "无法删除：该模板正在被测试用例使用",
+      "cannotDeleteMultiple": "无法删除：所选模板中有部分正在被测试用例使用",
+      "deleteTemplatesTitle": "删除{noun}？",
+      "templates": "模板",
+      "template": "模板",
+      "deleteTemplatesPrompt": "确定要删除 {count} 个模板{suffix}吗？此操作无法撤销。",
+      "cancel": "取消",
+      "deleteSelected": "删除所选",
+      "emptyTitle": "模板",
+      "emptyDescription1": "模板可以将常见测试流程转为可复用构建块。",
+      "emptyDescription2": "模板一次创建，可在多个测试中复用，并在变更时保持同步。非常适合登录、初始化、清理等团队常用共享流程。",
+      "createFirstTemplate": "创建你的第一个模板",
+      "documentation": "文档"
+    },
+    "page": {
+      "deleteTemplateTitle": "删除模板？",
+      "deleteTemplateConfirm": "确定要删除 \"{name}\" 吗？此操作无法撤销。",
+      "deleteAction": "删除",
+      "cancelAction": "取消",
+      "deleteSuccessTitle": "成功",
+      "templateDeletedSuccessfully": "模板删除成功",
+      "deleteErrorTitle": "错误",
+      "failedToDeleteTemplate": "删除模板失败",
+      "failedToLoadTemplates": "加载模板失败",
+      "retry": "重试"
+    },
+    "detailPage": {
+      "failedToLoadTemplate": "加载模板失败",
+      "retry": "重试",
+      "titleTemplate": "模板",
+      "save": "保存",
+      "nameLabel": "名称",
+      "namePlaceholder": "输入名称",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "输入描述",
+      "created": "创建时间",
+      "updated": "更新时间"
+    }
+  },
+  "Settings": {
+    "environments": {
+      "nameAndUrlRequired": "名称和 URL 为必填项",
+      "createdSuccessfully": "环境创建成功",
+      "failedToCreate": "创建环境失败",
+      "deletedSuccessfully": "环境删除成功",
+      "failedToDelete": "删除环境失败",
+      "updatedSuccessfully": "环境更新成功",
+      "failedToUpdate": "更新环境失败",
+      "title": "环境",
+      "description": "添加域名 URL 来定义测试运行环境，例如生产或预发布环境。",
+      "environmentNamePlaceholder": "环境名称",
+      "domainUrlPlaceholder": "域名 URL",
+      "addEnvironment": "添加环境"
+    },
+    "browserSettings": {
+      "title": "浏览器默认设置",
+      "description": "为每个环境设置默认的浏览器语言和 HTTP 请求头。测试用例中的设置优先级更高。",
+      "columnEnvironment": "环境",
+      "columnLanguage": "语言",
+      "columnTimezone": "时区",
+      "columnHeaders": "HTTP 请求头",
+      "noLanguage": "默认",
+      "noTimezone": "默认",
+      "noHeaders": "无",
+      "headersCount": "{count} 个请求头",
+      "editTitle": "浏览器默认设置 — {name}",
+      "language": "浏览器语言",
+      "languagePlaceholder": "默认 (en-US)",
+      "timezone": "浏览器时区",
+      "timezonePlaceholder": "默认 (America/Los_Angeles)",
+      "extraHeaders": "额外 HTTP 请求头",
+      "extraHeadersTooltip": "为该环境的每次浏览器请求附加自定义 HTTP 请求头。测试用例的请求头会覆盖此处的同名请求头。",
+      "extraHeadersAddButton": "添加请求头",
+      "extraHeadersNamePlaceholder": "请求头名称",
+      "extraHeadersValuePlaceholder": "请求头值",
+      "extraHeadersColumnName": "名称",
+      "extraHeadersColumnValue": "值",
+      "extraHeadersNameRequired": "请求头名称不能为空",
+      "extraHeadersNameInvalid": "请求头名称无效，只能包含字母、数字、连字符或下划线",
+      "extraHeadersNameDuplicate": "请求头名称已存在",
+      "savedSuccessfully": "浏览器默认设置已保存",
+      "failedToSave": "保存浏览器默认设置失败",
+      "clearedSuccessfully": "浏览器默认设置已清除",
+      "failedToClear": "清除浏览器默认设置失败",
+      "clearButton": "清除",
+      "clearConfirmTitle": "清除浏览器默认设置",
+      "clearConfirmMessage": "确定要移除 {name} 的所有浏览器默认设置吗？",
+      "edit": "编辑"
+    },
+    "apiTokens": {
+      "copiedTitle": "已复制！",
+      "copiedMessage": "API 令牌已复制到剪贴板",
+      "pageTitle": "API 令牌",
+      "description": "用于 CI/CD 和外部集成的 Shiplight 编程访问。可生成并管理自动化 API 令牌。",
+      "docs": "文档 ↗",
+      "copyToken": "复制令牌",
+      "createToken": "创建令牌",
+      "edit": "编辑",
+      "save": "保存",
+      "delete": "删除",
+      "deleteConfirmTitle": "删除 API 令牌",
+      "deleteConfirmMessageNamed": "确定要删除 API 令牌 \"{name}\" 吗？此操作无法撤销，并会立即使该令牌失效。",
+      "deleteConfirmMessageUnnamed": "确定要删除此 API 令牌吗？此操作无法撤销，并会立即使该令牌失效。",
+      "fields": {
+        "name": "名称",
+        "namePlaceholder": "输入令牌名称",
+        "token": "令牌",
+        "created": "创建时间"
+      },
+      "emptyMessage": "未找到 API 令牌",
+      "searchPlaceholder": "搜索令牌..."
+    },
+    "testAccounts": {
+      "cacheClearedTitle": "缓存清除成功",
+      "failedToClearCacheTitle": "清除缓存失败",
+      "errorClearingCacheTitle": "清除缓存出错",
+      "details": {
+        "usernamePlaceholder": "用户名",
+        "passwordPlaceholder": "密码",
+        "saving": "保存中...",
+        "saved": "已保存",
+        "failedToSave": "保存失败"
+      },
+      "list": {
+        "columns": {
+          "id": "ID",
+          "username": "用户名",
+          "loginHints": "登录提示",
+          "status": "状态",
+          "availability": "可用性",
+          "created": "创建时间",
+          "lastTestResult": "最近测试结果"
+        },
+        "status": {
+          "shared": "共享",
+          "private": "私有",
+          "inUse": "使用中",
+          "available": "可用"
+        },
+        "notUsed": "未使用",
+        "actions": {
+          "edit": "编辑",
+          "clearCache": "清除缓存",
+          "delete": "删除"
+        },
+        "selectionActions": {
+          "shareSelected": "共享所选",
+          "deleteSelected": "删除所选"
+        }
+      },
+      "deleteModal": {
+        "title": "确认删除",
+        "inUseMessage": "该测试账号正在使用中，无法删除。请先取消关联。",
+        "confirmMessage": "确定要删除该测试账号吗？此操作无法撤销。",
+        "notifications": {
+          "failedToCheckInUse": "检查测试账号是否被使用失败",
+          "deletedSuccessfully": "测试账号删除成功",
+          "failedToDelete": "删除测试账号失败"
+        }
+      },
+      "loginHintsConfiguration": {
+        "toggleTitle": "Agent 登录提示（可选）",
+        "desktop": "桌面端",
+        "mobile": "移动端",
+        "additionalPromptLabel": "附加提示",
+        "verificationHintLabel": "验证提示",
+        "desktopAdditionalPromptPlaceholder": "e.g., Click 'Skip intro', Accept cookies",
+        "desktopVerificationHintPlaceholder": "e.g., User avatar appears, 'Logout' visible",
+        "mobileAdditionalPromptPlaceholder": "e.g., Tap 'Skip intro', Accept cookies",
+        "mobileVerificationHintPlaceholder": "e.g., Profile icon visible in top-right",
+        "desktopAdditionalPromptDescription": "AI agent 在桌面端登录时应执行的特定动作或步骤",
+        "desktopVerificationHintDescription": "用于 AI 在桌面端验证登录完成的视觉元素",
+        "mobileAdditionalPromptDescription": "AI agent 在移动端登录时应执行的特定动作或步骤",
+        "mobileVerificationHintDescription": "用于 AI 在移动端验证登录完成的视觉元素",
+        "useAiVerificationForLoginCheckLabel": "使用 AI 验证提示进行已登录检查",
+        "useAiVerificationForLoginCheckDescription": "启用后，登录前检查会使用 AI 结合验证提示判断登录状态，而不是使用缓存的登录校验表达式"
+      },
+      "loginHintsDisplay": {
+        "desktop": "桌面端",
+        "mobile": "移动端",
+        "additionalPromptLabel": "附加提示",
+        "verificationHintLabel": "验证提示",
+        "aiLoginPrecheckLabel": "AI 登录预检查",
+        "enabled": "已启用"
+      },
+      "totpConfig": {
+        "invalidCode": "无效",
+        "secretKeyPlaceholder": "输入 TOTP 密钥",
+        "generateOtpCode": "生成 OTP 代码"
+      },
+      "editModal": {
+        "titleEdit": "编辑测试账号",
+        "titleCreate": "添加新测试账号",
+        "scopeLabel": "范围",
+        "scopePlaceholder": "选择范围",
+        "scopeDescriptionLocked": "已被使用的测试账号无法修改范围。如需变更，请在目标范围创建新账号。",
+        "noEnvironmentsFound": "未找到环境",
+        "usernameLabel": "用户名",
+        "usernamePlaceholder": "测试账号用户名",
+        "passwordLabel": "密码",
+        "passwordPlaceholder": "测试账号密码",
+        "oauthAccountLabel": "这是 OAuth 账号",
+        "oauthProviderPlaceholder": "选择 OAuth 提供商",
+        "twoFactorLabel": "该账号需要双重认证",
+        "nameOptionalLabel": "名称（可选）",
+        "nameOptionalPlaceholder": "用于区分账号的便捷名称",
+        "validation": {
+          "requiredFields": "用户名、密码和环境为必填项",
+          "oauthProviderRequired": "OAuth 账号必须选择 OAuth 提供商",
+          "totpSecretRequired": "双重认证必须提供 TOTP 密钥",
+          "emailSenderRequired": "邮件提取必须填写发件人（From）"
+        },
+        "notifications": {
+          "createdSuccessfully": "测试账号创建成功",
+          "updatedSuccessfully": "测试账号更新成功",
+          "failedToCreate": "创建测试账号失败",
+          "failedToUpdate": "更新测试账号失败"
+        },
+        "emailExtraction": {
+          "title": "邮件提取",
+          "enable": "启用验证码邮件提取",
+          "methodLabel": "提取方式",
+          "methodPlaceholder": "选择方式",
+          "methods": {
+            "verificationCode": "验证码",
+            "activationLink": "激活链接",
+            "custom": "自定义"
+          },
+          "forwardEmailLabel": "转发邮箱",
+          "forwardEmailDescription": "自动生成的转发邮箱，请记得将邮件转发到该地址",
+          "customPromptLabel": "自定义提示词",
+          "customPromptPlaceholder": "用于邮件内容提取的自定义指令",
+          "filtersTitle": "邮件过滤器",
+          "fromLabel": "发件人（必填）",
+          "fromPlaceholder": "@example.com",
+          "subjectLabel": "主题（可选）",
+          "subjectPlaceholder": "Verification Code",
+          "bodyContainsLabel": "正文包含（可选）",
+          "bodyContainsPlaceholder": "Your verification code is"
+        },
+        "createButton": "创建测试账号",
+        "updateButton": "更新测试账号"
+      },
+      "cacheClearedMessage": "已成功清除测试账号 {username} 的缓存",
+      "failedToClearCacheMessage": "清除测试账号 {username} 的缓存失败",
+      "errorClearingCacheMessage": "清除测试账号 {username} 缓存时出错",
+      "environmentLabel": "环境",
+      "columns": {
+        "accountId": "账号 ID",
+        "username": "用户名",
+        "password": "密码",
+        "name": "名称",
+        "loginHints": "登录提示",
+        "created": "创建时间"
+      },
+      "copied": "已复制！",
+      "copyUsername": "复制用户名",
+      "clearCache": "清除缓存",
+      "failedToLoad": "加载测试账号失败",
+      "title": "测试账号",
+      "description": "为不同环境添加账号，以获得稳定的身份验证流程。",
+      "searchPlaceholder": "搜索测试账号...",
+      "allEnvironments": "全部环境",
+      "allEnvironmentsDescription": "显示所有环境中的账号",
+      "addTestAccount": "添加测试账号"
+    },
+    "forwardEmails": {
+      "validationErrorTitle": "校验错误",
+      "fieldsRequired": "名称、转发邮箱和发件人过滤条件为必填项",
+      "deleteTitle": "删除邮件转发配置",
+      "noVerificationEmailTitle": "未找到验证邮件",
+      "confirmDeleteMessage": "确定要删除此转发邮箱配置吗？",
+      "noVerificationEmailMessage": "未找到验证邮件。请确认你已在邮箱服务商中开始配置邮件转发。",
+      "failedToFetchVerificationLink": "获取验证链接失败。",
+      "columns": {
+        "name": "名称",
+        "forwardEmail": "转发邮箱",
+        "senderFilter": "发件人过滤"
+      },
+      "actions": {
+        "getVerificationLink": "获取转发验证链接"
+      },
+      "title": "转发邮箱配置",
+      "description": "在测试中自动读取并提取邮件内容，例如验证码或魔法链接。",
+      "newConfiguration": "新建配置",
+      "loading": "正在加载转发邮箱配置",
+      "empty": "暂无转发邮箱配置",
+      "editConfigurationTitle": "编辑转发邮箱配置",
+      "createConfigurationTitle": "创建转发邮箱配置",
+      "form": {
+        "configurationNameLabel": "配置名称",
+        "configurationNamePlaceholder": "输入此配置的名称",
+        "forwardEmailLabel": "转发邮箱",
+        "forwardEmailDescription": "用于转发邮件的地址，系统自动生成，请记得在邮箱服务商中设置转发到该地址",
+        "filterFromEmailLabel": "发件人过滤",
+        "filterFromEmailPlaceholder": "按发件人邮箱或域名过滤，例如 @example.com",
+        "update": "更新",
+        "create": "创建"
+      },
+      "verificationModal": {
+        "title": "转发验证链接",
+        "description": "已找到验证邮件。点击下方链接以确认邮件转发配置。",
+        "openLink": "打开链接"
+      }
+    },
+    "labels": {
+      "nameAndColorRequired": "名称和颜色为必填项",
+      "createdSuccessfully": "标签创建成功",
+      "failedToCreate": "创建标签失败",
+      "deletedSuccessfully": "标签删除成功",
+      "failedToDelete": "删除标签失败",
+      "updatedSuccessfully": "标签更新成功",
+      "failedToUpdate": "更新标签失败",
+      "columns": {
+        "name": "名称",
+        "created": "创建时间",
+        "updated": "更新时间"
+      },
+      "customColor": "自定义颜色",
+      "colorPicker": {
+        "saturation": "饱和度",
+        "hue": "色相",
+        "alpha": "透明度"
+      },
+      "title": "标签",
+      "description": "创建和管理标签，用于分类和筛选测试用例。",
+      "labelNamePlaceholder": "标签名称",
+      "addLabel": "添加标签",
+      "empty": {
+        "search": "没有匹配搜索条件的标签",
+        "default": "暂无标签。在上方创建你的第一个标签。"
+      }
+    },
+    "members": {
+      "failedToLoad": "加载成员失败",
+      "resendInvitation": "重新发送邀请",
+      "failedToResendInvitation": "重新发送邀请失败",
+      "memberRoleUpdated": "成员角色已更新",
+      "failedToUpdateMemberRole": "更新成员角色失败",
+      "suspendUserTitle": "停用用户",
+      "failedToSuspendUser": "停用用户失败",
+      "failedToActivateUser": "启用用户失败",
+      "cancelInvitationTitle": "取消邀请",
+      "failedToCancelInvitation": "取消邀请失败",
+      "removeMemberTitle": "移除成员",
+      "failedToRemoveMember": "移除成员失败",
+      "failedToUpdateSettings": "更新设置失败",
+      "inviteModal": {
+        "title": "邀请成员",
+        "emailLabel": "邮箱地址",
+        "emailPlaceholder": "colleague@example.com",
+        "roleLabel": "角色",
+        "sendInvitation": "发送邀请",
+        "roles": {
+          "member": "成员",
+          "admin": "管理员"
+        },
+        "errors": {
+          "enterEmail": "请输入邮箱地址",
+          "enterValidEmail": "请输入有效邮箱地址",
+          "failedToSendInvitation": "发送邀请失败"
+        }
+      },
+      "notifications": {
+        "invitedSuccessfully": "已成功邀请 {email}",
+        "invitationResent": "已重新发送邀请至 {email}",
+        "userSuspended": "已停用用户 {email}",
+        "userActivated": "已激活用户 {email}",
+        "invitationCancelled": "已取消 {email} 的邀请",
+        "memberRemoved": "已将 {email} 从组织中移除",
+        "domainAutoJoinEnabled": "已启用域名自动加入",
+        "domainAutoJoinDisabled": "已禁用域名自动加入"
+      },
+      "confirmations": {
+        "suspend": "确定要停用 <strong>{email}</strong> 吗？该用户将无法再访问组织。",
+        "cancelInvitation": "确定要取消 <strong>{email}</strong> 的邀请吗？此操作不可撤销。",
+        "removeMember": "确定要将 <strong>{email}</strong> 从组织中移除吗？此操作不可撤销。"
+      },
+      "actions": {
+        "suspendUser": "停用用户",
+        "cancelInvitation": "取消邀请",
+        "keepInvitation": "保留邀请",
+        "remove": "移除",
+        "removeAdmin": "移除管理员",
+        "makeAdmin": "设为管理员",
+        "activateUser": "激活用户"
+      },
+      "status": {
+        "active": "活跃",
+        "pending": "待处理",
+        "inactive": "未激活",
+        "revoked": "已撤销"
+      },
+      "columns": {
+        "member": "成员",
+        "role": "角色",
+        "status": "状态",
+        "joined": "加入时间"
+      },
+      "you": "你",
+      "roles": {
+        "admin": "管理员",
+        "member": "成员"
+      },
+      "invitedOn": "已邀请 {date}",
+      "title": "成员",
+      "description": "邀请和管理团队成员，分配角色，并控制组织访问权限。",
+      "inviteMember": "邀请成员",
+      "domainAutoJoin": {
+        "title": "域名自动加入",
+        "description": "允许匹配邮箱域名的用户自动加入"
+      },
+      "counts": {
+        "activeMembers": "{count} 位活跃成员",
+        "pendingInvitations": "{count} 个待处理邀请"
+      },
+      "tabs": {
+        "activeMembers": "活跃成员 ({count})",
+        "pendingInvitations": "待处理邀请 ({count})",
+        "inactiveMembers": "未激活成员 ({count})"
+      },
+      "search": {
+        "activePlaceholder": "搜索活跃成员...",
+        "pendingPlaceholder": "搜索待处理邀请...",
+        "inactivePlaceholder": "搜索未激活成员..."
+      }
+    },
+    "integrations": {
+      "settingsModal": {
+        "title": "Slack 设置",
+        "defaultStartingUrl": "默认起始 URL",
+        "defaultTestAccount": "默认测试账号"
+      },
+      "slack": {
+        "description": "连接 Slack，在团队频道接收测试通知与告警。",
+        "workspace": "工作区",
+        "teamId": "Team ID",
+        "defaultChannel": "默认频道",
+        "connect": "连接 Slack",
+        "revokeConfirm": "确定要撤销 Slack 集成吗？这将禁用所有与 Slack 相关的功能。",
+        "connectedToChannel": "已连接 Slack 频道：{channel}（团队：{team}）",
+        "disconnect": "断开连接",
+        "name": "Slack"
+      },
+      "title": "集成",
+      "description": "连接外部服务以增强测试工作流",
+      "connected": "已连接",
+      "notConnected": "未连接",
+      "connectedBy": "连接人",
+      "unknown": "未知",
+      "revokeAccess": "撤销访问",
+      "comingSoonTitle": "更多集成即将上线",
+      "comingSoonDescription": "我们正在增加更多集成，以帮助你简化工作流程。",
+      "comingSoonCta": "即将上线",
+      "errors": {
+        "failedToCheckStatus": "检查集成状态失败",
+        "failedToRevoke": "撤销集成失败"
+      },
+      "linear": {
+        "description": "连接 Linear，以接收问题通知并将项目数据与测试同步。",
+        "organization": "组织",
+        "connect": "连接 Linear",
+        "revokeConfirm": "确定要撤销 Linear 集成吗？这将禁用所有与 Linear 相关的功能。",
+        "name": "Linear"
+      }
+    },
+    "testData": {
+      "failedToFetch": "获取测试数据失败",
+      "fileTooLargeTitle": "文件过大",
+      "uploadedSuccessfully": "测试数据上传成功",
+      "updatedSuccessfully": "测试数据更新成功",
+      "deletedSuccessfully": "测试数据删除成功",
+      "failedToDelete": "删除测试数据失败",
+      "downloadedSuccessfully": "测试数据下载成功",
+      "failedToDownload": "下载测试数据失败",
+      "actions": {
+        "download": "下载",
+        "update": "更新",
+        "delete": "删除"
+      },
+      "title": "测试数据",
+      "description": "使用图片、视频、CSV 或文档等测试数据文件来模拟真实用户流程（最大大小：{maxFileSizeMb}MB）。",
+      "uploadFile": "上传文件",
+      "overwriteModal": {
+        "title": "覆盖现有测试数据",
+        "message": "名为“{fileName}”的文件已存在，是否覆盖？",
+        "confirm": "覆盖"
+      },
+      "deleteModal": {
+        "title": "删除测试数据",
+        "message": "确定要删除“{name}”吗？此操作不可撤销。",
+        "warning": "警告：这也会从所有正在使用该测试数据的测试用例中移除它。"
+      },
+      "table": {
+        "fileId": "文件 ID",
+        "name": "名称",
+        "usedBy": "使用于",
+        "lastUpdated": "最后更新"
+      }
+    },
+    "variables": {
+      "failedToFetch": "获取变量失败",
+      "nameAndValueRequired": "名称和值为必填项",
+      "createdSuccessfully": "变量创建成功",
+      "failedToCreate": "创建变量失败",
+      "deletedSuccessfully": "变量删除成功",
+      "failedToDelete": "删除变量失败",
+      "updatedSuccessfully": "变量更新成功",
+      "failedToUpdate": "更新变量失败",
+      "globalLabel": "全局",
+      "environmentLabel": "环境",
+      "columns": {
+        "name": "名称",
+        "value": "值",
+        "sensitive": "敏感"
+      },
+      "sensitiveYes": "是",
+      "sensitiveNo": "否",
+      "title": "全局变量",
+      "description": "变量可在测试和环境中复用。使用它们可以让测试更灵活、可配置且更安全。",
+      "searchPlaceholder": "搜索变量...",
+      "allEnvironments": "全部环境",
+      "allEnvironmentsDescription": "显示所有环境中的变量",
+      "globalDescription": "在所有环境中可用",
+      "addConstant": "添加变量",
+      "addModal": {
+        "title": "新增变量"
+      },
+      "editModal": {
+        "title": "编辑变量"
+      },
+      "updateConstant": "更新变量",
+      "form": {
+        "nameLabel": "名称",
+        "namePlaceholder": "变量名称",
+        "valueLabel": "值",
+        "valuePlaceholder": "变量值",
+        "sensitiveLabel": "敏感数据",
+        "sensitiveDescription": "将此变量标记为包含敏感信息（密码、API Key 等）",
+        "scopeLabel": "作用域",
+        "scopePlaceholder": "选择作用域"
+      },
+      "deleteModal": {
+        "title": "确认删除",
+        "message": "确定要删除此变量吗？此操作不可撤销。"
+      }
+    },
+    "autoFix": {
+      "failedToUpdateSetting": "更新设置失败",
+      "enabledMessage": "已启用测试失败自动修复",
+      "disabledMessage": "已禁用测试失败自动修复",
+      "notAvailable": "该功能不可用。",
+      "title": "自动修复",
+      "runOnTestFailure": "测试失败时运行",
+      "description": "使用 AI 自动分析并修复失败测试。单个测试用例可覆盖该设置。"
+    },
+    "environmentSelect": {
+      "nameAndUrlRequired": "环境名称和 URL 为必填项",
+      "invalidUrlFormat": "请输入有效的 URL 格式",
+      "createdSuccessfully": "环境创建成功",
+      "errorCreating": "创建环境时发生错误",
+      "createNewEnvironment": "创建新环境",
+      "nothingFound": "未找到环境",
+      "environmentNameLabel": "环境名称",
+      "environmentNamePlaceholder": "e.g., Production",
+      "environmentUrlLabel": "环境 URL",
+      "environmentUrlPlaceholder": "https://app.example.com",
+      "createButton": "创建环境"
+    },
+    "notifications": {
+      "title": "通知",
+      "pageDescription": "设置 Slack 与 webhook 集成以接收测试结果通知。",
+      "docs": "文档 ↗",
+      "loading": "请稍候...",
+      "errors": {
+        "failedToFetchChannels": "获取频道失败",
+        "failedToLoadWebhookEndpoints": "加载 webhook 端点失败",
+        "failedToCreateChannel": "创建频道失败",
+        "failedToDeleteChannel": "删除频道失败",
+        "invalidStateToken": "状态令牌无效，请重试。",
+        "failedToConnectSlack": "连接 Slack 失败。",
+        "failedToConnectSlackRetry": "连接 Slack 失败，请重试。",
+        "connectedButFailedToSave": "已连接 Slack，但保存设置失败，请重试。",
+        "slackNotConfigured": "Slack 集成配置不正确，请联系支持。",
+        "failedToDisconnectSlack": "断开 Slack 连接失败，请重试。",
+        "failedToSaveWebhook": "保存 webhook 端点失败，请重试。",
+        "failedToDeleteWebhook": "删除 webhook 端点失败，请重试。",
+        "failedToUpdateWebhook": "更新 webhook 端点失败，请重试。",
+        "failedToGenerateWebhookSecret": "生成 webhook 密钥失败，请重试。"
+      },
+      "success": {
+        "connectedSlack": "Slack 连接成功！",
+        "disconnectedSlack": "Slack 已成功断开连接！",
+        "webhookUpdated": "Webhook 端点更新成功！",
+        "webhookCreated": "Webhook 端点创建成功！",
+        "webhookDeleted": "Webhook 端点删除成功！",
+        "webhookEnabled": "Webhook 端点已启用！",
+        "webhookDisabled": "Webhook 端点已禁用！"
+      },
+      "slack": {
+        "tab": "Slack",
+        "connectPopupTitle": "连接到 Slack",
+        "notConfigured": "Slack 集成尚未配置。请联系支持以启用该功能。",
+        "loadingChannels": "正在加载 Slack 频道",
+        "sectionTitle": "Slack 通知",
+        "sectionDescription": "连接 Slack 频道以接收测试通知。在此配置频道后，可在各测试计划中订阅。",
+        "connectChannel": "连接频道"
+      },
+      "webhooks": {
+        "tab": "Webhooks",
+        "loadingEndpoints": "正在加载 webhook 端点",
+        "sectionTitle": "Webhook 端点",
+        "sectionDescription": "配置 webhook 端点以通过 HTTP POST 接收测试通知。在此创建端点后，可在各测试计划中订阅。",
+        "addWebhook": "添加 Webhook"
+      }
+    },
+    "usage": {
+      "title": "用量统计",
+      "description": "监控测试执行用量并跟踪性能指标",
+      "loading": "正在加载用量数据...",
+      "errors": {
+        "failedToLoadUsageData": "加载用量数据失败",
+        "failedToLoadBreakdownData": "加载明细数据失败"
+      },
+      "yesterdayRuns": "昨日运行次数",
+      "thisMonthRuns": "本月运行次数",
+      "thisYearRuns": "今年运行次数",
+      "simpleReliableCounts": "仅统计简单可靠计数",
+      "breakdownTitle": "用量明细",
+      "period": {
+        "byDay": "按天",
+        "byWeek": "按周",
+        "byMonth": "按月"
+      },
+      "exportCsv": "导出 CSV",
+      "table": {
+        "period": "周期",
+        "totalRuns": "总运行次数"
+      }
+    }
+  },
+  "DeviceDisplay": {
+    "device": "设备",
+    "defaultBrowserConfig": "默认浏览器配置",
+    "screen": "屏幕",
+    "viewport": "视口",
+    "scaleFactor": "缩放因子",
+    "type": "类型",
+    "touchSupport": "触控支持",
+    "userAgent": "User Agent",
+    "mobile": "移动端",
+    "desktop": "桌面端",
+    "yes": "是",
+    "no": "否"
+  },
+  "AgentTask": {
+    "header": {
+      "agentTasks": "Agent 任务",
+      "noTasks": "暂无任务",
+      "delete": "删除",
+      "titleUpdatedSuccessfully": "任务标题更新成功",
+      "titleUpdateFailed": "更新任务标题失败"
+    },
+    "pageView": {
+      "connecting": "正在连接屏幕广播...",
+      "failedToLoad": "加载内容失败",
+      "screencastDisconnected": "屏幕广播已断开",
+      "waitingForConnection": "正在等待建立连接...",
+      "taskPageViewAlt": "任务页面视图",
+      "taskScreencast": "任务屏幕广播",
+      "watchAgentBrowser": "实时查看 Agent 浏览器"
+    },
+    "stepList": {
+      "taskInformation": "任务信息",
+      "pick": "选择",
+      "taskId": "任务 ID",
+      "status": "状态",
+      "createdAt": "创建于",
+      "testCaseId": "测试用例 ID",
+      "notAvailable": "N/A",
+      "unknown": "未知"
+    },
+    "generatedTestCases": {
+      "sectionTitle": "已生成测试用例",
+      "sectionSubtitle": "由描述生成的测试用例。",
+      "deleteTestCaseTitle": "删除测试用例？",
+      "confirmDeleteSingle": "确定要删除此测试用例吗？",
+      "deletedSuccessfully": "测试用例删除成功",
+      "failedToDelete": "删除测试用例失败",
+      "deleteTestCasesTitle": "删除测试用例？",
+      "confirmDeleteMultiple": "确定要删除 {noun} 吗？此操作无法撤销。",
+      "theseTestCases": "这些测试用例",
+      "thisTestCase": "此测试用例",
+      "testCasesDeletedSuccessfully": "测试用例删除成功",
+      "failedToDeleteTestCases": "删除测试用例失败",
+      "columnId": "ID",
+      "columnTitle": "标题",
+      "columnStatus": "状态",
+      "columnGeneratedSteps": "生成步骤",
+      "generatingSteps": "正在生成测试步骤...",
+      "viewDetails": "查看测试用例详情",
+      "deleteTestCaseTooltip": "删除测试用例",
+      "deleteSelected": "删除所选（{count}）",
+      "noTestCasesYet": "尚未生成测试用例",
+      "noTestCasesSubtext": "生成的测试用例将显示在这里"
+    },
+    "reviewDescriptions": {
+      "sectionTitle": "审核测试描述",
+      "sectionSubtitle": "请审核并选择你要生成和执行的测试用例。",
+      "columnTitle": "标题",
+      "columnDescription": "描述",
+      "testNamePlaceholder": "输入测试名称",
+      "testDescriptionPlaceholder": "输入测试描述",
+      "generateTestCase": "生成测试用例",
+      "deleteDescription": "删除描述",
+      "dragToResizeColumns": "拖动调整列宽",
+      "addTestCase": "添加测试用例",
+      "generateTestCases": "生成 {count} 个测试用例"
+    },
+    "taskItem": {
+      "statusNotStarted": "未开始",
+      "statusAgentExploring": "Agent 探索中",
+      "statusGenerating": "生成中",
+      "statusFailed": "失败",
+      "statusFinished": "已完成",
+      "statusDone": "完成",
+      "timeJustNow": "刚刚",
+      "timeHoursAgo": "{hours} 小时前",
+      "timeDaysAgo": "{days} 天前",
+      "copyTitle": "复制标题",
+      "copyGoal": "复制目标"
+    },
+    "page": {
+      "initializing": "初始化中...",
+      "preparingToAnalyzeWebsite": "正在准备分析目标网站。",
+      "exploringTargetUrl": "正在探索目标 URL",
+      "exploringTargetUrlDescription": "AI agent 正在与网站交互，以理解其功能并生成全面的测试描述。",
+      "analyzingWebsite": "正在分析网站",
+      "analyzingWebsiteDescription": "AI agent 正在处理网站结构并规划测试用例场景。",
+      "pageLoading": "页面加载中",
+      "pageLoadingDescription": "正在加载目标网站并准备分析。",
+      "startingAnalysis": "开始分析",
+      "startingAnalysisDescription": "正在初始化网站分析流程。",
+      "targetUrl": "目标 URL",
+      "goal": "目标",
+      "activityLog": "活动日志",
+      "processing": "处理中...",
+      "generatingTestBatch": "正在生成测试批次",
+      "progressHintPrefix": "通常需要",
+      "oneToTwoMinutes": "1-2 minutes",
+      "progressHintMiddle": "你可以",
+      "leaveAndComeBack": "离开此页面后再回来",
+      "progressHintSuffix": "- 你的进度会被保存！",
+      "testCreatedSuccessfully": "测试创建成功",
+      "failedToCreateTest": "创建测试失败，请重试。",
+      "testsCreatedSuccessfully": "测试创建成功",
+      "failedToCreateTests": "创建测试失败，请重试。",
+      "fillNameAndDescriptionForSelected": "请为所有已选描述填写名称和描述。",
+      "copied": "已复制",
+      "copy": "复制",
+      "noTaskSelected": "未选择任务",
+      "selectTaskFromTopLeft": "请点击左上角按钮选择任务",
+      "selectTestGenerationTask": "选择测试生成任务",
+      "chooseTaskFromList": "从列表中选择任务以查看详情",
+      "generationFailed": "生成失败",
+      "batchCreationFailedUnknown": "批量创建因未知原因失败，请重试。",
+      "deleteTask": "删除任务",
+      "deleteTaskTitle": "删除任务",
+      "deleteTaskConfirmMessage": "确定要删除此任务吗？",
+      "delete": "删除",
+      "cancel": "取消",
+      "taskDeletedSuccessfully": "任务删除成功",
+      "failedToDeleteTask": "删除任务失败",
+      "loadingTestGenerationTasks": "正在加载测试生成任务...",
+      "loadFailed": "加载失败",
+      "failedToLoadTestGenerationTasks": "加载测试生成任务失败，请检查网络连接后重试。",
+      "reload": "重新加载",
+      "noTestGenerationTasks": "暂无测试生成任务",
+      "createFirstTestGenerationTask": "创建你的第一个测试生成任务以开始使用"
+    }
+  },
+  "Core": {
+    "userAvatar": {
+      "unknownUser": "未知用户",
+      "runByUnknown": "{action}（执行者：未知用户）",
+      "runBy": "{action}（执行者：{name}）"
+    },
+    "sectionedList": {
+      "actionsHeader": "操作",
+      "itemsSelected": "{count, plural, one {已选择 # 项} other {已选择 # 项}}"
+    },
+    "baseList": {
+      "fiftyPerPage": "每页 50 条",
+      "hundredPerPage": "每页 100 条",
+      "showingItems": "显示第 {start}-{end} 项，共 {total} 项",
+      "itemsSelected": "{count, plural, one {已选择 # 项} other {已选择 # 项}}"
+    },
+    "usageModal": {
+      "defaultTitle": "使用情况",
+      "usedByCount": "{count, plural, one {（被 # 个测试用例使用）} other {（被 # 个测试用例使用）}}",
+      "noTestCasesUsing": "没有测试用例使用此{entityType}",
+      "failedToLoad": "加载测试用例失败：{error}"
+    },
+    "resultBadge": {
+      "analyzing": "分析中...",
+      "analyzingTooltip": "AI 正在分析测试失败",
+      "passed": "通过",
+      "failed": "失败",
+      "pending": "处理中",
+      "queued": "排队中",
+      "skipped": "已跳过",
+      "notStarted": "未开始"
+    }
+  },
+  "Crud": {
+    "cancel": "取消",
+    "fieldRequired": "{label}为必填项",
+    "actionsHeader": "操作",
+    "editLabel": "编辑",
+    "deleteLabel": "删除",
+    "yes": "是",
+    "no": "否",
+    "noMatchSearch": "没有与搜索匹配的{title}",
+    "noItemsFound": "未找到{title}",
+    "refreshLabel": "刷新",
+    "loadingTitle": "正在加载{title}",
+    "searchPlaceholder": "搜索{title}...",
+    "createTitle": "创建{title}",
+    "editTitle": "编辑{title}",
+    "createLabel": "创建",
+    "updateLabel": "更新",
+    "deleteConfirmTitle": "删除{title}",
+    "deleteConfirmMessage": "确定要删除此{title}吗？此操作无法撤销。"
+  },
+  "Editor": {
+    "codeEditor": {
+      "saveChanges": "保存更改",
+      "saveSuccessTitle": "成功",
+      "saveSuccessMessage": "代码保存成功",
+      "saveErrorTitle": "错误",
+      "saveErrorMessage": "保存代码更改失败"
+    },
+    "functionModal": {
+      "titleStep0": "选择函数",
+      "titleStep1": "配置函数“{name}”的参数",
+      "step0Label": "选择函数",
+      "step0Description": "选择一个函数",
+      "step1Label": "设置参数",
+      "step1Description": "配置参数",
+      "searchPlaceholder": "搜索函数...",
+      "noFunctionsFound": "未找到启用的函数。请在“函数”模块中创建并启用函数后再用于测试。",
+      "columnName": "名称",
+      "columnDescription": "描述",
+      "noDescription": "无描述",
+      "parametersTitle": "参数",
+      "noCustomParams": "该函数没有可配置的自定义参数。",
+      "paramValuePlaceholder": "输入值",
+      "back": "返回",
+      "confirm": "确认"
+    },
+    "monacoEditor": {
+      "save": "保存",
+      "expandFullScreen": "展开到全屏"
+    }
+  },
+  "TestEditor": {
+    "failedToSaveTestFlow": "保存测试流程失败",
+    "loadingTestCaseDetails": "正在加载测试用例详情",
+    "untitled": "未命名",
+    "backToMainWindow": "返回主窗口"
+  },
+  "EnvironmentComponents": {
+    "list": {
+      "columnId": "ID",
+      "columnName": "名称",
+      "columnDescription": "描述",
+      "idPrefix": "ENV-{id}",
+      "deleteTitle": "删除环境",
+      "deleteConfirm": "确定要删除环境 \"{name}\" 吗？此操作无法撤销。",
+      "cancel": "取消",
+      "deleteButton": "删除环境",
+      "bulkDeleteTitle": "删除多个环境",
+      "bulkDeleteConfirm": "{count, plural, one {确定要删除 # 个环境吗？} other {确定要删除 # 个环境吗？}}此操作无法撤销。",
+      "bulkDeleteButton": "删除环境",
+      "makeDefault": "设为默认",
+      "deleteSelected": "删除所选",
+      "edit": "编辑"
+    },
+    "details": {
+      "namePlaceholder": "环境名称",
+      "descriptionPlaceholder": "添加描述...",
+      "urlPlaceholder": "环境 URL",
+      "makeDefault": "设为默认环境",
+      "saving": "保存中...",
+      "saved": "已保存",
+      "failedToSave": "保存失败"
+    },
+    "selectList": {
+      "columnEnvironment": "环境",
+      "columnUrl": "URL",
+      "columnDefault": "默认"
+    },
+    "delete": {
+      "title": "删除环境",
+      "checkingInUse": "正在检查环境是否被使用...",
+      "confirmAlertTitle": "确认删除",
+      "confirmMessage": "确定要删除环境 \"{name}\" 吗？此操作无法撤销。",
+      "inUseAlertTitle": "环境正在使用",
+      "inUseMessage": "该环境当前被测试用例使用。删除后可能影响现有配置。请先从所有测试用例中移除此环境。",
+      "cancel": "取消",
+      "deleteButton": "删除环境",
+      "errorTitle": "错误",
+      "failedToCheck": "检查环境是否被使用失败"
+    },
+    "testAccountsModal": {
+      "title": "测试账号",
+      "addButton": "添加测试账号",
+      "noAccounts": "该环境暂无测试账号",
+      "columnUsername": "用户名",
+      "columnPassword": "密码",
+      "columnName": "名称",
+      "cacheClearedTitle": "缓存已清除",
+      "cacheClearedMessage": "已为 {username} 清除缓存",
+      "failedToClearTitle": "清除缓存失败",
+      "failedToClearMessage": "为 {username} 清除缓存失败",
+      "errorTitle": "错误",
+      "errorMessage": "清除缓存出错"
+    },
+    "sidebar": {
+      "title": "环境",
+      "navEnvironments": "环境",
+      "navTestAccounts": "测试账号"
+    },
+    "layout": {
+      "title": "环境"
+    },
+    "listPage": {
+      "title": "环境",
+      "nameAndUrlRequired": "名称和 URL 为必填项",
+      "environmentCreatedSuccessfully": "环境创建成功",
+      "failedToCreateEnvironment": "创建环境失败",
+      "environmentDeletedSuccessfully": "环境删除成功",
+      "failedToDeleteEnvironment": "删除环境失败",
+      "environmentUpdatedSuccessfully": "环境更新成功",
+      "failedToUpdateEnvironment": "更新环境失败",
+      "columnId": "ID",
+      "columnName": "名称",
+      "columnDomainUrl": "域名 URL",
+      "tooltipTestAccounts": "测试账号",
+      "tooltipNewTestAccount": "新建测试账号",
+      "tooltipEdit": "编辑",
+      "delete": "删除",
+      "description": "添加域名 URL 来定义测试运行位置，例如生产或预发布环境。",
+      "docs": "文档 ↗",
+      "environmentNamePlaceholder": "环境名称",
+      "domainUrlPlaceholder": "域名 URL",
+      "addEnvironment": "添加环境"
+    },
+    "accountsPage": {
+      "cacheClearedSuccessfully": "缓存清除成功",
+      "cacheClearedFor": "已为 {username} 清除缓存",
+      "failedToClearCache": "清除缓存失败",
+      "failedToClearCacheFor": "为 {username} 清除缓存失败",
+      "errorClearingCache": "清除缓存出错",
+      "errorClearingCacheFor": "为 {username} 清除缓存时出错",
+      "environment": "环境",
+      "columnId": "ID",
+      "columnUsername": "用户名",
+      "columnPassword": "密码",
+      "columnName": "名称",
+      "columnLoginHints": "登录提示",
+      "columnCreated": "创建时间",
+      "copied": "已复制！",
+      "copyUsername": "复制用户名",
+      "edit": "编辑",
+      "more": "更多",
+      "clearCache": "清除缓存",
+      "delete": "删除",
+      "failedToLoadTestAccounts": "加载测试账号失败",
+      "title": "测试账号",
+      "description": "按环境添加账号以确保认证稳定可靠。",
+      "docs": "文档 ↗",
+      "searchTestAccountsPlaceholder": "搜索测试账号...",
+      "allEnvironments": "全部环境",
+      "showAccountsFromAllEnvironments": "显示所有环境的账号",
+      "addTestAccount": "添加测试账号"
+    }
+  },
+  "Issues": {
+    "notifications": {
+      "errorSearchFailed": "搜索问题失败",
+      "errorMissingTestRun": "无法关联问题：缺少测试运行信息",
+      "issueReplaced": "问题替换成功",
+      "issueLinked": "问题关联成功",
+      "failedToLink": "关联问题失败",
+      "errorMissingUnlinkInfo": "无法取消关联问题：缺少信息",
+      "issueUnlinked": "问题取消关联成功",
+      "failedToUnlink": "取消关联问题失败",
+      "failedToLoadIssue": "加载问题失败",
+      "issueDeleted": "问题删除成功",
+      "failedToDelete": "删除问题失败",
+      "statusUpdated": "问题状态更新成功",
+      "failedToUpdateStatus": "更新问题状态失败",
+      "externalUrlUpdated": "外部工单 URL 更新成功",
+      "failedToUpdateUrl": "更新外部工单 URL 失败",
+      "issuesDeleted": "问题删除成功",
+      "failedToDeleteIssues": "删除问题失败",
+      "failedToUpdateTitle": "更新标题失败",
+      "failedToUpdateDescription": "更新描述失败",
+      "failedToUpdateLabels": "更新标签失败",
+      "testResultUnlinked": "测试结果取消关联成功",
+      "failedToUnlinkResult": "取消关联测试结果失败",
+      "copiedTitle": "已复制",
+      "copiedMessage": "完整问题详情已复制到剪贴板",
+      "failedToCopyDetails": "复制问题详情失败"
+    },
+    "actionButton": {
+      "issueLinked": "问题已关联",
+      "linkToIssue": "关联问题",
+      "unlinkCurrentIssue": "取消当前问题关联",
+      "replaceWithAnother": "替换为其他问题",
+      "createNewIssue": "创建新问题",
+      "linkToExistingIssue": "关联现有问题",
+      "replaceLinkedIssueTitle": "替换已关联问题",
+      "linkExistingIssueTitle": "关联现有问题",
+      "currentLinkedIssue": "当前关联问题：",
+      "searchLabel": "搜索问题",
+      "searchPlaceholder": "按标题、描述或标签搜索...",
+      "foundResults": "找到 {count} 个问题",
+      "externalTicket": "外部工单",
+      "replaceButton": "替换",
+      "linkButton": "关联",
+      "noIssuesFound": "未找到与 \"{query}\" 相关的问题",
+      "enterSearchTerms": "输入搜索词以查找现有问题"
+    },
+    "filterBar": {
+      "searchPlaceholder": "搜索问题...",
+      "statusPlaceholder": "状态",
+      "clearFilters": "清除筛选"
+    },
+    "list": {
+      "columnId": "ID",
+      "columnTitle": "标题",
+      "columnStatus": "状态",
+      "columnExternalTicket": "外部工单",
+      "columnUpdated": "更新时间",
+      "columnCreated": "创建时间",
+      "columnCreatedBy": "创建者",
+      "deleteIssueTitle": "删除问题",
+      "deleteIssueConfirm": "确定要删除 \"{title}\" 吗？此操作无法撤销。",
+      "deleteSelectedTitleMultiple": "删除 {count} 个问题？",
+      "deleteSelectedTitleSingle": "删除问题？",
+      "deleteSelectedConfirmMultiple": "确定要删除这些问题吗？此操作无法撤销。",
+      "deleteSelectedConfirmSingle": "确定要删除此问题吗？此操作无法撤销。",
+      "deleteButton": "删除",
+      "cancelButton": "取消",
+      "deleteSelected": "删除所选（{count}）",
+      "addExternalTicketUrl": "添加外部工单 URL",
+      "ticketUrlPlaceholder": "输入工单 URL（例如：https://jira.company.com/issue-123）",
+      "addButton": "添加",
+      "issuesForTestCase": "测试用例 {id} 的问题",
+      "issuesForTestRun": "测试运行 {id} 的问题",
+      "noIssuesFound": "未找到问题",
+      "loadingText": "正在加载问题",
+      "loadingSubText": "正在获取问题..."
+    },
+    "statusSelector": {
+      "changeStatus": "更改状态"
+    },
+    "linkedIssues": {
+      "viewExternalTicket": "查看外部工单",
+      "viewIssue": "查看问题"
+    },
+    "shareModal": {
+      "title": "分享问题",
+      "urlOnly": "仅 URL",
+      "titleUrl": "标题 + URL",
+      "titleSummaryUrl": "标题 + 摘要 + URL",
+      "copyFullDetails": "复制完整详情"
+    },
+    "editModal": {
+      "createTitle": "创建新问题",
+      "editTitle": "编辑问题",
+      "titleLabel": "标题",
+      "titlePlaceholder": "输入问题标题",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "描述问题...",
+      "statusLabel": "状态",
+      "externalTicketUrlLabel": "外部工单 URL",
+      "externalTicketUrlPlaceholder": "https://...",
+      "labelsLabel": "标签",
+      "searchTagsPlaceholder": "搜索标签...",
+      "titleRequired": "标题为必填项",
+      "issueCreated": "问题创建成功",
+      "issueUpdated": "问题更新成功",
+      "failedToCreate": "创建问题失败",
+      "failedToUpdate": "更新问题失败",
+      "createButton": "创建问题",
+      "updateButton": "更新问题"
+    },
+    "selector": {
+      "searchPlaceholder": "搜索问题...",
+      "createNewIssue": "创建新问题",
+      "viewExternalTicket": "查看外部工单",
+      "viewIssue": "查看问题",
+      "linkToIssue": "关联问题"
+    },
+    "detail": {
+      "titlePlaceholder": "添加标题...",
+      "descriptionPlaceholder": "添加描述...",
+      "relatedTestResults": "相关测试结果",
+      "removeFromIssue": "从问题中移除",
+      "properties": "属性",
+      "copied": "已复制！",
+      "copyUrl": "复制 URL",
+      "statusLabel": "状态",
+      "createdLabel": "创建时间",
+      "updatedLabel": "更新时间",
+      "createdByLabel": "创建者",
+      "externalTicketLabel": "外部工单",
+      "externalTicketPlaceholder": "输入外部工单 URL",
+      "labelsLabel": "标签",
+      "editLabels": "编辑标签",
+      "addLabel": "添加标签",
+      "searchLabelsPlaceholder": "搜索标签...",
+      "deleteIssueTitle": "删除问题",
+      "deleteIssueConfirm": "确定要删除 \"{title}\" 吗？此操作无法撤销。",
+      "deleteButton": "删除",
+      "cancelButton": "取消",
+      "unlinkTestResultTitle": "取消关联测试结果",
+      "unlinkTestResultConfirm": "确定要将测试结果 #{id} 与此问题取消关联吗？这不会删除测试结果本身。",
+      "unlinkButton": "取消关联",
+      "issueNotFound": "未找到问题",
+      "loadingText": "正在加载问题",
+      "loadingSubText": "正在获取问题详情..."
+    }
+  },
+  "Knowledge": {
+    "sidebar": {
+      "title": "知识库",
+      "globalKnowledge": "全局知识",
+      "manualKnowledge": "手动知识",
+      "extractedKnowledge": "提取知识"
+    },
+    "layout": {
+      "toggleSidebar": "切换侧边栏",
+      "title": "知识库"
+    },
+    "systemPage": {
+      "title": "系统知识",
+      "description": "添加适用于所有 AI 测试的共享指令，例如引导流程、命名规则或已知弹窗。",
+      "docsLink": "文档 ↗",
+      "contentPlaceholder": "输入系统知识内容...",
+      "saveChanges": "保存更改"
+    },
+    "manualPage": {
+      "title": "手动知识",
+      "description": "为特定流程、UI 行为或业务规则添加可复用知识，供 AI 测试在需要时引用。",
+      "docsLink": "文档 ↗",
+      "entriesCount": "{count, plural, one {# 条知识} other {# 条知识}}",
+      "searchPlaceholder": "搜索内容...",
+      "add": "添加",
+      "errorTitle": "错误",
+      "newContentPlaceholder": "添加新知识内容...",
+      "platform": "平台",
+      "scenario": "场景",
+      "environments": "环境",
+      "environmentWithId": "环境 {id}"
+    },
+    "extractedPage": {
+      "title": "提取知识",
+      "description": "从测试用例自动提取的知识。这些条目可编辑，但不能手动创建。",
+      "refreshAll": "全部刷新",
+      "tabs": {
+        "knowledgeEntries": "知识条目（{count}）",
+        "sourceTestCases": "来源测试用例（{count}）"
+      },
+      "knowledgeCount": "{count, plural, one {# 条知识} other {# 条知识}}",
+      "sourceCount": "{count, plural, one {# 个包含提取知识的测试用例} other {# 个包含提取知识的测试用例}}",
+      "searchPlaceholder": "搜索内容...",
+      "errorTitle": "错误",
+      "emptyKnowledge": {
+        "title": "未找到提取知识",
+        "description": "从测试用例提取后，知识将显示在这里。",
+        "hint": "前往任意测试用例并点击“提取知识”以开始。"
+      },
+      "emptySources": {
+        "title": "未找到测试用例提取记录",
+        "description": "包含提取知识的测试用例将显示在这里。",
+        "hint": "前往任意测试用例并点击“提取知识”以开始。"
+      },
+      "notifications": {
+        "reExtractedTitle": "知识重新提取完成",
+        "reExtractedMessage": "已成功从该测试用例重新提取知识",
+        "failedTitle": "重新提取失败",
+        "failedMessage": "重新提取知识失败"
+      }
+    },
+    "table": {
+      "noKnowledgeYet": "暂无知识。创建第一条记录开始构建你的知识库。",
+      "createKnowledge": "创建知识",
+      "platformLabel": "平台",
+      "scenarioLabel": "场景",
+      "environmentsLabel": "环境",
+      "allEnvironments": "所有环境",
+      "generalScenario": "通用",
+      "loginScenario": "登录",
+      "all": "全部",
+      "desktop": "桌面端",
+      "mobile": "移动端",
+      "scenarioTooltipGeneral": "通用：用于所有测试场景",
+      "scenarioTooltipLogin": "登录：仅用于 agent 自动登录",
+      "cancelButton": "取消",
+      "saveButton": "保存",
+      "editKnowledgeTooltip": "编辑知识",
+      "deleteKnowledgeTooltip": "删除知识",
+      "deleteModalTitle": "删除知识",
+      "deleteModalMessage": "确定要删除这条知识吗？此操作无法撤销。",
+      "deleteButton": "删除",
+      "contentPlaceholder": "输入知识内容或答案..."
+    },
+    "editModal": {
+      "title": "编辑知识",
+      "contentLabel": "内容",
+      "contentPlaceholder": "输入知识内容或答案...",
+      "contentRequired": "内容为必填项",
+      "platformLabel": "平台",
+      "platformPlaceholder": "选择平台",
+      "platformAll": "全部",
+      "platformDesktop": "桌面端",
+      "platformMobile": "移动端",
+      "cancelButton": "取消",
+      "updateButton": "更新知识"
+    },
+    "richTextEditor": {
+      "invalidFileTypeTitle": "无效文件类型",
+      "invalidFileTypeMessage": "请选择有效图片文件（JPEG、PNG、GIF 或 WebP）",
+      "duplicateImageTitle": "重复图片",
+      "duplicateImageMessage": "该图片已存在于系统中。",
+      "processingFailedTitle": "处理失败",
+      "processingFailedMessage": "处理图片失败，请重试。",
+      "markdownMode": "Markdown",
+      "previewMode": "预览",
+      "collapseEditor": "收起编辑器",
+      "expandEditor": "展开编辑器",
+      "insertImage": "插入图片"
+    },
+    "extractionCard": {
+      "testCase": "测试用例 #{id}",
+      "outdated": "已过期",
+      "extracted": "提取于 {time}",
+      "testModified": "测试已在 {time} 修改",
+      "considerReextracting": "- 建议重新提取",
+      "knowledgeEntrySingular": "{count} 条知识",
+      "knowledgeEntriesPlural": "{count} 条知识",
+      "viewTestCase": "查看测试用例",
+      "reextractKnowledge": "重新提取知识",
+      "justNow": "刚刚",
+      "minutesAgo": "{count} 分钟前",
+      "hoursAgo": "{count} 小时前",
+      "daysAgo": "{count} 天前",
+      "monthsAgo": "{count} 个月前"
+    },
+    "toolbar": {
+      "undo": "撤销",
+      "redo": "重做",
+      "normalText": "正文",
+      "heading1": "标题 1",
+      "heading2": "标题 2",
+      "heading3": "标题 3",
+      "heading4": "标题 4",
+      "heading5": "标题 5",
+      "heading6": "标题 6",
+      "bold": "加粗",
+      "italic": "斜体",
+      "strikethrough": "删除线",
+      "inlineCode": "行内代码",
+      "clearFormatting": "清除格式",
+      "bulletList": "无序列表",
+      "numberedList": "有序列表",
+      "quote": "引用",
+      "codeBlock": "代码块",
+      "horizontalRule": "分隔线"
+    }
+  },
+  "Labels": {
+    "failedToCreate": "创建标签失败"
+  },
+  "TestFolder": {
+    "actionsModal": {
+      "selectedCount": "{count, plural, one {# 个测试用例} other {# 个测试用例}}",
+      "searchPlaceholder": "输入命令或搜索...",
+      "clearSearch": "清除搜索",
+      "noActionsFound": "未找到操作"
+    },
+    "autofixBadge": {
+      "autofixAvailable": "有可用自动修复",
+      "anAutofixIsAvailable": "有可用自动修复",
+      "viewResult": "查看结果（运行 {runId}）"
+    },
+    "folderActions": {
+      "createTest": "创建测试",
+      "createSubFolder": "创建子文件夹",
+      "rename": "重命名",
+      "duplicate": "复制",
+      "delete": "删除"
+    },
+    "folderContextMenu": {
+      "createTest": "创建测试",
+      "createSubFolder": "创建子文件夹",
+      "rename": "重命名",
+      "duplicate": "复制",
+      "delete": "删除"
+    },
+    "folderDialog": {
+      "titleRename": "重命名文件夹",
+      "titleCreate": "创建新文件夹",
+      "folderNameLabel": "文件夹名称",
+      "folderNamePlaceholder": "输入文件夹名称",
+      "parentFolderLabel": "父文件夹",
+      "parentFolderPlaceholder": "选择父文件夹（可选）",
+      "rootOption": "根目录（无父级）",
+      "cancel": "取消",
+      "saving": "保存中...",
+      "confirm": "确认"
+    },
+    "folderRow": {
+      "dropHere": "拖放到此处"
+    },
+    "folderDuplicate": {
+      "title": "复制文件夹",
+      "nameLabel": "新文件夹名称",
+      "namePlaceholder": "输入新文件夹名称",
+      "notice": "此操作将复制整个文件夹，包括所有子文件夹和测试用例。此操作不受当前筛选条件影响。",
+      "cancel": "取消",
+      "confirm": "复制",
+      "duplicating": "复制中...",
+      "success": "文件夹复制成功",
+      "failed": "文件夹复制失败"
+    },
+    "selectionBar": {
+      "selected": "已选择 {count} 个",
+      "clearSelection": "清除选择",
+      "runInCloud": "在云端运行",
+      "delete": "删除",
+      "actions": "操作",
+      "deleteModalTitle": "{count, plural, one {删除测试用例？} other {删除测试用例？}}",
+      "deleteModalMessage": "{count, plural, one {确定要删除此测试用例吗？此操作无法撤销。} other {确定要删除这些测试用例吗？此操作无法撤销。}}",
+      "deleteConfirm": "删除",
+      "deleteCancel": "取消",
+      "deleteSuccess": "{count, plural, one {测试用例删除成功} other {测试用例删除成功}}",
+      "deleteFailed": "删除测试用例失败",
+      "moveModalTitle": "{count, plural, one {将测试用例移动到文件夹} other {将测试用例移动到文件夹}}",
+      "moveModalDescription": "{count, plural, one {为该测试用例选择目标文件夹：} other {为这些测试用例选择目标文件夹：}}",
+      "moveModalPlaceholder": "选择目标文件夹（留空为根目录）",
+      "moveConfirm": "{count, plural, one {移动测试用例} other {移动测试用例}}",
+      "moveSuccess": "{count, plural, one {测试用例移动成功} other {测试用例移动成功}}",
+      "moveFailed": "移动测试用例失败",
+      "addToSuiteTitle": "添加到套件...",
+      "changeStatusTitle": "更改状态...",
+      "addLabelsTitle": "添加标签...",
+      "testCasesItemLabel": "测试用例",
+      "addEnvironmentTitle": "{count, plural, one {为测试用例添加环境配置} other {为测试用例添加环境配置}}",
+      "addEnvironmentNote": "{count, plural, one {注意：若所选测试用例已配置该环境，现有配置将被新设置替换。} other {注意：若所选测试用例已配置该环境，现有配置将被新设置替换。}}",
+      "addEnvironmentConfirm": "添加环境配置",
+      "selectEnvironmentError": "请选择环境",
+      "selectLabelError": "请至少选择一个标签",
+      "addedToSuiteSuccess": "{count, plural, one {测试用例添加到套件成功} other {测试用例添加到套件成功}}",
+      "addedToSuiteFailed": "添加测试用例到套件失败",
+      "alreadyInSuiteTitle": "已在套件中",
+      "alreadyInSuiteMessage": "部分或全部所选测试用例已在该套件中",
+      "environmentAddedAndUpdated": "已为 {added, plural, one {# 个测试用例} other {# 个测试用例}} 添加环境，并更新了 {overwritten, plural, one {# 个测试用例} other {# 个测试用例}} 的配置",
+      "environmentUpdated": "已更新 {overwritten, plural, one {# 个测试用例} other {# 个测试用例}} 的环境配置",
+      "environmentAdded": "已成功为 {added, plural, one {# 个测试用例} other {# 个测试用例}} 添加环境",
+      "environmentPartialSuccess": "已为 {successful, plural, one {# 个测试用例} other {# 个测试用例}} 添加/更新环境，但有 {failed} 个失败",
+      "environmentFailed": "为测试用例添加环境失败",
+      "duplicateModalTitle": "{count, plural, one {复制测试用例} other {复制测试用例}}",
+      "duplicateModalDescription": "选择复制后测试用例的目标文件夹（留空则各自保留在原文件夹）：",
+      "duplicateModalPlaceholder": "选择目标文件夹（留空则保留在原文件夹）",
+      "duplicateConfirm": "{count, plural, one {复制测试用例} other {复制测试用例}}",
+      "duplicateSuccess": "{count, plural, one {测试用例复制成功} other {测试用例复制成功}}",
+      "duplicateFailed": "复制测试用例失败",
+      "actionItems": {
+        "runInCloud": "在云端运行",
+        "moveToFolder": "移动到文件夹",
+        "addToSuite": "添加到套件",
+        "addEnvironmentConfig": "添加环境配置",
+        "changeStatus": "更改状态",
+        "addLabels": "添加标签",
+        "duplicate": "复制",
+        "deleteSelected": "删除所选"
+      }
+    },
+    "selectionManager": {
+      "clearSelection": "清除选择（{count}）"
+    },
+    "selectionModal": {
+      "goBack": "返回",
+      "clearSearch": "清除搜索",
+      "noOptionsFound": "未找到选项"
+    },
+    "testCaseContextMenu": {
+      "labelUpdateFailed": "更新测试用例标签失败",
+      "statusUpdatedSuccess": "测试用例状态已更新",
+      "statusUpdateFailed": "更新测试用例状态失败",
+      "deleteModalTitle": "删除测试用例？",
+      "deleteModalMessage": "确定要删除 \"{title}\" 吗？此操作无法撤销。",
+      "deleteConfirm": "删除",
+      "deleteCancel": "取消",
+      "deleteSuccess": "测试用例删除成功",
+      "deleteFailed": "删除测试用例失败",
+      "duplicateSuccess": "测试用例复制成功",
+      "duplicateFailed": "复制测试用例失败"
+    },
+    "testCaseLabelsSubmenu": {
+      "pickColorPlaceholder": "为标签选择颜色",
+      "addLabelsPlaceholder": "添加标签...",
+      "noColorsMatch": "无匹配颜色",
+      "noLabelsFound": "未找到标签",
+      "noLabelsAvailable": "暂无可用标签",
+      "createLabel": "创建标签 \"{name}\"",
+      "labelCreatedSuccess": "标签已创建",
+      "labelCreateFailed": "创建标签失败"
+    }
+  },
+  "Views": {
+    "managementModal": {
+      "title": "管理视图"
+    },
+    "contextMenu": {
+      "copyLink": "复制链接"
+    },
+    "list": {
+      "columns": {
+        "id": "ID",
+        "name": "名称",
+        "description": "描述",
+        "visibility": "可见性",
+        "owner": "所有者",
+        "created": "创建时间"
+      },
+      "visibility": {
+        "shared": "共享",
+        "private": "私有"
+      },
+      "actions": {
+        "copyLink": "复制链接"
+      },
+      "emptyState": {
+        "title": "视图",
+        "description": "视图是已保存的筛选组合，可帮助你快速找到需要的测试用例。创建你的第一个视图以开始使用。",
+        "primaryAction": "创建你的第一个视图"
+      },
+      "recordLabel": "视图"
+    },
+    "page": {
+      "tabs": {
+        "testViews": "测试视图",
+        "resultViews": "结果视图"
+      },
+      "emptyState": {
+        "testViews": {
+          "title": "测试视图",
+          "description": "视图是已保存的筛选组合，可帮助你快速找到需要的测试用例。创建你的第一个视图以开始使用。",
+          "primaryAction": "创建你的第一个视图"
+        },
+        "resultViews": {
+          "title": "结果视图",
+          "description": "结果视图是保存的筛选组合，帮助您快速找到所需的运行结果。创建您的第一个视图以开始使用。",
+          "primaryAction": "创建第一个视图"
+        }
+      },
+      "copySuffix": "(Copy)",
+      "failedToLoadViews": "加载视图失败",
+      "retry": "重试",
+      "deleteModal": {
+        "title": "删除视图",
+        "description": "确定要删除 \"{name}\" 吗？此操作无法撤销。"
+      },
+      "notifications": {
+        "linkCopied": {
+          "title": "链接已复制",
+          "message": "视图链接已复制到剪贴板"
+        },
+        "copyLinkFailed": "复制链接失败",
+        "duplicated": {
+          "message": "视图已复制为 \"{name}\""
+        },
+        "duplicateFailed": "复制视图失败",
+        "deleted": {
+          "message": "视图 \"{name}\" 删除成功"
+        },
+        "deleteFailed": "删除视图失败"
+      }
+    },
+    "selector": {
+      "copySuffix": "(Copy)",
+      "systemViews": {
+        "all": "全部测试",
+        "active": "启用",
+        "createdByMe": "由我创建"
+      },
+      "tooltips": {
+        "noFiltersApplied": "未应用筛选条件"
+      },
+      "actions": {
+        "copyLink": "复制链接",
+        "createNewView": "创建新视图",
+        "createTestCase": "创建测试用例"
+      },
+      "notifications": {
+        "linkCopied": {
+          "title": "链接已复制",
+          "message": "视图链接已复制到剪贴板"
+        },
+        "duplicated": {
+          "message": "视图已复制为 \"{name}\""
+        },
+        "duplicateFailed": "复制视图失败",
+        "deleted": {
+          "message": "视图 \"{name}\" 删除成功"
+        },
+        "deleteFailed": "删除视图失败"
+      },
+      "deleteModal": {
+        "title": "删除视图",
+        "description": "确定要删除 \"{name}\" 吗？此操作无法撤销。"
+      }
+    },
+    "table": {
+      "copySuffix": "(Copy)",
+      "columns": {
+        "name": "名称",
+        "visibility": "可见性",
+        "owner": "所有者"
+      },
+      "fields": {
+        "created": "创建时间"
+      },
+      "visibility": {
+        "shared": "共享",
+        "private": "私有"
+      },
+      "actions": {
+        "open": "打开",
+        "copyLink": "复制链接"
+      },
+      "emptyState": {
+        "description": "暂无视图。创建你的第一个视图以开始使用。"
+      },
+      "notifications": {
+        "linkCopied": {
+          "title": "链接已复制",
+          "message": "视图链接已复制到剪贴板"
+        },
+        "duplicated": {
+          "message": "视图已复制为 \"{name}\""
+        },
+        "duplicateFailed": "复制视图失败",
+        "deleted": {
+          "message": "视图 \"{name}\" 删除成功"
+        },
+        "deleteFailed": "删除视图失败"
+      },
+      "deleteModal": {
+        "title": "删除视图",
+        "description": "确定要删除 \"{name}\" 吗？此操作无法撤销。"
+      }
+    },
+    "detailsPanel": {
+      "title": "视图详情",
+      "na": "N/A",
+      "sections": {
+        "name": "名称",
+        "description": "描述",
+        "visibility": "可见性",
+        "metadata": "元数据",
+        "activeFilters": "已激活筛选"
+      },
+      "visibility": {
+        "shared": "共享",
+        "private": "私有"
+      },
+      "fields": {
+        "owner": "所有者",
+        "created": "创建时间",
+        "lastUpdated": "最后更新"
+      },
+      "noFiltersApplied": "未应用筛选条件"
+    },
+    "editPanel": {
+      "fields": {
+        "namePlaceholder": "视图名称",
+        "descriptionPlaceholder": "添加描述...",
+        "saveTo": "保存到"
+      },
+      "visibility": {
+        "shared": "共享",
+        "private": "私有",
+        "sharedDescription": "与团队共享",
+        "privateDescription": "仅你可见"
+      },
+      "validation": {
+        "nameRequired": "视图名称为必填项"
+      },
+      "notifications": {
+        "created": "视图 \"{name}\" 创建成功",
+        "updated": "视图 \"{name}\" 更新成功",
+        "saveFailed": "保存视图失败"
+      }
+    },
+    "detailPage": {
+      "failedToLoadView": "加载视图失败，请重试。"
+    }
+  },
+  "ErrorPage": {
+    "statusError": "发生错误 {statusCode}",
+    "unexpectedError": "发生了意外错误",
+    "sorryMessage": "抱歉，出现了一些问题。"
+  },
+  "NotFoundPage": {
+    "title": "404 - 页面未找到",
+    "description": "你访问的页面不存在。"
+  },
+  "HomePage": {
+    "nextLogoAlt": "Next.js logo",
+    "stepOnePrefix": "从编辑开始",
+    "stepTwo": "保存后可立即看到你的更改。",
+    "vercelLogoAlt": "Vercel logomark",
+    "deployNow": "立即部署",
+    "readDocs": "阅读文档",
+    "fileIconAlt": "File icon",
+    "learn": "学习",
+    "windowIconAlt": "Window icon",
+    "examples": "示例",
+    "globeIconAlt": "Globe icon",
+    "goToNextjs": "前往 nextjs.org →"
+  },
+  "RequestAccess": {
+    "loading": "加载中...",
+    "titleRevoked": "访问已撤销",
+    "titleAccessDenied": "需要访问申请",
+    "titleDefault": "申请访问",
+    "descriptionRevoked": "你对该组织的访问已被撤销。你可以在下方填写原因申请重新加入。",
+    "descriptionAccessDenied": "加入该组织需要审批。请提交访问申请并说明加入原因。",
+    "descriptionDefault": "申请访问以加入该组织。",
+    "invalidRequestTitle": "无效请求",
+    "invalidRequestDescription": "该访问申请链接无效或已过期。",
+    "goToLogin": "前往登录",
+    "requestSubmittedTitle": "申请已提交",
+    "requestSubmittedDescription": "你的访问申请已提交给组织管理员。申请审核后你将收到邮件通知。",
+    "backToLogin": "返回登录",
+    "organizationLabel": "组织",
+    "emailLabel": "邮箱",
+    "revokedAlert": "你的访问此前被管理员撤销。新的申请将被发送审核。",
+    "messageLabel": "留言",
+    "messagePlaceholder": "请说明你希望加入该组织的原因...",
+    "messageDescription": "该信息将发送给组织管理员",
+    "cancel": "取消",
+    "submitRequest": "提交申请",
+    "errors": {
+      "invalidOrMissingToken": "令牌无效或缺失",
+      "invalidOrExpiredToken": "令牌无效或已过期",
+      "failedToVerifyAccessRequest": "验证访问申请失败",
+      "reasonRequired": "请填写申请理由",
+      "failedToSubmitRequest": "提交申请失败"
+    }
+  },
+  "Dashboard": {
+    "analyticsCommon": {
+      "title": "分析",
+      "nav": {
+        "dashboard": "仪表盘",
+        "runStatus": "运行状态",
+        "runDuration": "运行时长",
+        "testResults": "测试结果",
+        "testFlakiness": "测试不稳定性",
+        "testExplore": "测试探索",
+        "suiteExplore": "套件探索"
+      },
+      "quickSelect": "快速选择",
+      "cancel": "取消",
+      "apply": "应用",
+      "utcTooltip": "分析数据按 UTC 日期分组，可能与您的本地日历略有差异。",
+      "granularity": {
+        "day": "天",
+        "week": "周"
+      },
+      "dimensionFilter": {
+        "branch": "分支",
+        "author": "作者",
+        "noPlaywrightData": "暂无 Playwright 运行数据",
+        "mutuallyExclusiveBranch": "请先清除作者筛选",
+        "mutuallyExclusiveAuthor": "请先清除分支筛选"
+      },
+      "datePresets": {
+        "today": "今天",
+        "3d": "最近 3 天",
+        "7d": "最近 7 天",
+        "14d": "最近 14 天",
+        "30d": "最近 30 天",
+        "60d": "最近 60 天",
+        "90d": "最近 90 天",
+        "mtd": "本月至今"
+      }
+    },
+    "page": {
+      "title": "仪表盘",
+      "subtitle": "测试自动化活动概览",
+      "lastDays": "最近 {days} 天",
+      "cards": {
+        "testCases": {
+          "label": "测试用例",
+          "secondary": "{count} added in last 7 days"
+        },
+        "testRuns": {
+          "label": "测试运行",
+          "secondary": "{rate}% pass rate"
+        },
+        "testCaseRuns": {
+          "label": "测试用例运行",
+          "secondary": "{rate}% pass rate"
+        }
+      },
+      "recentTestCases": {
+        "title": "最近测试用例",
+        "failedToLoad": "加载测试用例失败",
+        "emptyMine": "你尚未创建测试用例",
+        "empty": "未找到测试用例",
+        "create": "创建测试用例"
+      },
+      "viewAll": "查看全部 →"
+    },
+    "components": {
+      "recentTestRuns": {
+        "title": "最近测试运行",
+        "filters": {
+          "withFailures": "含失败",
+          "recent": "最近"
+        },
+        "viewAll": "查看全部 →",
+        "viewDetails": "查看测试运行详情",
+        "viewAllRuns": "查看全部运行",
+        "table": {
+          "status": "状态",
+          "runId": "运行 ID",
+          "trigger": "触发方式",
+          "results": "结果"
+        },
+        "status": {
+          "passed": "通过",
+          "failed": "失败",
+          "skipped": "跳过",
+          "unknown": "未知"
+        },
+        "results": {
+          "passedSummary": "{passed}/{total} passed",
+          "failedSummary": "{failed} failed"
+        },
+        "empty": {
+          "failed": "所选时间范围内无失败测试运行",
+          "recent": "所选时间范围内无测试运行"
+        }
+      },
+      "testRunModal": {
+        "loadingTitle": "正在加载测试运行",
+        "loadingMessage": "正在获取测试运行数据...",
+        "testRunTitle": "测试运行 {id}",
+        "empty": "该测试运行未找到测试用例结果。"
+      },
+      "testCaseRunHistoryModal": {
+        "loadingTitle": "正在加载测试运行历史",
+        "loadingMessage": "正在获取测试运行历史..."
+      },
+      "testExecutionTrends": {
+        "title": "测试执行趋势",
+        "empty": "所选时间范围暂无数据",
+        "lastDays": "最近 {days} 天",
+        "series": {
+          "totalRuns": "总运行数",
+          "passed": "通过",
+          "failed": "失败"
+        }
+      },
+      "testCasesNeedingAttention": {
+        "title": "需关注的测试用例",
+        "loading": "加载中...",
+        "empty": "暂无需关注的测试用例。所有测试状态良好！",
+        "never": "从不",
+        "viewRunHistory": "查看测试运行历史",
+        "tabs": {
+          "risky": "高风险（{count}）",
+          "flaky": "不稳定（{count}）"
+        },
+        "table": {
+          "testCase": "测试用例",
+          "failureRate": "失败率",
+          "recentStats": "最近统计",
+          "lastRun": "最近运行"
+        },
+        "recentStats": {
+          "passed": "通过：{count}",
+          "failed": "失败：{count}",
+          "flaky": "不稳定：{count}"
+        },
+        "issueType": {
+          "highFailureRate": "高失败率",
+          "flaky": "不稳定",
+          "notRunRecently": "近期未运行",
+          "generationFailed": "生成失败",
+          "stuckGenerating": "生成卡住"
+        }
+      }
+    },
+    "analyticsPage": {
+      "loading": "加载中...",
+      "title": "仪表盘",
+      "cards": {
+        "past7Days": "过去 7 天",
+        "severity": {
+          "low": "低",
+          "watch": "关注",
+          "high": "高"
+        },
+        "failingTestCases": {
+          "tooltip": "查看测试用例",
+          "title": "失败测试用例",
+          "hint": "最近一次运行失败的启用测试用例占比。",
+          "cases": "{failing}/{total} cases"
+        },
+        "runPassRate": {
+          "tooltip": "查看运行状态",
+          "title": "运行通过率",
+          "hint": "所有测试用例均通过的运行占比。",
+          "runs": "{passed}/{total} runs"
+        },
+        "testPassRate": {
+          "tooltip": "查看测试结果",
+          "title": "测试通过率",
+          "hint": "单次测试用例执行通过的占比。",
+          "executions": "{passed}/{total} executions"
+        },
+        "testFlakyRate": {
+          "tooltip": "查看测试不稳定性",
+          "title": "测试不稳定率",
+          "hint": "首次失败但重试通过的测试执行占比。",
+          "executions": "{flaky}/{total} executions"
+        }
+      },
+      "range": {
+        "past7Days": "过去 7 天",
+        "past15Days": "过去 15 天",
+        "past30Days": "过去 30 天"
+      },
+      "charts": {
+        "executionFlow": {
+          "title": "执行流",
+          "hint": "按天展示总执行数、失败数和不稳定次数，帮助识别质量问题是否与执行量峰值相关。",
+          "series": {
+            "total": "总计",
+            "failed": "失败",
+            "flaky": "不稳定"
+          }
+        },
+        "passRateTrend": {
+          "title": "通过率趋势",
+          "hint": "所选周期内的日通过率，反映测试质量是在改善还是下降，不受每日运行数量影响。",
+          "series": {
+            "passRatePct": "通过率 %"
+          }
+        }
+      },
+      "testCaseHealth": {
+        "title": "测试用例健康度",
+        "hint": "按测试用例细分性能表现。重点关注失败和不稳定用例，定位最有改进价值的区域。",
+        "viewAllCases": "查看所有测试用例",
+        "filters": {
+          "failing": "失败",
+          "flaky": "不稳定"
+        },
+        "caseCount": "{count} {type} cases",
+        "emptyFailing": "无失败用例，测试套件状态良好！",
+        "emptyFlaky": "未发现不稳定用例。",
+        "table": {
+          "passRate": "通过率",
+          "runs": "运行次数",
+          "failed": "失败",
+          "flaky": "不稳定"
+        }
+      }
+    },
+    "runStatusPage": {
+      "loading": "加载中...",
+      "title": "运行状态",
+      "period": {
+        "week": "周",
+        "day": "天"
+      },
+      "summary": {
+        "overallRuns": "总体运行次数",
+        "failed": "失败",
+        "passed": "通过",
+        "avgPassRate": "平均通过率"
+      },
+      "tooltip": {
+        "passRate": "通过率",
+        "failed": "失败",
+        "passed": "通过"
+      },
+      "legend": {
+        "failed": "失败",
+        "passed": "通过",
+        "passRatePct": "通过率 %"
+      },
+      "pager": {
+        "previous": "上一{period}",
+        "next": "下一{period}"
+      },
+      "detail": {
+        "totalRuns": "总运行次数",
+        "passed": "通过",
+        "failed": "失败",
+        "passRate": "通过率",
+        "individualRuns": "单次运行"
+      }
+    },
+    "runDurationPage": {
+      "loading": "加载中...",
+      "title": "运行时长",
+      "period": {
+        "week": "周",
+        "day": "天"
+      },
+      "summary": {
+        "totalRuns": "总运行次数",
+        "avgDuration": "平均时长",
+        "maxDuration": "最长时长",
+        "minDuration": "最短时长"
+      },
+      "tooltip": {
+        "runs": "运行次数",
+        "avgDuration": "平均时长"
+      },
+      "legend": {
+        "runs": "运行次数",
+        "avgDuration": "平均时长"
+      },
+      "pager": {
+        "previous": "上一{period}",
+        "next": "下一{period}"
+      },
+      "detail": {
+        "runs": "运行次数",
+        "min": "最小",
+        "p50": "P50",
+        "avgP50": "平均 P50",
+        "avg": "平均",
+        "p95": "P95",
+        "avgP95": "平均 P95",
+        "max": "最大",
+        "individualRuns": "单次运行"
+      }
+    },
+    "testResultsPage": {
+      "loading": "加载中...",
+      "title": "测试结果",
+      "period": {
+        "week": "周",
+        "day": "天"
+      },
+      "summary": {
+        "totalTests": "测试总数",
+        "passedTests": "通过测试",
+        "failedTests": "失败测试",
+        "notExecuted": "未执行",
+        "skipped": "已跳过",
+        "avgSuccessRate": "平均成功率"
+      },
+      "tooltip": {
+        "successRate": "成功率",
+        "failed": "失败",
+        "passed": "通过"
+      },
+      "legend": {
+        "failed": "失败",
+        "passed": "通过",
+        "avgSuccessRatePct": "平均成功率 %"
+      },
+      "pager": {
+        "previous": "上一{period}",
+        "next": "下一{period}"
+      },
+      "detail": {
+        "total": "总计",
+        "passed": "通过",
+        "failed": "失败",
+        "notExecuted": "未执行",
+        "skipped": "已跳过",
+        "successRate": "成功率",
+        "failedTestCases": "失败测试用例",
+        "noFailedTestCases": "当天无失败测试用例。",
+        "failedBadge": "失败"
+      }
+    },
+    "testFlakinessPage": {
+      "loading": "加载中...",
+      "title": "测试不稳定性",
+      "period": {
+        "week": "周",
+        "day": "天"
+      },
+      "summary": {
+        "flakyTests": "不稳定测试",
+        "avgFlakinessRate": "平均不稳定率"
+      },
+      "tooltip": {
+        "flakyTests": "不稳定测试",
+        "flakinessRate": "不稳定率"
+      },
+      "legend": {
+        "flakyTests": "不稳定测试",
+        "flakinessRatePct": "不稳定率 %"
+      },
+      "pager": {
+        "previous": "上一{period}",
+        "next": "下一{period}"
+      },
+      "detail": {
+        "total": "总计",
+        "passed": "通过",
+        "failed": "失败",
+        "flaky": "不稳定",
+        "flakinessRate": "不稳定率",
+        "flakyTestCases": "不稳定测试用例",
+        "noFlakyTestCases": "当天无不稳定测试用例。",
+        "flakyBadge": "不稳定"
+      }
+    },
+    "testExplorePage": {
+      "loading": "加载中...",
+      "title": "测试探索",
+      "showing": "显示 {total} 个测试中的 {filtered} 个",
+      "filters": {
+        "searchPlaceholder": "按测试标题搜索...",
+        "createdBy": "创建者",
+        "lastRunResult": "最近运行结果",
+        "source": "来源",
+        "sourcePlatform": "平台",
+        "sourcePlaywright": "Playwright"
+      },
+      "table": {
+        "id": "ID",
+        "testTitle": "测试标题",
+        "passRate": "通过率",
+        "passRateHint": "最近 7 天内全部执行的通过率",
+        "recentRuns": "最近运行",
+        "recentRunsHint": "最近 15 次运行状态（从旧到新）",
+        "lastRun": "最近运行"
+      },
+      "runResult": {
+        "passed": "通过",
+        "failed": "失败",
+        "flaky": "不稳定"
+      },
+      "time": {
+        "justNow": "刚刚",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
+      },
+      "empty": "没有测试匹配当前筛选条件。"
+    },
+    "testDetailPage": {
+      "notFound": "未找到测试。",
+      "backToTestExplore": "返回测试探索",
+      "breadcrumb": {
+        "testExplore": "测试探索"
+      },
+      "viewTest": "查看测试",
+      "runResult": {
+        "passed": "通过",
+        "failed": "失败",
+        "flaky": "不稳定"
+      },
+      "time": {
+        "justNow": "刚刚",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
+      },
+      "summary": {
+        "passRate": "通过率",
+        "passRateHint": "最近 7 天内全部执行的通过率",
+        "passRateValue": "{passed} passed / {total} total",
+        "totalRuns": "总运行次数",
+        "totalRunsHint": "最近 7 天内总执行次数",
+        "last": "最近：{value}",
+        "results": "结果",
+        "resultsHint": "最近 7 天内通过/失败/不稳定分布",
+        "resultsLegend": "通过 · 失败",
+        "resultsLegendWithFlaky": "通过 · 失败 · 不稳定",
+        "avgDuration": "平均时长",
+        "avgDurationHint": "最近 7 天内平均执行时长"
+      },
+      "runHistory": {
+        "title": "运行历史",
+        "table": {
+          "runId": "运行 ID",
+          "result": "结果",
+          "duration": "时长",
+          "trigger": "触发方式",
+          "when": "时间"
+        },
+        "empty": "暂无运行历史",
+        "totalRuns": "共 {count} 次运行"
+      }
+    },
+    "suiteExplorePage": {
+      "loading": "加载中...",
+      "title": "套件探索",
+      "showing": "显示 {total} 个套件中的 {filtered} 个",
+      "filters": {
+        "searchPlaceholder": "按套件名称搜索...",
+        "createdBy": "创建者",
+        "lastRunResult": "最近运行结果",
+        "source": "来源",
+        "sourcePlatform": "平台",
+        "sourcePlaywright": "Playwright"
+      },
+      "table": {
+        "id": "ID",
+        "suiteTitle": "套件标题",
+        "passRate": "通过率",
+        "passRateHint": "最近 7 天内全部执行的通过率",
+        "recentRuns": "最近运行",
+        "recentRunsHint": "最近 15 次运行状态（从旧到新）",
+        "lastRun": "最近运行"
+      },
+      "runResult": {
+        "passed": "通过",
+        "failed": "失败"
+      },
+      "time": {
+        "justNow": "刚刚",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
+      },
+      "empty": "没有套件匹配当前筛选条件。"
+    },
+    "suiteDetailPage": {
+      "notFound": "未找到套件。",
+      "backToSuiteExplore": "返回套件探索",
+      "breadcrumb": {
+        "suiteExplore": "套件探索"
+      },
+      "viewSuite": "查看套件",
+      "runResult": {
+        "passed": "通过",
+        "failed": "失败"
+      },
+      "time": {
+        "justNow": "刚刚",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
+      },
+      "summary": {
+        "passRate": "通过率",
+        "passRateHint": "最近 7 天内全部套件运行通过率",
+        "passRateValue": "{passed} passed / {total} total",
+        "totalRuns": "总运行次数",
+        "totalRunsHint": "最近 7 天内套件运行总次数",
+        "last": "最近：{value}",
+        "results": "结果",
+        "resultsHint": "最近 7 天内通过/失败分布",
+        "resultsLegend": "通过 · 失败",
+        "avgDuration": "平均时长",
+        "avgDurationHint": "最近 7 天内套件运行平均时长"
+      },
+      "runHistory": {
+        "title": "运行历史",
+        "table": {
+          "runId": "运行 ID",
+          "result": "结果",
+          "duration": "时长",
+          "casesPassFail": "用例（通过/失败）",
+          "trigger": "触发方式",
+          "when": "时间"
+        },
+        "empty": "暂无运行历史",
+        "totalRuns": "共 {count} 次运行"
+      }
+    }
+  },
+  "AutoFix": {
+    "agentActivityStream": {
+      "analysisFailed": "分析失败",
+      "live": "实时",
+      "waitingForEvents": "正在等待事件..."
+    },
+    "fixCarousel": {
+      "previous": "上一项",
+      "next": "下一项",
+      "position": "{current} / {total}"
+    },
+    "fixCard": {
+      "classification": {
+        "A": "应用缺陷",
+        "B": "测试问题",
+        "C": "基础设施",
+        "D": "配置问题"
+      },
+      "time": {
+        "ago": "{value}"
+      },
+      "notifications": {
+        "acceptedTitle": "已接受修复",
+        "acceptedMessage": "修复已应用。",
+        "rejectedTitle": "已拒绝修复",
+        "rejectedMessage": "修复已被拒绝。",
+        "errorTitle": "错误",
+        "acceptError": "接受修复失败",
+        "rejectError": "拒绝修复失败"
+      },
+      "sections": {
+        "failedStep": "失败步骤",
+        "rootCause": "根因",
+        "fixApplied": "已应用修复",
+        "changes": "变更（{count}）",
+        "moreChanges": "+ {count} more"
+      },
+      "verified": {
+        "true": "修复已验证 - 该修复下测试通过",
+        "false": "修复未验证 - 测试仍失败"
+      },
+      "actions": {
+        "accept": "接受",
+        "reject": "拒绝",
+        "viewDiff": "查看差异"
+      }
+    },
+    "page": {
+      "pendingReview": "待审核",
+      "empty": "暂无 agent 运行。",
+      "classification": {
+        "A": "应用缺陷",
+        "B": "测试问题",
+        "C": "基础设施",
+        "D": "配置问题"
+      },
+      "status": {
+        "pending": "处理中",
+        "running": "运行中",
+        "completed": "已完成",
+        "failed": "失败",
+        "cancelled": "已取消"
+      },
+      "time": {
+        "ago": "{value}"
+      },
+      "table": {
+        "id": "ID",
+        "testCase": "测试用例",
+        "status": "状态",
+        "classification": "分类",
+        "verified": "已验证",
+        "source": "来源",
+        "created": "创建时间"
+      }
+    },
+    "agentRunBanner": {
+      "title": "自动修复",
+      "fixAvailable": "有可用修复",
+      "notVerified": "Autofixer 无法为本次运行生成已验证的测试修复。",
+      "analysisNumber": "分析 #{number}",
+      "previousAnalyses": "前 {count} 次分析",
+      "classification": {
+        "A": "应用缺陷",
+        "B": "测试问题",
+        "C": "基础设施",
+        "D": "配置问题"
+      },
+      "reuse": {
+        "executedWithFix": "本次运行使用了 AI 修改后的测试流程。",
+        "viewOriginalAnalysis": "查看原始分析"
+      },
+      "sections": {
+        "appliedFix": "已应用修复",
+        "originalIntent": "原始意图",
+        "rootCause": "根因",
+        "reasoning": "推理",
+        "failedStep": "失败步骤",
+        "suggestedFix": "建议修复"
+      },
+      "actions": {
+        "acceptFix": "接受修复",
+        "rejectFix": "拒绝修复",
+        "rejectAndDisable": "拒绝并禁用分析",
+        "reanalyze": "重新分析",
+        "retry": "重试"
+      },
+      "live": {
+        "title": "自动修复正在分析此次失败",
+        "pending": "已排队等待分析...",
+        "running": "正在分析根因..."
+      },
+      "error": {
+        "timeoutTitle": "自动修复分析超时",
+        "failedTitle": "自动修复分析失败",
+        "timeoutDetail": "分析超过了 {minutes} 分钟时限。"
+      },
+      "notifications": {
+        "errorTitle": "错误",
+        "acceptError": "接受修复失败",
+        "rejectError": "拒绝修复失败",
+        "fixAcceptedTitle": "已接受修复",
+        "fixAcceptedMessage": "AI 修复已应用到测试用例。",
+        "fixRejectedTitle": "已拒绝修复",
+        "fixRejectedMessage": "AI 修复已被拒绝，后续运行将不使用该修复。",
+        "disableFailed": "修复已拒绝，但禁用分析失败。",
+        "disabled": "AI 修复已被拒绝，失败分析已被禁用。"
+      }
+    },
+    "detailPage": {
+      "loading": "加载中...",
+      "classification": {
+        "A": "应用缺陷",
+        "B": "测试问题",
+        "C": "基础设施",
+        "D": "配置问题"
+      },
+      "status": {
+        "passed": "通过",
+        "failed": "失败"
+      },
+      "header": {
+        "agentRun": "Agent 运行 #{id}"
+      },
+      "notifications": {
+        "reanalysisQueued": "已加入重新分析队列",
+        "reanalysisFailed": "触发重新分析失败"
+      },
+      "actions": {
+        "reanalyze": "重新分析",
+        "hideDetails": "隐藏详情",
+        "showDetails": "显示详情",
+        "retryAnalysis": "重试分析"
+      },
+      "error": {
+        "timeoutTitle": "分析超时",
+        "failedTitle": "分析失败",
+        "unexpected": "分析过程中发生意外错误。"
+      },
+      "events": {
+        "loading": "正在加载事件...",
+        "failedToLoad": "加载事件失败：{error}",
+        "noData": "本次运行暂无数据。"
+      },
+      "sidebar": {
+        "properties": "属性",
+        "status": "状态",
+        "classification": "分类",
+        "fixVerified": "修复已验证",
+        "duration": "时长",
+        "source": "来源",
+        "testCase": "测试用例",
+        "testRun": "测试运行",
+        "agentRunId": "Agent 运行 ID"
+      },
+      "sections": {
+        "agentTrace": "Agent 轨迹",
+        "rootCause": "根因",
+        "failedStep": "失败步骤",
+        "expected": "期望",
+        "actual": "实际",
+        "analysis": "分析",
+        "originalTestIntent": "原始测试意图",
+        "goal": "目标",
+        "criticalSteps": "关键步骤",
+        "historicalComparison": "历史对比",
+        "lastSuccess": "最近成功",
+        "changesIdentified": "识别到的变化",
+        "environmentDifferences": "环境差异",
+        "investigationJourney": "排查过程",
+        "screenshotAnalysis": "截图分析",
+        "observations": "观察结果",
+        "abnormalities": "异常点",
+        "evidenceChain": "证据链",
+        "from": "来自 {source}",
+        "supports": "支持证据：{value}",
+        "suggestedFix": "建议修复",
+        "fixExplanation": "修复说明",
+        "whatChanged": "变更内容",
+        "whyThisWorks": "生效原因",
+        "verificationEvidence": "验证证据",
+        "alternativesConsidered": "考虑过的替代方案",
+        "notChosen": "未采用：{reason}",
+        "testFlowChanges": "测试流程变更",
+        "stepIndex": "步骤 {index}",
+        "fixVerified": "修复已验证"
+      }
+    }
+  },
+  "QA": {
+    "breadcrumbs": {
+      "dashboard": "仪表板",
+      "specs": "质量规范",
+      "verification": "验证运行",
+      "releases": "发布验证",
+      "setup": "设置"
+    },
+    "dashboard": {
+      "title": "质量中心",
+      "repoStatus": "仓库状态",
+      "specOverview": "质量规范概览",
+      "noRepoConnected": "未连接仓库。请连接您的 GitHub 仓库以开始使用。",
+      "connectRepo": "连接仓库",
+      "topSpecs": "按优先级排序的顶级质量规范",
+      "draftCount": "{count} 草稿",
+      "approvedCount": "{count} 已批准",
+      "activeCount": "{count} 活跃",
+      "deprecatedCount": "{count} 已弃用",
+      "totalSpecs": "质量规范总数",
+      "goToSetup": "前往设置",
+      "viewAllSpecs": "查看所有质量规范"
+    },
+    "specs": {
+      "title": "质量规范",
+      "create": "创建质量规范",
+      "empty": "未找到质量规范。您可以手动创建，或连接 FullStory 自动发现。",
+      "status": {
+        "draft": "草稿",
+        "approved": "已批准",
+        "deprecated": "已弃用"
+      },
+      "save": "保存更改",
+      "priority": "优先级",
+      "specType": "类型",
+      "steps": "步骤",
+      "tags": "标签",
+      "name": "名称",
+      "description": "描述",
+      "domain": "领域",
+      "lastUpdated": "最后更新",
+      "filterAll": "全部",
+      "addStep": "添加步骤",
+      "removeStep": "删除步骤",
+      "stepAction": "操作",
+      "stepDescription": "描述",
+      "gitPath": "Git 文件路径",
+      "lastSync": "上次同步",
+      "createTitle": "创建新质量规范",
+      "createDescription": "为质量保证定义新的质量规范。",
+      "criticality": "关键性",
+      "revenueImpact": "收入影响",
+      "compliance": "合规性",
+      "team": "团队",
+      "customTags": "自定义标签",
+      "addTag": "添加标签",
+      "critical": "关键",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "searchPlaceholder": "按名称搜索...",
+      "filterDomain": "按领域筛选",
+      "allDomains": "所有领域",
+      "minPriority": "最低优先级",
+      "maxPriority": "最高优先级",
+      "polish": "润色",
+      "stepsPlaceholder": "每行一个步骤，例如：\n登录应用\n创建新项目\n验证项目出现在列表中",
+      "stepsHelper": "每行一个步骤。描述用户做什么，而不是如何做。",
+      "testsCovering": "覆盖此规范的测试",
+      "testCases": "测试用例",
+      "testSuites": "测试套件",
+      "add": "添加",
+      "noTestCasesTagged": "暂无测试用例关联此规范。",
+      "noTestSuitesTagged": "暂无测试套件关联此规范。",
+      "noExternalId": "此规范尚无外部 ID。从 git 同步后，可关联测试。",
+      "totalCount": "共 {count} 项",
+      "delete": "删除",
+      "deleteConfirmTitle": "删除质量规范",
+      "deleteConfirmMessage": "删除质量规范 <strong>{name}</strong>？此操作无法撤销。",
+      "failedDelete": "删除质量规范失败",
+      "statusChanged": "状态已更改为 {status}",
+      "failedStatusUpdate": "更新状态失败",
+      "failedTag": "关联失败",
+      "failedUntag": "取消关联失败",
+      "tagged": "已关联 {count} 项"
+    },
+    "coverage": {
+      "title": "规范覆盖",
+      "pass": "通过",
+      "partial": "部分通过",
+      "fail": "失败",
+      "uncovered": "未覆盖",
+      "passTooltip": "此质量规范的所有测试均通过。",
+      "partialTooltip": "此质量规范的部分测试通过，部分失败。",
+      "failTooltip": "此质量规范的所有测试均失败。",
+      "uncoveredTooltip": "此质量规范尚无测试，或测试尚无结果。",
+      "filterAll": "全部",
+      "filterPass": "通过",
+      "filterPartial": "部分",
+      "filterFail": "失败",
+      "filterUncovered": "未覆盖",
+      "empty": "尚无已批准的质量规范。请在质量规范中创建，以查看覆盖情况。",
+      "noTests": "无测试",
+      "passingSummary": "{passed}/{total} 通过",
+      "failedSummary": "{failed} 失败",
+      "testSuite": "测试套件",
+      "tests": "测试",
+      "status": "状态",
+      "test": "测试",
+      "latestResult": "最新结果",
+      "lastRun": "最后运行",
+      "untitled": "未命名",
+      "noSpecsMatchFilter": "无规范匹配此筛选。"
+    },
+    "releaseHealth": {
+      "title": "发布健康度",
+      "specCoverage": "规范覆盖",
+      "taggedRuns": "已关联的测试运行",
+      "noApprovedSpecs": "暂无已批准的规范",
+      "passingSummary": "{passed} / {total} 通过",
+      "runsPassingSummary": "{passed} / {total} 通过 · {runs} 次运行",
+      "noRunData": "{runs} 次运行 · 无测试数据",
+      "noRunsTagged": "暂无测试运行关联到此发布。请在运行结果页面进行关联。",
+      "createEmpty": "创建已批准的规范以查看覆盖情况。",
+      "passCount": "{count} 通过",
+      "partialCount": "{count} 部分",
+      "failCount": "{count} 失败",
+      "uncoveredCount": "{count} 未覆盖",
+      "passedLabel": "{count} 通过",
+      "failedLabel": "{count} 失败",
+      "otherLabel": "{count} 其他"
+    },
+    "release": {
+      "delete": "删除发布",
+      "deleteConfirm": "删除发布 <strong>{name}</strong>？此操作无法撤销。",
+      "failedDelete": "删除发布失败",
+      "deleted": "{name} 已删除"
+    },
+    "releases": {
+      "title": "发布验证",
+      "create": "新建发布验证",
+      "empty": "暂无发布验证。",
+      "accept": "接受发布",
+      "reject": "拒绝发布",
+      "baseline": "基线",
+      "dimensions": {
+        "functional": "功能",
+        "visual": "视觉",
+        "performance": "性能",
+        "data": "数据",
+        "behavioral": "行为"
+      },
+      "name": "名称",
+      "status": "状态",
+      "customerCount": "客户数量",
+      "createdAt": "创建时间",
+      "verificationRun": "验证运行",
+      "thresholds": "阈值",
+      "createTitle": "新建发布验证",
+      "createDescription": "从验证运行创建发布验证。",
+      "releaseName": "发布名称",
+      "selectVerificationRun": "选择验证运行",
+      "thresholdPercent": "阈值 (%)",
+      "readiness": "发布就绪性",
+      "goNoGo": "通过 / 不通过",
+      "allDimensionsPass": "所有维度均通过",
+      "dimensionsFailing": "{count} 个维度未通过",
+      "overallStatus": "总体状态",
+      "specBreakdown": "逐项质量规范结果",
+      "specName": "质量规范名称",
+      "result": "结果",
+      "threshold": "阈值",
+      "delta": "变化量",
+      "artifacts": "查看产物",
+      "pass": "通过",
+      "fail": "失败",
+      "pending": "等待中",
+      "readyForReview": "待审核",
+      "accepted": "已接受",
+      "rejected": "已拒绝",
+      "customers": "客户配置",
+      "addCustomer": "添加客户配置",
+      "customerName": "客户名称",
+      "environment": "环境",
+      "specCount": "质量规范数量",
+      "configJson": "配置 JSON",
+      "editCustomer": "编辑客户配置",
+      "deleteCustomer": "删除",
+      "noCustomers": "暂无客户配置。",
+      "selectSpecs": "选择质量规范",
+      "customerConfigs": "客户配置管理"
+    },
+    "verification": {
+      "title": "验证运行",
+      "run": "运行验证",
+      "empty": "暂无验证运行。",
+      "id": "ID",
+      "status": "状态",
+      "specCount": "质量规范数量",
+      "method": "方法",
+      "passed": "通过",
+      "failed": "失败",
+      "commitSha": "提交 SHA",
+      "triggeredBy": "触发者",
+      "duration": "时长",
+      "createdAt": "创建时间",
+      "runTitle": "运行验证",
+      "runDescription": "选择质量规范并配置验证运行。",
+      "selectSpecs": "选择质量规范",
+      "selectEnvironment": "选择环境",
+      "selectMethod": "选择方法",
+      "methodYaml": "YAML 测试",
+      "methodAgent": "Agent",
+      "methodManual": "手动",
+      "running": "运行中",
+      "completed": "已完成",
+      "pending": "等待中",
+      "specResults": "质量规范结果",
+      "specName": "质量规范名称",
+      "stepResults": "步骤结果",
+      "step": "步骤",
+      "action": "操作",
+      "screenshot": "截图",
+      "traceLink": "执行追踪",
+      "submitResult": "提交结果",
+      "resultStatus": "结果",
+      "notes": "备注",
+      "pass": "通过",
+      "fail": "失败",
+      "submit": "提交",
+      "filterAll": "全部",
+      "environment": "环境",
+      "metadata": "运行元数据"
+    },
+    "setup": {
+      "title": "设置",
+      "connectGithub": "连接 GitHub 仓库",
+      "connectFullStory": "连接 FullStory",
+      "repoConnected": "仓库已连接",
+      "lastSync": "上次同步",
+      "repoConnections": "仓库连接",
+      "addRepo": "添加仓库",
+      "noRepos": "尚未连接任何仓库。",
+      "repoOwner": "仓库所有者",
+      "repoName": "仓库名称",
+      "branch": "分支",
+      "connectRepo": "连接仓库",
+      "installGithubApp": "安装 GitHub App",
+      "fullStoryConnection": "FullStory 连接",
+      "fullStoryApiKey": "FullStory API 密钥",
+      "fullStorySchedule": "采集计划",
+      "fullStoryConnect": "连接",
+      "fullStoryTriggerNow": "立即触发",
+      "fullStoryConnected": "已连接",
+      "fullStoryNotConnected": "未连接",
+      "fullStoryLastIngestion": "上次采集",
+      "scheduleDaily": "每天",
+      "scheduleHourly": "每小时",
+      "scheduleManual": "仅手动"
+    }
+  }
+}

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cascading Error - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .wizard-container {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .wizard-header {
+            background: var(--bg-secondary);
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .wizard-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .step-indicators {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            transition: all 0.3s;
+        }
+
+        .step-circle.active {
+            background: var(--primary);
+            color: var(--text-inverse);
+        }
+
+        .step-circle.completed {
+            background: var(--success);
+            color: var(--text-inverse);
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .step-label.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-label.completed {
+            color: var(--success);
+        }
+
+        .step-connector {
+            width: 60px;
+            height: 3px;
+            background: var(--gray-200);
+            transition: background 0.3s;
+        }
+
+        .step-connector.completed {
+            background: var(--success);
+        }
+
+        .wizard-body {
+            padding: var(--spacing-2xl);
+            min-height: 300px;
+        }
+
+        .wizard-step {
+            display: none;
+        }
+
+        .wizard-step.active {
+            display: block;
+            animation: stepFadeIn 0.3s ease;
+        }
+
+        @keyframes stepFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wizard-step h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .wizard-step .step-description {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Plan selection */
+        .plan-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .plan-card {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .plan-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .plan-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
+        .plan-card .plan-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .plan-card .plan-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .plan-card .plan-price span {
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .plan-card .plan-features {
+            list-style: none;
+            text-align: left;
+            margin-top: var(--spacing-md);
+        }
+
+        .plan-card .plan-features li {
+            padding: var(--spacing-xs) 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-card .plan-features li::before {
+            content: '\2713 ';
+            color: var(--success);
+            font-weight: 700;
+            margin-right: var(--spacing-xs);
+        }
+
+        /* Details form */
+        .details-form {
+            max-width: 500px;
+        }
+
+        /* Confirmation */
+        .confirmation-summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+        }
+
+        .confirmation-summary .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .confirmation-summary .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.125rem;
+            padding-top: var(--spacing-md);
+        }
+
+        .confirmation-summary .summary-row .label {
+            color: var(--text-secondary);
+        }
+
+        .selected-plan-display {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .wizard-footer {
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-secondary);
+        }
+
+        .complete-message {
+            display: none;
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+
+        .complete-message.visible {
+            display: block;
+        }
+
+        .complete-message .check-icon {
+            width: 72px;
+            height: 72px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto var(--spacing-lg);
+        }
+
+        .complete-message h2 {
+            color: var(--success);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        @media (max-width: 768px) {
+            .plan-options {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicators {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Cascading Error</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Cascading Error</h1>
+            <p class="description">Plan options changed: "Basic" was removed and replaced with "Premium", "Business", "Enterprise". An old test selecting "Basic" causes a cascading failure when the confirmation step tries to verify the plan name.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: previous_step_error</h4>
+                <p>The pricing plans were updated. The "Basic" plan was discontinued and replaced with "Premium".</p>
+                <ul>
+                    <li><strong>Old plans:</strong> Basic ($9/mo), Premium ($29/mo), Enterprise ($99/mo)</li>
+                    <li><strong>New plans:</strong> Premium ($29/mo), Business ($59/mo), Enterprise ($99/mo)</li>
+                    <li><strong>Old test behavior:</strong> Step 1: select "Basic" plan. Step 3: verify plan name shows "Basic"</li>
+                    <li><strong>Cascading effect:</strong> The "Basic" option does not exist, so no plan gets selected. In Step 3, the plan verification fails because no plan was chosen (or wrong plan name appears).</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="wizard-container">
+                    <div class="wizard-header">
+                        <div class="wizard-title">Subscription Setup</div>
+                        <div class="step-indicators" id="stepIndicators">
+                            <div class="step-indicator">
+                                <div class="step-circle active" data-step="1">1</div>
+                                <span class="step-label active">Select Plan</span>
+                            </div>
+                            <div class="step-connector"></div>
+                            <div class="step-indicator">
+                                <div class="step-circle" data-step="2">2</div>
+                                <span class="step-label">Enter Details</span>
+                            </div>
+                            <div class="step-connector"></div>
+                            <div class="step-indicator">
+                                <div class="step-circle" data-step="3">3</div>
+                                <span class="step-label">Confirm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-body">
+                        <!-- Step 1: Select Plan -->
+                        <!-- NOTE: "Basic" plan was removed. Old options were: Basic, Premium, Enterprise -->
+                        <div class="wizard-step active" data-step="1">
+                            <h2>Choose Your Plan</h2>
+                            <p class="step-description">Select the plan that best fits your needs. All plans include a 14-day free trial.</p>
+
+                            <div class="plan-options">
+                                <div class="plan-card" data-plan="Premium" data-price="29">
+                                    <div class="plan-name">Premium</div>
+                                    <div class="plan-price">$29 <span>/month</span></div>
+                                    <ul class="plan-features">
+                                        <li>10 team members</li>
+                                        <li>50 GB storage</li>
+                                        <li>Priority support</li>
+                                        <li>API access</li>
+                                    </ul>
+                                </div>
+                                <div class="plan-card" data-plan="Business" data-price="59">
+                                    <div class="plan-name">Business</div>
+                                    <div class="plan-price">$59 <span>/month</span></div>
+                                    <ul class="plan-features">
+                                        <li>50 team members</li>
+                                        <li>500 GB storage</li>
+                                        <li>24/7 support</li>
+                                        <li>Advanced analytics</li>
+                                    </ul>
+                                </div>
+                                <div class="plan-card" data-plan="Enterprise" data-price="99">
+                                    <div class="plan-name">Enterprise</div>
+                                    <div class="plan-price">$99 <span>/month</span></div>
+                                    <ul class="plan-features">
+                                        <li>Unlimited members</li>
+                                        <li>Unlimited storage</li>
+                                        <li>Dedicated support</li>
+                                        <li>Custom integrations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Enter Details -->
+                        <div class="wizard-step" data-step="2">
+                            <h2>Billing Details</h2>
+                            <p class="step-description">Enter your billing information to complete the subscription.</p>
+                            <div class="details-form">
+                                <div class="form-group">
+                                    <label for="billingName">Full Name</label>
+                                    <input type="text" id="billingName" class="form-control" placeholder="John Smith">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billingEmail">Email</label>
+                                    <input type="email" id="billingEmail" class="form-control" placeholder="john@company.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cardNumber">Card Number</label>
+                                    <input type="text" id="cardNumber" class="form-control" placeholder="4242 4242 4242 4242" maxlength="19">
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                                    <div class="form-group">
+                                        <label for="expiry">Expiry Date</label>
+                                        <input type="text" id="expiry" class="form-control" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cvc">CVC</label>
+                                        <input type="text" id="cvc" class="form-control" placeholder="123" maxlength="3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Confirm -->
+                        <div class="wizard-step" data-step="3">
+                            <h2>Confirm Your Subscription</h2>
+                            <p class="step-description">Review your selection and confirm to start your free trial.</p>
+                            <div class="confirmation-summary">
+                                <div class="summary-row">
+                                    <span class="label">Selected Plan</span>
+                                    <span class="selected-plan-display" id="confirmPlan">No plan selected</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Billing Name</span>
+                                    <span id="confirmName">-</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Email</span>
+                                    <span id="confirmEmail">-</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Monthly Total</span>
+                                    <span id="confirmPrice">$0/month</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Complete -->
+                        <div class="complete-message" id="completeMessage">
+                            <div class="check-icon">&#x2713;</div>
+                            <h2>Subscription Activated!</h2>
+                            <p style="color: var(--text-secondary);">Your <strong id="completePlan"></strong> plan is now active. Your 14-day free trial has started.</p>
+                        </div>
+                    </div>
+
+                    <div class="wizard-footer" id="wizardFooter">
+                        <button class="btn btn-outline" id="prevBtn" disabled>Back</button>
+                        <button class="btn btn-primary" id="nextBtn" disabled>Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentStep = 1;
+        var selectedPlan = null;
+        var selectedPrice = null;
+
+        var steps = document.querySelectorAll('.wizard-step');
+        var circles = document.querySelectorAll('.step-circle');
+        var labels = document.querySelectorAll('.step-label');
+        var connectors = document.querySelectorAll('.step-connector');
+        var prevBtn = document.getElementById('prevBtn');
+        var nextBtn = document.getElementById('nextBtn');
+        var planCards = document.querySelectorAll('.plan-card');
+
+        // Plan selection
+        planCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                planCards.forEach(function(c) { c.classList.remove('selected'); });
+                this.classList.add('selected');
+                selectedPlan = this.getAttribute('data-plan');
+                selectedPrice = this.getAttribute('data-price');
+                nextBtn.disabled = false;
+            });
+        });
+
+        function updateWizard() {
+            // Update steps
+            steps.forEach(function(step) {
+                step.classList.remove('active');
+                if (parseInt(step.getAttribute('data-step')) === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update indicators
+            circles.forEach(function(circle, i) {
+                var stepNum = i + 1;
+                circle.classList.remove('active', 'completed');
+                labels[i].classList.remove('active', 'completed');
+                if (stepNum === currentStep) {
+                    circle.classList.add('active');
+                    labels[i].classList.add('active');
+                } else if (stepNum < currentStep) {
+                    circle.classList.add('completed');
+                    labels[i].classList.add('completed');
+                }
+            });
+
+            // Update connectors
+            connectors.forEach(function(conn, i) {
+                conn.classList.toggle('completed', i + 1 < currentStep);
+            });
+
+            // Update buttons
+            prevBtn.disabled = currentStep === 1;
+
+            if (currentStep === 1) {
+                nextBtn.disabled = !selectedPlan;
+                nextBtn.textContent = 'Next';
+            } else if (currentStep === 2) {
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Next';
+            } else if (currentStep === 3) {
+                nextBtn.textContent = 'Confirm & Subscribe';
+                nextBtn.classList.remove('btn-primary');
+                nextBtn.classList.add('btn-success');
+                nextBtn.disabled = false;
+
+                // Populate confirmation
+                document.getElementById('confirmPlan').textContent = selectedPlan || 'No plan selected';
+                document.getElementById('confirmName').textContent = document.getElementById('billingName').value || '-';
+                document.getElementById('confirmEmail').textContent = document.getElementById('billingEmail').value || '-';
+                document.getElementById('confirmPrice').textContent = selectedPrice ? ('$' + selectedPrice + '/month') : '$0/month';
+            }
+        }
+
+        nextBtn.addEventListener('click', function() {
+            if (currentStep < 3) {
+                currentStep++;
+                updateWizard();
+            } else if (currentStep === 3) {
+                // Complete
+                document.getElementById('completePlan').textContent = selectedPlan;
+                document.getElementById('completeMessage').classList.add('visible');
+                steps.forEach(function(s) { s.classList.remove('active'); });
+                document.getElementById('wizardFooter').style.display = 'none';
+
+                circles.forEach(function(c) {
+                    c.classList.remove('active');
+                    c.classList.add('completed');
+                });
+                labels.forEach(function(l) {
+                    l.classList.remove('active');
+                    l.classList.add('completed');
+                });
+                connectors.forEach(function(c) {
+                    c.classList.add('completed');
+                });
+            }
+        });
+
+        prevBtn.addEventListener('click', function() {
+            if (currentStep > 1) {
+                currentStep--;
+                nextBtn.classList.remove('btn-success');
+                nextBtn.classList.add('btn-primary');
+                updateWizard();
+            }
+        });
+
+        updateWizard();
+    </script>
+</body>
+</html>

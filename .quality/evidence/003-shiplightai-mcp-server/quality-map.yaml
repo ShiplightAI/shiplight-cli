@@ -1,0 +1,405 @@
+# How this map's STRUCTURE (its check list) was produced. Reconstructed from the
+# shipped MCP server + mcp-tools (every check is source_type IMPLEMENTATION), not
+# from an accepted spec or a human-authored check list — so the honest value is
+# inferred_brownfield until an owner ratifies the check set. Promoting this is the
+# human-gated step that raises structure confidence; no test added here can.
+#
+# RECONCILED 2026-08-10 against commit 736d9e973 ("browser-only server, drop the
+# v1 cloud surface", 2026-07-30), which this map had not caught up with. That
+# commit deleted testCaseTools.ts, dataTools.ts, testResultTools.ts,
+# TokenApiClient.ts and IApiClient.ts along with their tests, so four checks were
+# describing a product surface that no longer exists and pointing at test files
+# that no longer exist:
+#
+#   - exp-cloud-token-gating  REMOVED — there is no cloud path left to gate. The
+#     surviving intent (no cloud tool may reappear) is now carried by
+#     exp-session-bound-surface, whose test already asserts the exact registered
+#     surface, so the concern keeps real proof instead of being dropped.
+#   - exp-env-url-matching    REMOVED — matchEnvironmentByUrl went with the cloud
+#     environment surface.
+#   - exp-file-io-wrapping    REMOVED — saveFunction/saveTestCase went with the
+#     cloud sync surface.
+#   - exp-local-references    MOVED TO 002 — template:/call: resolution was not
+#     deleted, it moved to the CLI with the authoring boundary. Re-authored as
+#     002 exp-local-references against
+#     apps/cli/src/yaml-transpiler/, mapped to the existing
+#     pipeline.test.ts resolution tests. The owner decided 2026-08-10 that the
+#     CLI should NOT sandbox these paths — staying inside the project is the
+#     test author's responsibility — so the security framing was dropped and the
+#     check is now about resolving to the right file.
+#
+# Removing checks narrows declared scope, so it was a structure change for the
+# owner to ratify, not an agent's call to finalize. RATIFIED 2026-08-10: the
+# owner reviewed the resulting 11-check list and approved it, which accepts the
+# four removals above along with it (checks_reviewed below).
+#
+# structure_provenance stays inferred_brownfield: the checks were reconstructed
+# from the shipped server, and an owner's approval does not rewrite where they
+# came from. The approval is recorded by checks_reviewed, which is the gate that
+# lifts these checks' structure confidence.
+structure_provenance: "inferred_brownfield"
+checks_reviewed: true
+target:
+  id: "003-shiplightai-mcp-server"
+  name: "@shiplightai/mcp UI-Automation Server"
+  scope: "feature"
+  aliases: []
+  source_refs:
+    - path: "specs/003-shiplightai-mcp-server/spec.md"
+      label: "Reconstructed feature spec"
+    - path: "project-map.yaml"
+      label: "Project map feature entry"
+    - path: "apps/mcp-server/README.md"
+      label: "Published package README (observed)"
+    - path: "apps/mcp-server"
+      label: "MCP server implementation (stdio host)"
+    - path: "packages/mcp-tools"
+      label: "Tool registry, backends, resources implementation"
+
+expectations:
+  - id: exp-browser-tools-behavior
+    title: "Browser tools (navigate/act/inspect/get_locators) actually drive the page"
+    description: >-
+      The core product surface: an agent calls navigate/act/inspect_page/get_locators/
+      get_page_info and the handler drives a real SessionManager-backed Playwright page,
+      returning DOM/locator/log data and handling errors. These tools ARE the product.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/tools/browserTools.ts"
+      - path: "packages/mcp-tools/src/backends/SessionManager.ts"
+      - path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+    category: api
+    priority: P0
+    policy_override:
+      required_modalities: ["e2e"]
+      required_contexts: ["pr-ci"]
+      require_gate: true
+      notes: "Release-critical product surface; the deterministic browser tools must be driven against a real browser in a CI gate, not validated only at the schema level."
+    evidence:
+      - id: ev-browser-behavior
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Dedicated browser CI lane (browser-tests.yml): real headless Chromium drives new_session -> get_page_info -> inspect_page -> get_locators -> act(click navigates) -> close_session; needs no secrets."
+      - id: ev-act-surface-enforcement
+        type: unit
+        path: "packages/mcp-tools/src/tools/__tests__/actSurfaceEnforcement.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          act executes only what it advertises. Negative-tested: verify /
+          ai_extract / ai_wait_until / login are refused without reaching the
+          backend, a mixed batch is rejected atomically so nothing half-runs,
+          and a positive case asserts all 22 advertised actions still dispatch.
+          Replaces the former opt-in live act(verify) row: this server is
+          browser-only and wires no LLM model, so the AI-driven actions are not
+          part of its surface at all.
+  - id: exp-session-lifecycle
+    title: "Sessions are created, isolated, and cleaned up"
+    description: >-
+      SessionManager creates sessions with stable ids and initialized state, isolates
+      concurrent sessions, and tears down browser resources on close/timeout.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/backends/SessionManager.ts"
+      - path: "packages/mcp-tools/src/tools/sessionTools.ts"
+      - path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+    category: ops
+    priority: P1
+    evidence:
+      - id: ev-session-lifecycle-browser
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Proves single-session create -> use -> close and two concurrent sessions (distinct ids, independent pages, closing one leaves the other working, operations on a closed session fail)."
+      - id: ev-close-session-fold
+        type: unit
+        path: "packages/mcp-tools/src/tools/__tests__/closeSessionFold.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          close_session fold semantics with a safety guard: an omitted or null
+          session_id closes ALL sessions (so an LLM omitting the arg cleans up),
+          a named session_id closes only that one, and a provided-but-EMPTY
+          session_id is rejected rather than silently mass-closing.
+    proof_gap:
+      summary: >-
+        Explicit create/isolate/close and the close-all fold are pinned. This
+        gap previously said idle auto-cleanup "is implemented but not pinned by
+        executable proof" — that was wrong, and writing the test it asked for
+        would have failed. SessionManager has no idle tracking, no reaping
+        timer and no expiry; SessionManagerOptions declares terminationTimeout
+        and nothing in the package reads it, which is likely why the capability
+        was believed to exist (apps/mcp-server passes it at startup). So a
+        session that is never closed holds its browser until the process exits.
+      next_step: >-
+        Product decision first, not a test: either implement idle reaping (then
+        cover it with a fast-timeout test), or drop the dead terminationTimeout
+        option and accept that sessions are closed explicitly.
+
+  - id: exp-storage-state
+    title: "save_storage_state persists session auth state and new_session restores it"
+    description: >-
+      The auth-cache promise: after logging in, save_storage_state writes the
+      session's cookies/localStorage/IndexedDB to a file, and a later new_session
+      with storage_state_path restores them into a fresh browser context — so an
+      agent logs in once and reuses the session instead of re-authenticating every run.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/tools/sessionTools.ts"
+      - path: "packages/mcp-tools/src/backends/SessionManager.ts"
+      - path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-storage-state-roundtrip
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Real headless-Chromium round-trip (keyless): a session sets localStorage,
+          save_storage_state writes a state file that is asserted to contain the
+          origin's captured ss_probe key/value, then a fresh new_session with
+          storage_state_path reports storage_state_loaded and inspect_page reads the
+          restored value back out of the page. All three advertised stores are
+          covered: the fixture also sets a cookie and an IndexedDB record, the
+          saved file is asserted to carry both, and the restored session reads
+          both back. The fixture flips a readiness flag before capture so the
+          async IndexedDB write cannot be raced.
+
+
+  - id: exp-action-entity-payload
+    title: "Located actions return replay-ready locator data an agent can persist"
+    description: >-
+      Every located action a session performs returns locator/xpath/frame_path —
+      the payload an agent embeds into .test.yaml statements so they replay
+      deterministically. This server is the only place that data can be produced
+      (it needs a live page). Authoring/validating the YAML that consumes it is
+      002's CLI; the TestFlow<->YAML roundtrip check moved there with the
+      transpiler (predecessor check id: exp-yaml-export).
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/tools/browserTools.ts"
+      - path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+      - path: "specs/003-shiplightai-mcp-server/spec.md"
+        label: "FR-002 (re-framed)"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-entity-via-browser-lane
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The browser lane drives located actions (act by element index,
+          get_locators) against a real page AND pins the payload: frame_path is
+          present, element_index/tag_name echo back, and the returned xpath is
+          driven back against the live page to prove it resolves to exactly one
+          element with the expected text. act(click) is asserted to return an
+          action_entity carrying a locator or xpath. Shape alone would not prove
+          replay-readiness — an xpath that does not resolve is not replay-ready.
+  - id: exp-chrome-relay
+    title: "Chrome extension relay attaches existing tabs over CDP"
+    description: >-
+      ExtensionRelayServer tracks tab register/unregister, exposes them as Playwright
+      Pages via connectOverCDP, discovers tabs registered after connect, clears all
+      targets when the extension disconnects, and recovers on reconnect.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/backends/__tests__/ExtensionRelayServer.test.ts"
+    category: other
+    priority: P1
+    evidence:
+      - id: ev-relay-unit
+        type: unit
+        path: "packages/mcp-tools/src/backends/__tests__/ExtensionRelayServer.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Against a real loopback WS server: target register/unregister, multi-tab, disconnect-clears-all, Playwright connectOverCDP, and disconnect->reconnect recovery."
+    proof_gap:
+      summary: "The relay backend (ExtensionRelayServer) is directly proven, but the thin MCP tool-handler wrapper that exposes it — RelayTools.attachToBrowser / getRelayStatus in relayTools.ts — is not separately driven, so the tool-invocation path is covered only transitively."
+      next_step: "Optional: a handler-level test that calls attach_to_browser against a stub relay server and asserts it returns the attached page/targets and surfaces a clear error when no relay is running."
+
+  - id: exp-stdio-guards
+    title: "Stdio guards keep the JSON-RPC channel clean"
+    description: >-
+      isBrokenPipe detects EPIPE only; formatThrown renders errors/objects/primitives
+      safely (incl. circular); createStderrConsole routes all console output to stderr,
+      newline-terminated — so stray stdout never corrupts the MCP transport.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "apps/mcp-server/src/stdioGuards.test.ts"
+    category: ops
+    priority: P1
+    evidence:
+      - id: ev-stdio-unit
+        type: unit
+        path: "apps/mcp-server/src/stdioGuards.test.ts"
+        command: "cd apps/mcp-server && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Guard functions plus the server install pattern: redirected console.* captures all output on the stderr writer and writes ZERO bytes to process.stdout, so a stray dependency console.log cannot corrupt the JSON-RPC channel."
+    proof_gap:
+      summary: "A full live stdio transport with the real MCP SDK is not separately exercised."
+      next_step: "Optional: an end-to-end stdio transport smoke with the real MCP SDK."
+
+  - id: exp-tool-registry
+    title: "MCP tools register and dispatch correctly; unknown tools error"
+    description: >-
+      registerTool/registerAll store handlers and route handleToolCall (args + abort
+      signal); unknown tool names throw; last registration wins. A completeness test
+      fails if any tool definition has no backing method.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/registry/__tests__/toolRegistry.test.ts"
+      - path: "packages/mcp-tools/src/registry/__tests__/toolRegistrationCompleteness.test.ts"
+    category: api
+    priority: P1
+    evidence:
+      - id: ev-registry-unit
+        type: unit
+        path: "packages/mcp-tools/src/registry/__tests__/toolRegistry.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers handler storage, handleToolCall routing with args + abort signal, unknown-tool throw, and last-registration-wins."
+      - id: ev-registry-completeness
+        type: unit
+        path: "packages/mcp-tools/src/registry/__tests__/toolRegistrationCompleteness.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Fails if any tool definition has no backing method; checks names against the mapping table, not runtime behavior."
+      - id: ev-registry-session-bound
+        type: unit
+        path: "packages/mcp-tools/src/tools/__tests__/sessionBoundToolSurface.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Guards the mapping tables themselves: the reverse tool<->method map is
+          DERIVED from the forward map (a hand-written inverse had drifted and
+          kept two dead authoring rows), and no authoring tool or method may
+          reappear in either direction. Negative-tested at introduction.
+    proof_gap:
+      summary: "Completeness checks names against the forward mapping table, not behavior. The reverse map can no longer drift (derived)."
+      next_step: "None critical; keep the forward table current as tools are added."
+
+  - id: exp-session-bound-surface
+    title: "The tool surface is session-bound: authoring and cloud tools stay removed"
+    description: >-
+      The server exposes only tools that operate on a live browser session, and
+      nothing that reaches an external service. Two removals are held here as one
+      standing guard (tool lists AND the registry mapping tables), not as
+      one-time cleanups. (1) Authoring: scaffold_project / validate_yaml_test /
+      export_yaml_to_test moved to the shiplightai CLI so the artifact that
+      validates a test is the one that runs it. (2) The v1 cloud surface — test
+      case/template/function sync, environments, test accounts, upload_html_report
+      and the token-gated API client behind them — was removed outright, so there
+      is no cloud path to gate and no SHIPLIGHT_API_TOKEN to honor. A reintroduced
+      cloud tool trips the same registered-surface assertion. Spec: 003
+      FR-012/FR-013, SC-006.
+    source_type: SOURCE
+    source_refs:
+      - path: "specs/003-shiplightai-mcp-server/spec.md"
+        label: "Scope Boundary + FR-012/FR-013"
+      - path: "packages/mcp-tools/src/tools/__tests__/sessionBoundToolSurface.test.ts"
+    category: api
+    priority: P1
+    evidence:
+      - id: ev-session-bound-surface
+        type: unit
+        path: "packages/mcp-tools/src/tools/__tests__/sessionBoundToolSurface.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Registered non-session surface is exactly ["generate_html_report"] —
+          its cloud counterpart upload_html_report went with the rest of the v1
+          cloud surface. No authoring tool name in the forward registry map; no
+          authoring method reachable; reverse map stays derived; a tool-count
+          floor guards against silent regrowth. Reintroduction of either an
+          authoring or a cloud tool trips it with the rationale in the failure
+          message (negative-tested).
+      - id: ev-resource-content-guards
+        type: unit
+        path: "packages/mcp-tools/src/resources/__tests__/getResource.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          The prose surface of the boundary: shiplight://yaml-test-spec and its
+          legacy alias no longer resolve or advertise, and the action-entity
+          resource names no removed tool and points authoring at the CLI.
+
+  - id: exp-log-capture
+    title: "Console and network logs are captured for debugging"
+    description: >-
+      SessionManager collects console/network logs during page operations, surfaced via
+      the get_browser_*_logs tools, with sane limits.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/backends/SessionManager.ts"
+      - path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+    category: ops
+    priority: P2
+    evidence:
+      - id: ev-logcap-browser
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: "Against a real page: a page console.log marker and navigation responses appear in getConsoleLogs/getNetworkLogs."
+    proof_gap:
+      summary: "Capture is proven; the documented log size limit/truncation behavior is not separately asserted."
+      next_step: "Optional: assert the documented log-limit/truncation behavior."
+
+  - id: exp-session-new-schema
+    title: "new_session validates and normalizes browser options"
+    description: >-
+      Zod schema accepts starting_url, viewport, mobile emulation, color_scheme (reject
+      invalid), geolocation, timezone/locale, user_agent; strips legacy device_name /
+      test_account_id.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/tools/__tests__/newSessionSchema.test.ts"
+    category: api
+    priority: P2
+    evidence:
+      - id: ev-newsession-unit
+        type: unit
+        path: "packages/mcp-tools/src/tools/__tests__/newSessionSchema.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Schema-level: accepts the documented options, rejects invalid color_scheme, and strips legacy device_name/test_account_id."
+      - id: ev-newsession-options-applied
+        type: e2e
+        path: "packages/mcp-tools/browser-tests/browserTools.behavior.test.ts"
+        command: "pnpm --filter mcp-tools test:browser"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Options take effect, not merely validate: a session created with
+          viewport 900x640, locale ja-JP and color_scheme dark is asserted
+          against the live page's window.innerWidth/innerHeight,
+          navigator.language, and the prefers-color-scheme media query. A schema
+          that accepts an option the context ignores would pass the unit row
+          above and still ship broken.
+
+  - id: exp-resource-uris
+    title: "MCP resource URIs resolve, including legacy versioned aliases"
+    description: >-
+      Remaining schema URIs (testflow-json, action-entity) resolve; legacy versioned
+      URIs map to the same content; unknown URIs return undefined; listResources
+      advertises canonical URIs. shiplight://yaml-test-spec (and its legacy alias)
+      MUST NOT resolve — the YAML language spec ships in the CLI as
+      `npx shiplight spec yaml` so it is version-locked to the transpiler.
+    source_type: IMPLEMENTATION
+    source_refs:
+      - path: "packages/mcp-tools/src/resources/__tests__/getResource.test.ts"
+    category: api
+    priority: P3
+    evidence:
+      - id: ev-resource-unit
+        type: unit
+        path: "packages/mcp-tools/src/resources/__tests__/getResource.test.ts"
+        command: "pnpm --filter mcp-tools test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: "Covers canonical + legacy versioned URI resolution, unknown-URI undefined, listResources advertising canonical URIs, the NEGATIVE case (yaml-test-spec + alias return undefined and are de-listed), and action-entity content guards."

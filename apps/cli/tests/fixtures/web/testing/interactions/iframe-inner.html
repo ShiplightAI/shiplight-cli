@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 12px;
+            margin: 0;
+            background: #fff;
+        }
+        h4 { margin-top: 0; color: #1a1a2e; }
+        #inner-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        #inner-result {
+            margin-top: 8px;
+            padding: 8px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h4>Inner Frame</h4>
+    <input id="inner-input" type="text" placeholder="Type in inner frame..." />
+    <div id="inner-result"></div>
+    <script>
+        const innerInput = document.getElementById('inner-input');
+        const innerResult = document.getElementById('inner-result');
+        innerInput.addEventListener('input', () => {
+            if (innerInput.value) {
+                innerResult.style.display = 'block';
+                innerResult.textContent = 'You typed: ' + innerInput.value;
+            } else {
+                innerResult.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

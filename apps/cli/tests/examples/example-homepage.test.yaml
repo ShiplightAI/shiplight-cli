@@ -1,0 +1,6 @@
+goal: Verify Example.com homepage loads
+base_url: https://example.com
+statements:
+  - URL: /
+  - VERIFY: The page title contains Example Domain
+  - VERIFY: There is a link on the page

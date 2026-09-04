@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Timezone - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .clock-display {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .date-display {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .tz-highlight {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        @media (max-width: 768px) {
+            .clock-display {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Locale</span>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Browser Timezone</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Current Time</h2>
+
+                <div class="tz-highlight" id="tz-name">--</div>
+                <div class="clock-display" id="clock">--:--:--</div>
+                <div class="date-display" id="date-display">--</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function formatTime(date, tz) {
+            return new Intl.DateTimeFormat("en-US", {
+                timeZone: tz,
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            }).format(date);
+        }
+
+        function formatDate(date, tz) {
+            return new Intl.DateTimeFormat("en-US", {
+                timeZone: tz,
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            }).format(date);
+        }
+
+        function update() {
+            const now = new Date();
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            document.getElementById("tz-name").textContent = tz;
+            document.getElementById("clock").textContent = formatTime(now, tz);
+            document.getElementById("date-display").textContent = formatDate(now, tz);
+        }
+
+        update();
+        setInterval(update, 1000);
+    </script>
+</body>
+</html>

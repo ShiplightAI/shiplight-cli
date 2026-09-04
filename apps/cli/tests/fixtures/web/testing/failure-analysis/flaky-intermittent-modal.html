@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intermittent Modal - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-2xl);
+            max-width: 520px;
+            width: 90%;
+            box-shadow: var(--shadow-xl);
+            transform: translateY(20px);
+            animation: slideUp 0.3s ease forwards;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            to { transform: translateY(0); }
+        }
+
+        .modal-banner {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .modal-banner h3 {
+            font-size: 1.375rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            color: white;
+        }
+
+        .modal-banner p {
+            font-size: 0.9375rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+            color: white;
+        }
+
+        .modal-features {
+            list-style: none;
+            padding: 0;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .modal-features li {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) 0;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .modal-features li::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L4.5 8.5 2 6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        .form-container {
+            max-width: 500px;
+        }
+
+        .submission-result {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .submission-result.visible {
+            display: block;
+        }
+
+        .submission-result.success {
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            color: #065f46;
+        }
+
+        .submission-result.error {
+            background: #fef2f2;
+            border: 1px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .status-bar.modal-shown {
+            background: #fef2f2;
+            border: 1px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .status-bar.modal-hidden {
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            color: #065f46;
+        }
+
+        .status-dot-large {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-bar.modal-shown .status-dot-large {
+            background: var(--danger);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .status-bar.modal-hidden .status-dot-large {
+            background: var(--success);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .load-log {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--gray-900);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            color: var(--gray-300);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: var(--spacing-xs) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--gray-500);
+        }
+
+        .log-modal { color: #f87171; }
+        .log-no-modal { color: #4ade80; }
+        .log-action { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Intermittent Modal</span>
+            </div>
+            <span class="badge">Flaky Test</span>
+            <h1>Intermittent Modal</h1>
+            <p class="description">A promotional modal appears ~50% of the time on page load, blocking the form and causing tests that do not handle it to fail.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Contact Form</h2>
+                <p>Fill out and submit this contact form. On page load, there is a 50% chance a promotional modal appears and blocks the form.</p>
+
+                <div id="status-bar" class="status-bar"></div>
+
+                <div class="form-container">
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="full-name">Full Name</label>
+                            <input type="text" id="full-name" class="form-control" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" placeholder="you@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" class="form-control" placeholder="Type your message here..." rows="4"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">Send Message</button>
+                            <button type="button" class="btn btn-outline" id="reload-btn">Simulate Reload</button>
+                        </div>
+                    </form>
+
+                    <div id="submission-result" class="submission-result"></div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Page Load Log</h2>
+                <p>Each page load (or simulated reload) is logged below, showing whether the modal appeared.</p>
+                <div class="load-log" id="load-log"></div>
+            </div>
+
+            <div class="info-box warning">
+                <h4>Why This Causes Flaky Tests</h4>
+                <p>A test that navigates to this page and immediately tries to fill in the form will fail ~50% of the time when the modal overlay blocks the form elements. The test needs to conditionally dismiss the modal before interacting with the form.</p>
+                <ul>
+                    <li>Modal appears with 50% probability (<code>Math.random() &lt; 0.5</code>)</li>
+                    <li>When present, the modal blocks all form interactions</li>
+                    <li>Fix: Check for modal presence and dismiss it before form interaction</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+
+    <script>
+        (function() {
+            var modalContainer = document.getElementById('modal-container');
+            var statusBar = document.getElementById('status-bar');
+            var logEl = document.getElementById('load-log');
+            var loadNumber = 0;
+
+            function addLog(message, className) {
+                var now = new Date().toLocaleTimeString();
+                var entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = '<span class="log-time">[' + now + ']</span> <span class="' + className + '">' + message + '</span>';
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+
+            function showModal() {
+                var html = '<div class="modal-overlay" id="promo-modal">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-banner">' +
+                    '<h3>Limited Time Offer!</h3>' +
+                    '<p>Upgrade to Pro and get 50% off your first year</p>' +
+                    '</div>' +
+                    '<ul class="modal-features">' +
+                    '<li>Unlimited test executions</li>' +
+                    '<li>Priority support with 1-hour SLA</li>' +
+                    '<li>Advanced analytics dashboard</li>' +
+                    '<li>Custom integrations and webhooks</li>' +
+                    '</ul>' +
+                    '<div class="modal-actions">' +
+                    '<button class="btn btn-primary" id="modal-upgrade-btn">Upgrade Now</button>' +
+                    '<button class="btn btn-outline" id="modal-close-btn">No Thanks</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+                modalContainer.innerHTML = html;
+
+                document.getElementById('modal-close-btn').addEventListener('click', function() {
+                    dismissModal();
+                    addLog('Modal dismissed by user (clicked "No Thanks")', 'log-action');
+                });
+
+                document.getElementById('modal-upgrade-btn').addEventListener('click', function() {
+                    dismissModal();
+                    addLog('Modal dismissed by user (clicked "Upgrade Now")', 'log-action');
+                });
+            }
+
+            function dismissModal() {
+                var modal = document.getElementById('promo-modal');
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease';
+                    setTimeout(function() {
+                        modalContainer.innerHTML = '';
+                    }, 200);
+                }
+                statusBar.className = 'status-bar modal-hidden';
+                statusBar.innerHTML = '<span class="status-dot-large"></span> Modal dismissed - form is accessible';
+            }
+
+            function simulateLoad() {
+                loadNumber++;
+                var showsModal = Math.random() < 0.5;
+
+                if (showsModal) {
+                    showModal();
+                    statusBar.className = 'status-bar modal-shown';
+                    statusBar.innerHTML = '<span class="status-dot-large"></span> Modal is blocking the form (load #' + loadNumber + ')';
+                    addLog('Load #' + loadNumber + ': Modal APPEARED (blocking form)', 'log-modal');
+                } else {
+                    modalContainer.innerHTML = '';
+                    statusBar.className = 'status-bar modal-hidden';
+                    statusBar.innerHTML = '<span class="status-dot-large"></span> No modal this time - form is accessible (load #' + loadNumber + ')';
+                    addLog('Load #' + loadNumber + ': No modal (form accessible)', 'log-no-modal');
+                }
+            }
+
+            // Form submission
+            document.getElementById('contact-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var name = document.getElementById('full-name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                var message = document.getElementById('message').value.trim();
+                var resultEl = document.getElementById('submission-result');
+
+                if (name && email && message) {
+                    resultEl.className = 'submission-result visible success';
+                    resultEl.textContent = 'Message sent successfully! We will reply to ' + email + ' within 24 hours.';
+                    addLog('Form submitted: name="' + name + '", email="' + email + '"', 'log-action');
+                } else {
+                    resultEl.className = 'submission-result visible error';
+                    resultEl.textContent = 'Please fill in all fields before submitting.';
+                    addLog('Form submission failed: missing fields', 'log-modal');
+                }
+            });
+
+            // Simulate reload button
+            document.getElementById('reload-btn').addEventListener('click', function() {
+                document.getElementById('submission-result').className = 'submission-result';
+                simulateLoad();
+            });
+
+            // Initial page load
+            simulateLoad();
+        })();
+    </script>
+</body>
+</html>

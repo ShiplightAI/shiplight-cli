@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .clipboard-display {
+            background: var(--gray-50);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            word-break: break-all;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .clipboard-display.has-content {
+            border-color: var(--success);
+            background: #ecfdf5;
+        }
+
+        .clipboard-display.error {
+            border-color: var(--danger);
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .clipboard-display .placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <!-- Header -->
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">/</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">/</span>
+                <span>Clipboard</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="test-content">
+            <!-- Copy Section -->
+            <div class="test-section">
+                <h2>Write to Clipboard</h2>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="btn-copy" onclick="copyToClipboard()">
+                        Copy Text to Clipboard
+                    </button>
+                </div>
+                <div id="copy-status" class="info-box success" style="display: none;">
+                    <p id="copy-status-text"></p>
+                </div>
+            </div>
+
+            <!-- Read Section -->
+            <div class="test-section">
+                <h2>Read from Clipboard</h2>
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="btn-read" onclick="readClipboard()">
+                        Read Clipboard
+                    </button>
+                </div>
+                <div id="clipboard-content" class="clipboard-display">
+                    <span class="placeholder">Clipboard content will appear here</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TEXT_TO_COPY = 'Hello from clipboard test!';
+
+        async function copyToClipboard() {
+            const statusEl = document.getElementById('copy-status');
+            const statusText = document.getElementById('copy-status-text');
+            try {
+                await navigator.clipboard.writeText(TEXT_TO_COPY);
+                statusEl.style.display = 'block';
+                statusEl.className = 'info-box success';
+                statusText.textContent = 'Copied: ' + TEXT_TO_COPY;
+            } catch (err) {
+                statusEl.style.display = 'block';
+                statusEl.className = 'info-box danger';
+                statusText.textContent = 'Copy failed: ' + err.message;
+            }
+        }
+
+        async function readClipboard() {
+            const displayEl = document.getElementById('clipboard-content');
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    displayEl.className = 'clipboard-display has-content';
+                    displayEl.textContent = text;
+                } else {
+                    displayEl.className = 'clipboard-display';
+                    displayEl.innerHTML = '<span class="placeholder">(empty)</span>';
+                }
+            } catch (err) {
+                displayEl.className = 'clipboard-display error';
+                displayEl.textContent = 'Read failed: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

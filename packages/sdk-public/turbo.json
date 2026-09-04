@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "test:unit": {
+      // consumerDeclarations.test.ts inspects dist/, so this package's own
+      // build must run first. The root task only declares `^build`
+      // (dependencies' builds), which is not enough here.
+      "dependsOn": ["build"]
+    }
+  }
+}

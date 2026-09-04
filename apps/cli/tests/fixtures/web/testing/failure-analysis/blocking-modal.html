@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocking Modal - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .cookie-modal {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-2xl);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.4s ease;
+        }
+
+        .cookie-modal .cookie-icon {
+            width: 56px;
+            height: 56px;
+            background: #fef3c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .cookie-modal h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .cookie-modal p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .cookie-modal .modal-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .cookie-modal .modal-buttons .btn {
+            flex: 1;
+        }
+
+        .registration-form {
+            max-width: 600px;
+        }
+
+        .registration-form h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .registration-form .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .success-message {
+            display: none;
+            padding: var(--spacing-lg);
+            background: #ecfdf5;
+            border: 1px solid var(--success);
+            border-radius: var(--border-radius);
+            color: #065f46;
+            margin-top: var(--spacing-lg);
+        }
+
+        .success-message.visible {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Blocking Modal</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Blocking Modal</h1>
+            <p class="description">A cookie consent modal overlay blocks form interaction on page load. The test must dismiss the modal before filling the form. An old test that does not handle the modal will fail.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: blocking_element</h4>
+                <p>A cookie consent modal was added to this page. Previously there was no modal, so the old test would immediately try to fill in the form fields. Now the modal overlay intercepts all clicks until dismissed.</p>
+                <ul>
+                    <li><strong>Old test behavior:</strong> Navigate to page, immediately fill Name and Email, click Submit</li>
+                    <li><strong>Expected fix:</strong> Dismiss the cookie modal first by clicking "Accept Cookies" or "Decline", then proceed with the form</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="registration-form">
+                    <h2>Contact Registration</h2>
+                    <p class="subtitle">Fill in your details to register for our newsletter.</p>
+
+                    <form id="registrationForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" class="form-control" placeholder="Enter first name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" class="form-control" placeholder="Enter last name" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company (optional)</label>
+                            <input type="text" id="company" class="form-control" placeholder="Your company name">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">I agree to the terms and conditions</label>
+                        </div>
+                        <div class="button-group" style="margin-top: var(--spacing-lg);">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="reset" class="btn btn-outline">Clear Form</button>
+                        </div>
+                    </form>
+
+                    <div class="success-message" id="successMessage">
+                        <strong>Registration successful!</strong> Thank you for signing up. We will be in touch shortly.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Modal -->
+    <div class="modal-overlay" id="cookieModal">
+        <div class="cookie-modal">
+            <div class="cookie-icon">&#x1F36A;</div>
+            <h2>We Value Your Privacy</h2>
+            <p>We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept Cookies", you consent to our use of cookies.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-outline" id="declineCookies">Decline</button>
+                <button class="btn btn-primary" id="acceptCookies">Accept Cookies</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cookie modal logic
+        var cookieModal = document.getElementById('cookieModal');
+        var acceptBtn = document.getElementById('acceptCookies');
+        var declineBtn = document.getElementById('declineCookies');
+
+        function dismissModal() {
+            cookieModal.classList.add('hidden');
+        }
+
+        acceptBtn.addEventListener('click', dismissModal);
+        declineBtn.addEventListener('click', dismissModal);
+
+        // Form submission logic
+        var form = document.getElementById('registrationForm');
+        var successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var firstName = document.getElementById('firstName').value.trim();
+            var lastName = document.getElementById('lastName').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var terms = document.getElementById('terms').checked;
+
+            if (firstName && lastName && email && terms) {
+                successMessage.classList.add('visible');
+                form.reset();
+            }
+        });
+    </script>
+</body>
+</html>

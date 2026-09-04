@@ -1,0 +1,52 @@
+name: Sync YAML Test Language Spec
+
+on:
+  push:
+    paths:
+      - 'apps/cli/docs/YAML-TEST-LANGUAGE-SPEC.md'
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync spec to examples repo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          owner: ${{ vars.ORGANIZATION_NAME }}
+          app-id: ${{ vars.SHIPLIGHT_OPS_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SHIPLIGHT_OPS_GITHUB_APP_KEY }}
+          repositories: examples
+
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+
+      - name: Checkout examples repo
+        uses: actions/checkout@v6
+        with:
+          repository: ShiplightAI/examples
+          token: ${{ steps.generate_token.outputs.token }}
+          path: _examples
+          persist-credentials: true
+
+      - name: Copy spec and push if changed
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          cp apps/cli/docs/YAML-TEST-LANGUAGE-SPEC.md _examples/yaml-examples/YAML-TEST-LANGUAGE-SPEC.md
+
+          cd _examples
+          git add yaml-examples/YAML-TEST-LANGUAGE-SPEC.md
+          if git diff --cached --quiet; then
+            echo "No changes to sync"
+            exit 0
+          fi
+
+          git config user.name "shiplight-ops[bot]"
+          git config user.email "shiplight-ops[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/ShiplightAI/examples.git"
+          git commit -m "docs: sync YAML test language spec from shiplight-cli"
+          git push

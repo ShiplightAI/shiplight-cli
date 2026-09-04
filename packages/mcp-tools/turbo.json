@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    // Declared here rather than in the root config on purpose. A root-level
+    // definition gives EVERY workspace a task node, and each no-op node still
+    // resolves `dependsOn: ["build"]` — so this lane built the whole monorepo
+    // (sunset packages included) to run a few seconds of browser tests. Only
+    // mcp-tools, sdk-core and apps/cli define the script.
+    "test:browser": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": false
+    }
+  }
+}

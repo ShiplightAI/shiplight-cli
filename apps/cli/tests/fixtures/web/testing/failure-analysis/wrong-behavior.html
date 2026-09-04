@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incorrect Sort Behavior - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .item-list {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-row:hover {
+            background: var(--bg-secondary);
+        }
+
+        .item-index {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-lightest);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: var(--spacing-md);
+            flex-shrink: 0;
+        }
+
+        .item-name {
+            font-size: 1.0625rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .sort-indicator {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: var(--spacing-xs) var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+        }
+
+        .sort-indicator.active {
+            background: var(--primary-lightest);
+            color: var(--primary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Incorrect Sort Behavior</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>Incorrect Sort Behavior</h1>
+            <p class="description">A sortable list where the "Sort A-Z" button incorrectly sorts items in reverse alphabetical order (Z-A) instead of A-Z.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Fruit List</h2>
+                <p>Click "Sort A-Z" to sort the list alphabetically. The items should appear in alphabetical order from A to Z.</p>
+
+                <div class="sort-controls">
+                    <button class="btn btn-primary" id="sort-az-btn">Sort A-Z</button>
+                    <button class="btn btn-outline" id="reset-order-btn">Reset to Original</button>
+                    <span class="sort-indicator" id="sort-status">Unsorted</span>
+                </div>
+
+                <div class="item-list" id="fruit-list">
+                    <!-- Items rendered by JS -->
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>After clicking "Sort A-Z", the list should display items in alphabetical order: Apple, Banana, Cherry, Date, Elderberry.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var originalOrder = ['Cherry', 'Apple', 'Banana', 'Date', 'Elderberry'];
+            var currentItems = originalOrder.slice();
+
+            function renderList() {
+                var listEl = document.getElementById('fruit-list');
+                listEl.innerHTML = '';
+                currentItems.forEach(function(item, index) {
+                    var row = document.createElement('div');
+                    row.className = 'item-row';
+                    row.innerHTML = '<span class="item-index">' + (index + 1) + '</span>' +
+                        '<span class="item-name">' + item + '</span>';
+                    listEl.appendChild(row);
+                });
+            }
+
+            document.getElementById('sort-az-btn').addEventListener('click', function() {
+                // BUG: Uses .reverse() after .sort(), which results in Z-A order
+                // The developer likely added .reverse() by mistake or confused the sort direction
+                currentItems.sort(function(a, b) {
+                    return a.localeCompare(b);
+                }).reverse();
+
+                renderList();
+                var statusEl = document.getElementById('sort-status');
+                statusEl.textContent = 'Sorted A-Z';
+                statusEl.className = 'sort-indicator active';
+            });
+
+            document.getElementById('reset-order-btn').addEventListener('click', function() {
+                currentItems = originalOrder.slice();
+                renderList();
+                var statusEl = document.getElementById('sort-status');
+                statusEl.textContent = 'Unsorted';
+                statusEl.className = 'sort-indicator';
+            });
+
+            // Initial render
+            renderList();
+        })();
+    </script>
+</body>
+</html>

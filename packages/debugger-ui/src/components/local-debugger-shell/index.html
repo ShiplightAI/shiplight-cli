@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Shiplight Debugger</title>
+  <!--
+    Inline FOUC-prevention CSS runs before the JS bundle loads, so the
+    color literals below cannot import theme.ts. Keep `background` and
+    `color` in sync with theme.ts → `colors.bgBase` / `colors.textBody`.
+  -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #1a1b1e; color: #c1c2c5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+    #root { height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="./entry.tsx"></script>
+</body>
+</html>

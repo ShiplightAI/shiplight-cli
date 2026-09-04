@@ -1,0 +1,364 @@
+name: Publish @shiplightai/sdk
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run all gates but skip npm publish and bump push (test the workflow itself)"
+        type: boolean
+        default: false
+      max_size_increase_pct:
+        description: "Maximum approved tarball growth percentage; defaults to the standard +1% gate"
+        type: number
+        default: 1
+
+jobs:
+  # The public package re-exports the shared engine, so its source-level unit
+  # and real-browser tests are release gates in addition to sdk-public's own
+  # published-surface tests below.
+  sdk-tests:
+    uses: ./.github/workflows/sdk-tests.yml
+
+  publish:
+    needs: [sdk-tests]
+    # shiplight-medium (e2-standard-8, 8 vCPU / 32 GB) — a cloud-dispatched
+    # self-hosted runner, same as publish-cli.yml. The SDK examples gate is 51
+    # live-AI call sites across 8 browser scenarios; running them serially on a
+    # 2-vCPU GitHub-hosted runner took 30+ minutes, which is why they now run
+    # 4-wide below. Requires monots to stay a connected repo in the cloud service
+    # runner control plane, else the job queues without a runner.
+    runs-on: shiplight-medium
+    permissions:
+      contents: write
+      # REQUIRED to publish: npm authenticates this workflow by OIDC (trusted
+      # publishing) and there is no NPM_TOKEN to fall back on, so without an
+      # id-token the publish step has no credential and dies with ENEEDAUTH.
+      id-token: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Catches the commonest misconfiguration — a job without `id-token: write`
+      # — before the gates below spend their time. npm authenticates this
+      # workflow by OIDC (trusted publishing); there is no NPM_TOKEN fallback,
+      # so a missing id-token surfaces as a bare ENEEDAUTH at the very last step.
+      - name: Assert the OIDC id-token is available to this job
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            printf '::%s::%s\n' error "No OIDC id-token in this job — trusted publishing needs 'permissions: id-token: write'"
+            exit 1
+          fi
+          echo "OIDC id-token endpoint present."
+
+      - name: Configure git identity
+        run: |
+          git config user.name "shiplight-release-bot"
+          git config user.email "release-bot@shiplight.ai"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Compute OLD (live npm) and NEW (patch+1) versions
+        id: versions
+        run: |
+          set -euo pipefail
+          OLD=$(npm view @shiplightai/sdk version)
+          NEW=$(node -p "const v='${OLD}'.split('.').map(Number); v[2]++; v.join('.')")
+          echo "OLD=$OLD"
+          echo "NEW=$NEW"
+          echo "old=$OLD" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Assert NEW not already on npm
+        run: |
+          if npm view @shiplightai/sdk@${{ steps.versions.outputs.new }} version > /dev/null 2>&1; then
+            printf '::%s::%s\n' error "@shiplightai/sdk@${{ steps.versions.outputs.new }} already exists on npm"
+            exit 1
+          fi
+
+      - name: Bump packages/sdk-public/package.json to NEW
+        working-directory: packages/sdk-public
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.NEW_VERSION;fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');"
+          node -p "require('./package.json').version"
+
+      - name: Build SDK with dependencies
+        run: pnpm turbo run build --filter=@shiplightai/sdk
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      # Blocks publishing a tarball whose declarations reference the private
+      # workspace packages — consumers cannot resolve those, so the public
+      # types silently degrade to `any` or fail to compile outright.
+      # The trailing "..." also runs every dependency's unit suite; sdk-tests
+      # separately covers sdk-core's browser lane.
+      - name: SDK package tests (hard gate)
+        run: pnpm turbo run test:unit --filter=@shiplightai/sdk...
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Pack candidate tarball
+        working-directory: packages/sdk-public
+        run: pnpm pack
+
+      # Dogfood the exact candidate against every runnable SDK example from the
+      # public repository users clone. The examples use Gemini models; the
+      # Shiplight token routes those calls through the multi-provider LLM proxy.
+      - name: Checkout public SDK examples (ShiplightAI/examples)
+        uses: actions/checkout@v6
+        with:
+          repository: ShiplightAI/examples
+          path: examples-repo
+
+      - name: E2E — public SDK examples (hard gate, all must pass)
+        working-directory: examples-repo/sdk-examples
+        env:
+          SHIPLIGHT_API_TOKEN: ${{ secrets.SHIPLIGHT_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Testing against ShiplightAI/examples@$(git rev-parse HEAD)"
+          # npm ci needs an in-sync lockfile; fall back to npm install so
+          # unrelated lockfile drift in the external repo does not block the SDK.
+          npm ci || npm install
+          npm install --no-save "${{ github.workspace }}/packages/sdk-public/shiplightai-sdk-${{ steps.versions.outputs.new }}.tgz"
+          INSTALLED=$(node -p "require('./node_modules/@shiplightai/sdk/package.json').version")
+          if [ "$INSTALLED" != "${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "examples running @shiplightai/sdk $INSTALLED, expected ${{ steps.versions.outputs.new }}"
+            exit 1
+          fi
+
+          # Every example, with the marker proving the scenario reached its end.
+          # This array is the single source of truth: the script names are
+          # derived from it and compared against package.json, so an example
+          # cannot be added to the package without also being run here — nor
+          # left here after being removed. Previously the checked list and the
+          # run list were separate, so an example added to both package.json and
+          # the check could still silently never execute.
+          EXAMPLES=(
+            'quickstart|=== Quick Start Complete ==='
+            'basic|Assertion failed as expected:'
+            'login|=== Login Example Complete ==='
+            'self-healing|=== Self-Healing Summary ==='
+            'custom-actions|Custom actions successfully executed: 3/3'
+            'variables|=== Variables Example Complete ==='
+            'file-upload|=== File Upload Example Complete ==='
+            'extraction|✓ Data extraction example completed'
+          )
+
+          EXPECTED_SCRIPTS=$(printf '%s\n' "${EXAMPLES[@]}" | cut -d'|' -f1 | sort | tr '\n' ' ' | sed 's/ $//')
+          ACTUAL_SCRIPTS=$(node -e "const p=require('./package.json'); console.log(Object.keys(p.scripts || {}).sort().join(' '))")
+          if [ "$ACTUAL_SCRIPTS" != "$EXPECTED_SCRIPTS" ]; then
+            printf '::%s::%s\n' error "SDK example scripts changed. Running: $EXPECTED_SCRIPTS. In package.json: $ACTUAL_SCRIPTS"
+            exit 1
+          fi
+
+          # No --with-deps: the shiplight-medium image has the browser OS
+          # libraries pre-baked, and --with-deps shells out to `sudo apt-get`,
+          # which fails on the self-hosted runner ("sudo: a password is
+          # required"). Same reasoning as publish-cli.yml.
+          npx playwright install chromium
+          mkdir -p /tmp/sdk-examples
+
+          # The examples currently end with `.catch(console.error)`, which logs
+          # an exception but exits 0. Require a scenario-specific completion
+          # marker as well as a zero process exit so failures cannot pass silently.
+          #
+          # Output goes to a per-example file rather than streaming through tee,
+          # because 4 concurrent examples would interleave into noise. Each
+          # worker prints its own log (prefixed) when it fails, so a failure is
+          # still diagnosable from the job log alone.
+          run_sdk_example() {
+            local example_script="${1%%|*}"
+            local completion_marker="${1#*|}"
+            local example_log="/tmp/sdk-examples/${example_script}.log"
+
+            if ! xvfb-run -a npm run "$example_script" >"$example_log" 2>&1; then
+              printf '::%s::%s\n' error "SDK example failed with a nonzero exit: $example_script"
+              sed "s|^|[${example_script}] |" "$example_log"
+              return 1
+            fi
+            if ! grep -Fq "$completion_marker" "$example_log"; then
+              printf '::%s::%s\n' error "SDK example did not reach its completion marker: $example_script"
+              sed "s|^|[${example_script}] |" "$example_log"
+              return 1
+            fi
+            echo "SDK example passed: $example_script"
+          }
+          export -f run_sdk_example
+
+          # 4-wide on shiplight-medium's 8 vCPU. Each example drives its own
+          # Chromium on its own xvfb display (`xvfb-run -a` picks a free one).
+          # xargs exits nonzero when any worker does, so one failing example
+          # still fails the gate.
+          printf '%s\n' "${EXAMPLES[@]}" \
+            | xargs -P 4 -I{} bash -c 'run_sdk_example "$@"' _ {}
+
+      - name: Download baseline tarball (@shiplightai/sdk@OLD)
+        run: |
+          mkdir -p /tmp/baseline-tarball
+          cd /tmp/baseline-tarball
+          npm pack @shiplightai/sdk@${{ steps.versions.outputs.old }}
+
+      - name: Tarball size delta
+        id: size
+        env:
+          MAX_SIZE_INCREASE_PCT: ${{ inputs.max_size_increase_pct }}
+        run: |
+          set -euo pipefail
+          if ! awk -v m="$MAX_SIZE_INCREASE_PCT" 'BEGIN { exit (m ~ /^[0-9]+([.][0-9]+)?$/) ? 0 : 1 }'; then
+            printf '::%s::%s\n' error "Invalid maximum size increase: $MAX_SIZE_INCREASE_PCT"
+            exit 1
+          fi
+          BASELINE=$(stat -c%s "/tmp/baseline-tarball/shiplightai-sdk-${{ steps.versions.outputs.old }}.tgz")
+          CANDIDATE=$(stat -c%s "packages/sdk-public/shiplightai-sdk-${{ steps.versions.outputs.new }}.tgz")
+          DELTA=$((CANDIDATE - BASELINE))
+          PCT=$(awk -v d="$DELTA" -v b="$BASELINE" 'BEGIN { printf "%.4f", (d / b) * 100 }')
+          {
+            echo "baseline_bytes=$BASELINE"
+            echo "candidate_bytes=$CANDIDATE"
+            echo "delta_bytes=$DELTA"
+            echo "delta_pct=$PCT"
+          } >> "$GITHUB_OUTPUT"
+          echo "baseline ${{ steps.versions.outputs.old }}: $BASELINE B"
+          echo "candidate ${{ steps.versions.outputs.new }}: $CANDIDATE B"
+          echo "delta: $DELTA B ($PCT%)"
+          if awk -v p="$PCT" -v m="$MAX_SIZE_INCREASE_PCT" 'BEGIN { exit (p > m) ? 0 : 1 }'; then
+            printf '::%s::%s\n' error "Tarball grew $PCT% (approved maximum +$MAX_SIZE_INCREASE_PCT%)"
+            exit 1
+          fi
+
+      - name: Baseline install (@shiplightai/sdk@OLD in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/baseline-smoke && cd /tmp/baseline-smoke
+          npm init -y > /dev/null
+          npm install --no-audit @shiplightai/sdk@${{ steps.versions.outputs.old }} 2> baseline.warn
+
+      - name: Candidate install (./tarball in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/candidate-smoke && cd /tmp/candidate-smoke
+          npm init -y > /dev/null
+          npm install --no-audit "${{ github.workspace }}/packages/sdk-public/shiplightai-sdk-${{ steps.versions.outputs.new }}.tgz" 2> candidate.warn
+
+      - name: Diff filtered warnings (deprecated | peer | audit)
+        run: |
+          set -uo pipefail
+          PATTERN='deprecated|npm warn peer|npm error|vulnerabilit'
+          grep -E "$PATTERN" /tmp/baseline-smoke/baseline.warn | sort -u > /tmp/baseline.filtered || true
+          grep -E "$PATTERN" /tmp/candidate-smoke/candidate.warn | sort -u > /tmp/candidate.filtered || true
+          NEW_LINES=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+          if [ -n "$NEW_LINES" ]; then
+            printf '::%s::%s\n' error "New filtered warnings vs. baseline ${{ steps.versions.outputs.old }}:"
+            echo "$NEW_LINES"
+            exit 1
+          fi
+          echo "No new filtered warnings."
+
+      - name: Functional smoke (installed ESM import and declarations)
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          INSTALLED=$(node -p "require('./node_modules/@shiplightai/sdk/package.json').version")
+          if [ "$INSTALLED" != "${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "Installed version $INSTALLED != expected ${{ steps.versions.outputs.new }}"
+            exit 1
+          fi
+          test -s node_modules/@shiplightai/sdk/dist/index.js
+          test -s node_modules/@shiplightai/sdk/dist/index.d.ts
+          node --input-type=module -e "const sdk = await import('@shiplightai/sdk'); if (Object.keys(sdk).length === 0) throw new Error('SDK exports are empty')"
+
+      - name: npm publish --dry-run
+        working-directory: packages/sdk-public
+        run: pnpm publish --dry-run --no-git-checks --access public
+
+      - name: npm publish
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/sdk-public
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit bump and push main
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          git add packages/sdk-public/package.json
+          git commit -m "chore(sdk-public): bump @shiplightai/sdk to ${{ steps.versions.outputs.new }}"
+          # main can move while the release gates run; rebase the bump commit
+          # onto the latest main and retry so a concurrent push does not strand
+          # npm at a version the repository does not record.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed bump on attempt $attempt"
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) — rebasing onto latest main and retrying"
+            sleep $((attempt * 3))
+            git pull --rebase origin main || {
+              git rebase --abort 2>/dev/null || true
+              printf '::%s::%s\n' error "Rebase onto main failed (attempt $attempt) — aborting"
+              exit 1
+            }
+          done
+          if git push origin HEAD:main; then
+            echo "Pushed bump after final rebase"
+            exit 0
+          fi
+          printf '::%s::%s\n' error "Failed to push version bump to main after all rebase-and-retry attempts"
+          exit 1
+
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-diagnostics-sdk-${{ steps.versions.outputs.new }}
+          path: |
+            packages/sdk-public/shiplightai-sdk-*.tgz
+            /tmp/baseline-tarball/shiplightai-sdk-*.tgz
+            /tmp/baseline-smoke/baseline.warn
+            /tmp/candidate-smoke/candidate.warn
+            /tmp/baseline.filtered
+            /tmp/candidate.filtered
+            /tmp/sdk-examples/**
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## @shiplightai/sdk release"
+            echo ""
+            echo "- Version: \`${{ steps.versions.outputs.old }}\` → \`${{ steps.versions.outputs.new }}\`"
+            echo "- Tarball: \`${{ steps.size.outputs.baseline_bytes }} B\` → \`${{ steps.size.outputs.candidate_bytes }} B\` (\`${{ steps.size.outputs.delta_pct }}%\`)"
+            echo "- Approved size-growth maximum: \`${{ inputs.max_size_increase_pct }}%\`"
+            echo "- Dry run: \`${{ inputs.dry_run }}\`"
+            echo ""
+            echo "### Filtered warnings — new vs. baseline"
+            echo '```'
+            if [ -f /tmp/baseline.filtered ] && [ -f /tmp/candidate.filtered ]; then
+              NEW=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+              if [ -z "$NEW" ]; then
+                echo "(no new filtered warnings)"
+              else
+                echo "$NEW"
+              fi
+            else
+              echo "(warning diff not produced — earlier step failed)"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

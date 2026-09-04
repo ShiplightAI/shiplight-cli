@@ -1,0 +1,748 @@
+/* Multi-Theme CSS Variables System - black and white theme */
+
+:root {
+  /* Foundation Color System - Primary Colors (pure black and white system) */
+  --shiplight-primary-50:  #fafafa;
+  --shiplight-primary-100: #f5f5f5;
+  --shiplight-primary-200: #e5e5e5;
+  --shiplight-primary-300: #d4d4d4;
+  --shiplight-primary-400: #a3a3a3;
+  --shiplight-primary-500: #737373;
+  --shiplight-primary-600: #525252;
+  --shiplight-primary-700: #404040;
+  --shiplight-primary-800: #262626;
+  --shiplight-primary-900: #171717;
+  --shiplight-primary-950: #0a0a0a;
+
+  /* Foundation Color System - Neutral Colors (neutral gray system) */
+  --shiplight-neutral-50: #fafafa;
+  --shiplight-neutral-100: #f5f5f5;
+  --shiplight-neutral-200: #e5e5e5;
+  --shiplight-neutral-300: #d4d4d4;
+  --shiplight-neutral-400: #a3a3a3;
+  --shiplight-neutral-500: #737373;
+  --shiplight-neutral-600: #525252;
+  --shiplight-neutral-700: #404040;
+  --shiplight-neutral-800: #262626;
+  --shiplight-neutral-900: #171717;
+  --shiplight-neutral-950: #0a0a0a;
+
+  /* Foundation Color System - Semantic Colors */
+  --shiplight-success-50: #f0fdf4;
+  --shiplight-success-100: #dcfce7;
+  --shiplight-success-200: #bbf7d0;
+  --shiplight-success-300: #86efac;
+  --shiplight-success-500: #22c55e;
+  --shiplight-success-600: #16a34a;
+  --shiplight-success-700: #15803d;
+  --shiplight-success-800: #166534;  
+
+  --shiplight-warning-50: #fffbeb;
+  --shiplight-warning-100: #fef3c7;
+  --shiplight-warning-200: #fde68a;
+  --shiplight-warning-300: #fcd34d;
+  --shiplight-warning-500: #f59e0b;
+  --shiplight-warning-600: #d97706;
+  --shiplight-warning-700: #b45309;
+  --shiplight-warning-800: #92400e;
+
+  --shiplight-error-50: #fef2f2;
+  --shiplight-error-100: #fee2e2;
+  --shiplight-error-200: #fecaca;
+  --shiplight-error-300: #fca5a5;
+  --shiplight-error-500: #ef4444;
+  --shiplight-error-600: #dc2626;
+  --shiplight-error-700: #b91c1c;
+  --shiplight-error-800: #991b1b;
+
+  --shiplight-info-50: #eff6ff;
+  --shiplight-info-100: #dbeafe;
+  --shiplight-info-200: #bfdbfe;
+  --shiplight-info-300: #93c5fd;
+  --shiplight-info-500: #3b82f6;
+  --shiplight-info-600: #2563eb;
+  --shiplight-info-700: #1d4ed8;
+  --shiplight-info-800: #1e40af;
+
+  /* Application-Level Semantic Variables - re-adjusted to black and white theme */
+  --shiplight-bg-primary: var(--shiplight-neutral-50);
+  --shiplight-bg-secondary: var(--shiplight-neutral-100);
+  --shiplight-bg-tertiary: var(--shiplight-neutral-200);
+  --shiplight-bg-surface: #ffffff;
+  --shiplight-bg-surface-hover: var(--shiplight-neutral-100);
+  --shiplight-bg-surface-active: var(--shiplight-neutral-200);
+  --shiplight-bg-surface-elevated: #ffffff;
+  --shiplight-bg-overlay: var(--mantine-color-white);
+  --shiplight-bg-backdrop: rgba(0, 0, 0, 0.4);
+
+  --shiplight-bg-info: var(--shiplight-info-200);
+  --shiplight-bg-info-hover: var(--shiplight-info-300);
+  --shiplight-bg-info-active: var(--shiplight-info-400);
+  --shiplight-bg-success: var(--shiplight-success-200);
+  --shiplight-bg-success-hover: var(--shiplight-success-300);
+  --shiplight-bg-success-active: var(--shiplight-success-400);
+  --shiplight-bg-warning: var(--shiplight-warning-200);
+  --shiplight-bg-warning-hover: var(--shiplight-warning-300);
+  --shiplight-bg-warning-active: var(--shiplight-warning-400);
+  --shiplight-bg-error: var(--shiplight-error-200);
+  --shiplight-bg-error-hover: var(--shiplight-error-300);
+  --shiplight-bg-error-active: var(--shiplight-error-400);
+
+  /* Text Colors - optimized black and white contrast */
+  --shiplight-text-primary: var(--shiplight-neutral-900);
+  --shiplight-text-secondary: var(--shiplight-neutral-700);
+  --shiplight-text-tertiary: var(--shiplight-neutral-600);
+  --shiplight-text-quaternary: var(--shiplight-neutral-500);
+  --shiplight-text-inverse: #ffffff;
+  --shiplight-text-disabled: var(--shiplight-neutral-400);
+  --shiplight-text-placeholder: var(--shiplight-neutral-400);
+  --shiplight-text-muted: var(--shiplight-neutral-500);
+  --shiplight-text-link: var(--shiplight-neutral-800);
+  --shiplight-text-link-hover: var(--shiplight-neutral-900);
+  --shiplight-text-link-visited: var(--shiplight-neutral-700);
+
+  /* Border Colors - simplified to gray system */
+  --shiplight-border-primary: var(--shiplight-neutral-300);
+  --shiplight-border-secondary: var(--shiplight-neutral-200);
+  --shiplight-border-subtle: var(--shiplight-neutral-100);
+  --shiplight-border-focus: var(--shiplight-neutral-600);
+  --shiplight-border-hover: var(--shiplight-neutral-400);
+  --shiplight-border-active: var(--shiplight-neutral-700);
+  --shiplight-border-error: var(--shiplight-error-500);
+  --shiplight-border-success: var(--shiplight-success-500);
+  --shiplight-border-warning: var(--shiplight-warning-500);
+  --shiplight-border-info: var(--shiplight-info-500);
+
+  /* Button System - black and white theme buttons */
+  --shiplight-button-primary-bg: var(--shiplight-neutral-900);
+  --shiplight-button-primary-bg-hover: var(--shiplight-neutral-800);
+  --shiplight-button-primary-bg-active: var(--shiplight-neutral-700);
+  --shiplight-button-primary-bg-disabled: var(--shiplight-neutral-300);
+  --shiplight-button-primary-text: #ffffff;
+  --shiplight-button-primary-text-disabled: var(--shiplight-neutral-500);
+  --shiplight-button-primary-border: transparent;
+
+  --shiplight-button-secondary-bg: transparent;
+  --shiplight-button-secondary-bg-hover: var(--shiplight-neutral-100);
+  --shiplight-button-secondary-bg-active: var(--shiplight-neutral-200);
+  --shiplight-button-secondary-text: var(--shiplight-text-primary);
+  --shiplight-button-secondary-border: var(--shiplight-border-primary);
+  --shiplight-button-secondary-border-hover: var(--shiplight-border-hover);
+
+  --shiplight-button-tertiary-bg: transparent;
+  --shiplight-button-tertiary-bg-hover: var(--shiplight-neutral-50);
+  --shiplight-button-tertiary-text: var(--shiplight-text-secondary);
+  --shiplight-button-tertiary-text-hover: var(--shiplight-text-primary);
+
+  --shiplight-button-danger-bg: var(--shiplight-error-500);
+  --shiplight-button-danger-bg-hover: var(--shiplight-error-600);
+  --shiplight-button-danger-bg-active: var(--shiplight-error-700);
+  --shiplight-button-danger-text: #ffffff;
+
+  /* Status Badge System */
+  --shiplight-badge-passed-bg: var(--shiplight-success-50);
+  --shiplight-badge-passed-text: var(--shiplight-success-600);
+  --shiplight-badge-passed-border: var(--shiplight-success-200);
+  --shiplight-badge-passed-icon: var(--shiplight-success-600);
+
+  --shiplight-badge-flaky-bg: var(--shiplight-warning-50);
+  --shiplight-badge-flaky-text: var(--shiplight-warning-700);
+  --shiplight-badge-flaky-border: var(--shiplight-warning-200);
+  --shiplight-badge-flaky-icon: var(--shiplight-warning-600);
+
+  --shiplight-badge-failed-bg: var(--shiplight-error-50);
+  --shiplight-badge-failed-text: var(--shiplight-error-700);
+  --shiplight-badge-failed-border: var(--shiplight-error-200);
+  --shiplight-badge-failed-icon: var(--shiplight-error-600);
+
+  --shiplight-badge-pending-bg: var(--shiplight-warning-50);
+  --shiplight-badge-pending-text: var(--shiplight-warning-700);
+  --shiplight-badge-pending-border: var(--shiplight-warning-200);
+  --shiplight-badge-pending-icon: var(--shiplight-warning-600);
+
+  --shiplight-badge-skipped-bg: var(--shiplight-neutral-100);
+  --shiplight-badge-skipped-text: var(--shiplight-neutral-600);
+  --shiplight-badge-skipped-border: var(--shiplight-neutral-200);
+  --shiplight-badge-skipped-icon: var(--shiplight-neutral-500);
+
+  --shiplight-badge-queued-bg: var(--shiplight-info-50);
+  --shiplight-badge-queued-text: var(--shiplight-info-700);
+  --shiplight-badge-queued-border: var(--shiplight-info-200);
+  --shiplight-badge-queued-icon: var(--shiplight-info-600);
+
+  /* Action Type Badges - adjusted to black and white theme */
+  --shiplight-badge-action-bg: var(--shiplight-text-secondary);
+  --shiplight-badge-action-text: var(--mantine-color-white);
+  --shiplight-badge-ai-action-bg: var(--mantine-color-violet-7);
+  --shiplight-badge-ai-action-text: var(--mantine-color-white);
+  --shiplight-badge-assert-bg: var(--mantine-color-teal-7);
+  --shiplight-badge-assert-text: var(--mantine-color-white);
+  --shiplight-badge-code-bg: var(--mantine-color-cyan-7);
+  --shiplight-badge-code-text: var(--mantine-color-white);
+  --shiplight-badge-function-bg: var(--mantine-color-indigo-7);
+  --shiplight-badge-function-text: var(--mantine-color-white);
+  --shiplight-badge-wait-until-bg: var(--mantine-color-purple-7);
+  --shiplight-badge-wait-until-text: var(--mantine-color-white);
+
+  /* Form Element System - black and white form elements */
+  --shiplight-input-bg: #ffffff;
+  --shiplight-input-bg-disabled: var(--shiplight-neutral-100);
+  --shiplight-input-bg-readonly: var(--shiplight-neutral-50);
+  --shiplight-input-border: var(--shiplight-border-primary);
+  --shiplight-input-border-focus: var(--shiplight-border-focus);
+  --shiplight-input-border-error: var(--shiplight-border-error);
+  --shiplight-input-border-success: var(--shiplight-border-success);
+  --shiplight-input-text: var(--shiplight-text-primary);
+  --shiplight-input-text-disabled: var(--shiplight-text-disabled);
+  --shiplight-input-placeholder: var(--shiplight-text-placeholder);
+
+  --shiplight-select-bg: #ffffff;
+  --shiplight-select-border: var(--shiplight-border-primary);
+  --shiplight-select-border-focus: var(--shiplight-border-focus);
+  --shiplight-select-option-bg: #ffffff;
+  --shiplight-select-option-bg-hover: var(--shiplight-neutral-50);
+  --shiplight-select-option-bg-selected: var(--shiplight-neutral-100);
+  --shiplight-select-option-text-selected: var(--shiplight-neutral-900);
+
+  --shiplight-checkbox-bg: #ffffff;
+  --shiplight-checkbox-bg-checked: var(--shiplight-neutral-800);
+  --shiplight-checkbox-border: var(--shiplight-border-primary);
+  --shiplight-checkbox-border-checked: var(--shiplight-neutral-800);
+  --shiplight-checkbox-checkmark: #ffffff;
+
+  /* Spacing System */
+  --shiplight-space-xs: 0.25rem;
+  --shiplight-space-sm: 0.5rem;
+  --shiplight-space-md: 1rem;
+  --shiplight-space-lg: 1.5rem;
+  --shiplight-space-xl: 2rem;
+  --shiplight-space-2xl: 3rem;
+  --shiplight-space-3xl: 4rem;
+  --shiplight-space-4xl: 6rem;
+
+  --shiplight-component-padding-sm: var(--shiplight-space-sm);
+  --shiplight-component-padding-md: var(--shiplight-space-md);
+  --shiplight-component-padding-lg: var(--shiplight-space-lg);
+  --shiplight-component-margin: var(--shiplight-space-lg);
+  --shiplight-section-gap: var(--shiplight-space-xl);
+  --shiplight-page-padding: var(--shiplight-space-2xl);
+
+  /* Border Radius System */
+  --shiplight-radius-none: 0;
+  --shiplight-radius-sm: 0.125rem;
+  --shiplight-radius-md: 0.25rem;
+  --shiplight-radius-lg: 0.5rem;
+  --shiplight-radius-xl: 0.75rem;
+  --shiplight-radius-2xl: 1rem;
+  --shiplight-radius-full: 9999px;
+
+  --shiplight-button-radius: var(--shiplight-radius-md);
+  --shiplight-card-radius: var(--shiplight-radius-lg);
+  --shiplight-input-radius: var(--shiplight-radius-md);
+  --shiplight-badge-radius: var(--shiplight-radius-full);
+  --shiplight-modal-radius: var(--shiplight-radius-lg);
+
+  /* Typography System */
+  --shiplight-text-xs: 0.75rem;
+  --shiplight-text-sm: 0.875rem;
+  --shiplight-text-base: 1rem;
+  --shiplight-text-lg: 1.125rem;
+  --shiplight-text-xl: 1.25rem;
+  --shiplight-text-2xl: 1.5rem;
+  --shiplight-text-3xl: 1.875rem;
+  --shiplight-text-4xl: 2.25rem;
+  --shiplight-text-5xl: 3rem;
+
+  --shiplight-heading-1: var(--shiplight-text-4xl);
+  --shiplight-heading-2: var(--shiplight-text-3xl);
+  --shiplight-heading-3: var(--shiplight-text-2xl);
+  --shiplight-heading-4: var(--shiplight-text-xl);
+  --shiplight-heading-5: var(--shiplight-text-lg);
+  --shiplight-heading-6: var(--shiplight-text-base);
+  --shiplight-body-text: var(--shiplight-text-base);
+  --shiplight-caption-text: var(--shiplight-text-sm);
+  --shiplight-label-text: var(--shiplight-text-sm);
+  --shiplight-small-text: var(--shiplight-text-xs);
+
+  --shiplight-font-thin: 100;
+  --shiplight-font-light: 300;
+  --shiplight-font-normal: 400;
+  --shiplight-font-medium: 500;
+  --shiplight-font-semibold: 600;
+  --shiplight-font-bold: 700;
+  --shiplight-font-extrabold: 800;
+  --shiplight-font-black: 900;
+
+  --shiplight-heading-weight: var(--shiplight-font-semibold);
+  --shiplight-subheading-weight: var(--shiplight-font-medium);
+  --shiplight-body-weight: var(--shiplight-font-normal);
+  --shiplight-label-weight: var(--shiplight-font-medium);
+  --shiplight-caption-weight: var(--shiplight-font-normal);
+  --shiplight-button-weight: var(--shiplight-font-medium);
+
+  /* Shadow System */
+  --shiplight-shadow-none: none;
+  --shiplight-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shiplight-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shiplight-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shiplight-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shiplight-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shiplight-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  --shiplight-card-shadow: var(--shiplight-shadow-sm);
+  --shiplight-card-shadow-hover: var(--shiplight-shadow-md);
+  --shiplight-modal-shadow: var(--shiplight-shadow-2xl);
+  --shiplight-dropdown-shadow: var(--shiplight-shadow-lg);
+  --shiplight-button-shadow: var(--shiplight-shadow-sm);
+  --shiplight-floating-shadow: var(--shiplight-shadow-xl);
+
+  /* Animation System */
+  --shiplight-transition-fastest: 100ms;
+  --shiplight-transition-fast: 150ms;
+  --shiplight-transition-normal: 300ms;
+  --shiplight-transition-slow: 500ms;
+  --shiplight-transition-slowest: 700ms;
+
+  --shiplight-ease-linear: linear;
+  --shiplight-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --shiplight-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --shiplight-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --shiplight-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --shiplight-transition-colors: 
+    color var(--shiplight-transition-fast) var(--shiplight-ease-in-out),
+    background-color var(--shiplight-transition-fast) var(--shiplight-ease-in-out),
+    border-color var(--shiplight-transition-fast) var(--shiplight-ease-in-out);
+  --shiplight-transition-transform: 
+    transform var(--shiplight-transition-normal) var(--shiplight-ease-in-out);
+  --shiplight-transition-opacity: 
+    opacity var(--shiplight-transition-normal) var(--shiplight-ease-in-out);
+  --shiplight-transition-shadow: 
+    box-shadow var(--shiplight-transition-fast) var(--shiplight-ease-in-out);
+
+  /* Test Runner Specific Variables - adjusted to gray system */
+  --shiplight-step-navigate: var(--shiplight-neutral-600);
+  --shiplight-step-click: var(--shiplight-success-500);
+  --shiplight-step-type: var(--shiplight-neutral-800);
+  --shiplight-step-wait: var(--shiplight-warning-500);
+  --shiplight-step-verify: var(--shiplight-neutral-700);
+  --shiplight-step-ai-action: var(--shiplight-neutral-900);
+  --shiplight-step-function: var(--shiplight-neutral-500);
+  --shiplight-step-assertion: var(--shiplight-neutral-600);
+
+  --shiplight-activity-update: var(--shiplight-neutral-700);
+  --shiplight-activity-run: var(--shiplight-success-500);
+  --shiplight-activity-comment: var(--shiplight-neutral-600);
+  --shiplight-activity-delete: var(--shiplight-error-500);
+  --shiplight-activity-create: var(--shiplight-success-600);
+  --shiplight-activity-edit: var(--shiplight-warning-600);
+
+  /* Special State Colors - gray theme special states */
+  --shiplight-highlight-bg: var(--shiplight-neutral-100);
+  --shiplight-highlight-text: var(--shiplight-neutral-800);
+  --shiplight-highlight-border: var(--shiplight-neutral-300);
+
+  --shiplight-selected-bg: var(--shiplight-neutral-200);
+  --shiplight-selected-border: var(--shiplight-neutral-600);
+  --shiplight-selected-text: var(--shiplight-neutral-900);
+
+  --shiplight-pinned-bg: var(--shiplight-neutral-100);
+  --shiplight-pinned-border: var(--shiplight-neutral-300);
+  --shiplight-pinned-icon: var(--shiplight-neutral-600);
+
+  --shiplight-running-bg: var(--shiplight-neutral-200);
+  --shiplight-running-border: var(--shiplight-neutral-600);
+  --shiplight-running-pulse: var(--shiplight-neutral-800);
+
+  /* Fixed Colors - fixed colors (not theme-dependent) */
+  --shiplight-dark-bg: #0a0a0a;
+  --shiplight-dark-bg-light: #171717;
+  --shiplight-dark-bg-medium: #262626;
+  --shiplight-dark-text: #ffffff;
+  --shiplight-dark-text-muted: #d4d4d4;
+  --shiplight-dark-border: #404040;
+  
+  --shiplight-light-bg: #ffffff;
+  --shiplight-light-bg-dark: #f5f5f5;
+  --shiplight-light-bg-medium: #e5e5e5;
+  --shiplight-light-text: #0a0a0a;
+  --shiplight-light-text-muted: #525252;
+  --shiplight-light-border: #d4d4d4;
+
+  /* Inverted Colors - inverted color combinations */
+  --shiplight-inverted-bg: var(--shiplight-dark-bg);
+  --shiplight-inverted-bg-hover: var(--shiplight-dark-bg-light);
+  --shiplight-inverted-bg-active: var(--shiplight-dark-bg-medium);
+  --shiplight-inverted-text: var(--shiplight-dark-text);
+  --shiplight-inverted-text-muted: var(--shiplight-dark-text-muted);
+  --shiplight-inverted-border: var(--shiplight-dark-border);
+
+  /* Code/Terminal Style - code/terminal style */
+  --shiplight-code-bg: var(--shiplight-dark-bg);
+  --shiplight-code-bg-light: var(--shiplight-dark-bg-light);
+  --shiplight-code-text: var(--shiplight-dark-text);
+  --shiplight-code-text-muted: var(--shiplight-dark-text-muted);
+  --shiplight-code-border: var(--shiplight-dark-border);
+  --shiplight-code-selection: rgba(255, 255, 255, 0.1);
+
+  /* Console/Terminal Colors */
+  --shiplight-console-bg: var(--shiplight-dark-bg);
+  --shiplight-console-text: var(--shiplight-dark-text);
+  --shiplight-console-prompt: #10b981;
+  --shiplight-console-error: #ef4444;
+  --shiplight-console-warning: #f59e0b;
+  --shiplight-console-info: #3b82f6;
+
+  /* Z-Index Management */
+  --shiplight-z-base: 0;
+  --shiplight-z-dropdown: 1000;
+  --shiplight-z-sticky: 1020;
+  --shiplight-z-fixed: 1030;
+  --shiplight-z-modal-backdrop: 1040;
+  --shiplight-z-modal: 1050;
+  --shiplight-z-popover: 1060;
+  --shiplight-z-tooltip: 1070;
+  --shiplight-z-toast: 1080;
+  --shiplight-z-overlay: 1090;
+
+  /* Legacy variables for backward compatibility - updated to gray theme */
+  --shiplight-status-active: var(--shiplight-success-500);
+  --shiplight-status-disabled: var(--shiplight-neutral-400);
+  --shiplight-status-draft: var(--shiplight-neutral-300);
+  --shiplight-button-highlight-bg: var(--shiplight-neutral-100);
+  --shiplight-cursor-step-border: var(--shiplight-neutral-700);
+  --shiplight-input-focus-border: var(--shiplight-border-focus);
+  --shiplight-icon-muted: var(--shiplight-neutral-500);
+  --shiplight-button-primary: var(--shiplight-button-primary-bg);
+  --shiplight-button-hover: var(--shiplight-button-secondary-bg-hover);
+  --shiplight-running-animation-duration: 1.5s;
+  --shiplight-running-animation-easing: var(--shiplight-ease-in-out);
+  --shiplight-result-success-bg: var(--shiplight-badge-passed-bg);
+  --shiplight-result-success-text: var(--shiplight-badge-passed-text);
+  --shiplight-row-spacing: var(--shiplight-space-md);
+  --shiplight-badge-padding: var(--shiplight-space-sm) var(--shiplight-space-md);
+  --shiplight-danger: var(--shiplight-error-600);
+  --shiplight-result-passed-bg: var(--shiplight-badge-passed-bg);
+  --shiplight-result-passed-text: var(--shiplight-badge-passed-text);
+  --shiplight-result-flaky-bg: var(--shiplight-badge-flaky-bg);
+  --shiplight-result-flaky-text: var(--shiplight-badge-flaky-text);
+  --shiplight-result-failed-bg: var(--shiplight-badge-failed-bg);
+  --shiplight-result-failed-text: var(--shiplight-badge-failed-text);
+  --shiplight-result-pending-bg: var(--shiplight-badge-pending-bg);
+  --shiplight-result-pending-text: var(--shiplight-badge-pending-text);
+  --shiplight-result-queued-bg: var(--shiplight-badge-queued-bg);
+  --shiplight-result-queued-text: var(--shiplight-badge-queued-text);
+  --shiplight-result-skipped-bg: var(--shiplight-badge-skipped-bg);
+  --shiplight-result-skipped-text: var(--shiplight-badge-skipped-text);
+  --shiplight-result-default-bg: var(--shiplight-badge-skipped-bg);
+  --shiplight-background: var(--shiplight-bg-primary);
+  --shiplight-surface: var(--shiplight-bg-surface);
+  --shiplight-bg-subtle: var(--shiplight-bg-surface-hover);
+  --shiplight-bg-hover: var(--shiplight-bg-surface-active);
+  --shiplight-bg-moderate: var(--shiplight-neutral-100);
+  --shiplight-text-label: var(--shiplight-text-secondary);
+  --shiplight-text-subtle: var(--shiplight-text-tertiary);
+  --shiplight-border-default: var(--shiplight-border-primary);
+  --tooltip-font-size: var(--shiplight-text-xs);
+  --tooltip-padding: var(--shiplight-space-xs) var(--shiplight-space-sm);
+
+  /* Tailwind compatibility */
+  --background: var(--shiplight-bg-surface);
+  --foreground: var(--shiplight-text-primary);
+}
+
+/* Dark Theme Overrides - dark theme overrides */
+[data-mantine-color-scheme="dark"] {
+
+  /* Background color system for dark theme */
+  --shiplight-bg-primary: #0a0a0a;
+  --shiplight-bg-secondary: var(--shiplight-neutral-900);
+  --shiplight-bg-tertiary: var(--shiplight-neutral-800);
+  --shiplight-bg-surface: #171717;
+  --shiplight-bg-surface-hover: var(--shiplight-neutral-800);
+  --shiplight-bg-surface-active: var(--shiplight-neutral-700);
+  --shiplight-bg-surface-elevated: #262626;
+  --shiplight-bg-overlay: var(--mantine-color-dark-6);
+  --shiplight-bg-backdrop: rgba(0, 0, 0, 0.6);
+
+  /* Text color adjustments for dark theme */
+  --shiplight-text-primary: var(--shiplight-neutral-100);
+  --shiplight-text-secondary: var(--shiplight-neutral-300);
+  --shiplight-text-tertiary: var(--shiplight-neutral-400);
+  --shiplight-text-quaternary: var(--shiplight-neutral-500);
+  --shiplight-text-inverse: var(--shiplight-neutral-900);
+  --shiplight-text-disabled: var(--shiplight-neutral-600);
+  --shiplight-text-placeholder: var(--shiplight-neutral-500);
+  --shiplight-text-muted: var(--shiplight-neutral-400);
+  --shiplight-text-link: var(--shiplight-neutral-200);
+  --shiplight-text-link-hover: var(--shiplight-neutral-100);
+  --shiplight-text-link-visited: var(--shiplight-neutral-300);
+
+  /* Border color adjustments for dark theme */
+  --shiplight-border-primary: var(--shiplight-neutral-600);
+  --shiplight-border-secondary: var(--shiplight-neutral-700);
+  --shiplight-border-subtle: var(--shiplight-neutral-800);
+  --shiplight-border-focus: var(--shiplight-neutral-400);
+  --shiplight-border-hover: var(--shiplight-neutral-500);
+  --shiplight-border-active: var(--shiplight-neutral-300);
+
+
+  /* Background for info, success, warning, error color adjustments for dark theme */
+  /* dark mode should add opacity to the background color */
+  --shiplight-bg-info: color-mix(in srgb, var(--shiplight-info-200) 15%, transparent);
+  --shiplight-bg-info-hover: color-mix(in srgb, var(--shiplight-info-300) 15%, transparent);
+  --shiplight-bg-info-active: color-mix(in srgb, var(--shiplight-info-400) 15%, transparent);
+  --shiplight-bg-success: color-mix(in srgb, var(--shiplight-success-200) 15%, transparent);
+  --shiplight-bg-success-hover: color-mix(in srgb, var(--shiplight-success-300) 15%, transparent);
+  --shiplight-bg-success-active: color-mix(in srgb, var(--shiplight-success-400) 15%, transparent);
+  --shiplight-bg-warning: color-mix(in srgb, var(--shiplight-warning-200) 15%, transparent);
+  --shiplight-bg-warning-hover: color-mix(in srgb, var(--shiplight-warning-300) 15%, transparent);
+  --shiplight-bg-warning-active: color-mix(in srgb, var(--shiplight-warning-400) 15%, transparent);
+  --shiplight-bg-error: color-mix(in srgb, var(--shiplight-error-200) 15%, transparent);
+  --shiplight-bg-error-hover: color-mix(in srgb, var(--shiplight-error-300) 15%, transparent);
+  --shiplight-bg-error-active: color-mix(in srgb, var(--shiplight-error-400) 15%, transparent);
+
+  /* Button adjustments for dark theme */
+  --shiplight-button-primary-bg: var(--shiplight-neutral-100);
+  --shiplight-button-primary-bg-hover: var(--shiplight-neutral-200);
+  --shiplight-button-primary-bg-active: var(--shiplight-neutral-300);
+  --shiplight-button-primary-text: var(--shiplight-neutral-900);
+
+  --shiplight-button-secondary-bg-hover: var(--shiplight-neutral-800);
+  --shiplight-button-secondary-bg-active: var(--shiplight-neutral-700);
+
+  --shiplight-button-tertiary-bg-hover: var(--shiplight-neutral-800);
+
+  /* Badge adjustments for dark theme */
+  --shiplight-badge-passed-bg: rgba(34, 197, 94, 0.08);
+  --shiplight-badge-flaky-bg: rgba(245, 159, 0, 0.08);
+  --shiplight-badge-failed-bg: rgba(239, 68, 68, 0.08);
+  --shiplight-badge-pending-bg: rgba(245, 159, 0, 0.08);
+  --shiplight-badge-queued-bg: rgba(99, 102, 241, 0.08);
+  --shiplight-badge-skipped-bg: rgba(134, 142, 150, 0.08);
+
+  --shiplight-badge-skipped-bg: var(--shiplight-neutral-800);
+  --shiplight-badge-skipped-text: var(--shiplight-neutral-200);
+  --shiplight-badge-skipped-border: var(--shiplight-neutral-600);
+  --shiplight-badge-skipped-icon: var(--shiplight-neutral-400);
+
+
+  /* Form element adjustments for dark theme */
+  --shiplight-input-bg: var(--shiplight-neutral-800);
+  --shiplight-input-bg-disabled: var(--shiplight-neutral-700);
+  --shiplight-input-bg-readonly: var(--shiplight-neutral-750);
+  --shiplight-select-bg: var(--shiplight-neutral-800);
+  --shiplight-select-option-bg: var(--shiplight-neutral-800);
+  --shiplight-select-option-bg-hover: var(--shiplight-neutral-700);
+  --shiplight-select-option-bg-selected: var(--shiplight-neutral-600);
+  --shiplight-select-option-text-selected: var(--shiplight-neutral-100);
+  --shiplight-checkbox-bg: var(--shiplight-neutral-700);
+  --shiplight-checkbox-bg-checked: var(--shiplight-neutral-200);
+  --shiplight-checkbox-border-checked: var(--shiplight-neutral-200);
+  --shiplight-checkbox-checkmark: var(--shiplight-neutral-900);
+
+  /* Special state adjustments for dark theme */
+  --shiplight-highlight-bg: var(--shiplight-neutral-800);
+  --shiplight-highlight-text: var(--shiplight-neutral-200);
+  --shiplight-highlight-border: var(--shiplight-neutral-600);
+
+  --shiplight-selected-bg: var(--shiplight-neutral-700);
+  --shiplight-selected-border: var(--shiplight-neutral-400);
+  --shiplight-selected-text: var(--shiplight-neutral-100);
+
+  --shiplight-pinned-bg: var(--shiplight-neutral-800);
+  --shiplight-pinned-border: var(--shiplight-neutral-600);
+  --shiplight-pinned-icon: var(--shiplight-neutral-400);
+
+  --shiplight-running-bg: var(--shiplight-neutral-700);
+  --shiplight-running-border: var(--shiplight-neutral-400);
+  --shiplight-running-pulse: var(--shiplight-neutral-200);
+
+  /* Shadow adjustments for dark theme */
+  --shiplight-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shiplight-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shiplight-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shiplight-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+
+  /* Tailwind compatibility for dark theme */
+  --background: var(--shiplight-bg-surface);
+  --foreground: var(--shiplight-text-primary);
+
+  /* Fixed Colors remain the same in dark theme - fixed colors remain the same in dark theme */
+  /* This ensures that code blocks, terminals, etc. maintain consistent appearance across all themes */
+  
+  /* Inverted Colors - use light color as inverted color in dark theme */
+  --shiplight-inverted-bg: var(--shiplight-light-bg);
+  --shiplight-inverted-bg-hover: var(--shiplight-light-bg-dark);
+  --shiplight-inverted-bg-active: var(--shiplight-light-bg-medium);
+  --shiplight-inverted-text: var(--shiplight-light-text);
+  --shiplight-inverted-text-muted: var(--shiplight-light-text-muted);
+  --shiplight-inverted-border: var(--shiplight-light-border);
+}
+
+/* Global utility classes */
+.table-header {
+  color: var(--shiplight-text-tertiary);
+  font-size: var(--shiplight-text-sm);
+  font-weight: var(--shiplight-font-medium);
+}
+
+.section-title {
+  font-weight: var(--shiplight-heading-weight);
+  color: var(--shiplight-text-secondary);
+  font-size: var(--shiplight-text-base);
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+/* Fixed Color Utility Classes - fixed color utility classes */
+.shiplight-inverted {
+  background-color: var(--shiplight-inverted-bg);
+  color: var(--shiplight-inverted-text);
+  border-color: var(--shiplight-inverted-border);
+}
+
+.shiplight-inverted:hover {
+  background-color: var(--shiplight-inverted-bg-hover);
+}
+
+.shiplight-inverted:active {
+  background-color: var(--shiplight-inverted-bg-active);
+}
+
+.shiplight-code-style {
+  background-color: var(--shiplight-code-bg);
+  color: var(--shiplight-code-text);
+  border: 1px solid var(--shiplight-code-border);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.shiplight-code-style:hover {
+  background-color: var(--shiplight-code-bg-light);
+}
+
+.shiplight-code-style::selection {
+  background-color: var(--shiplight-code-selection);
+}
+
+.shiplight-console-style {
+  background-color: var(--shiplight-console-bg);
+  color: var(--shiplight-console-text);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  padding: var(--shiplight-space-md);
+  border-radius: var(--shiplight-radius-md);
+}
+
+.shiplight-console-prompt {
+  color: var(--shiplight-console-prompt);
+}
+
+.shiplight-console-error {
+  color: var(--shiplight-console-error);
+}
+
+.shiplight-console-warning {
+  color: var(--shiplight-console-warning);
+}
+
+.shiplight-console-info {
+  color: var(--shiplight-console-info);
+}
+
+/* Force Dark Background - force black background */
+.shiplight-force-dark {
+  background-color: var(--shiplight-dark-bg) !important;
+  color: var(--shiplight-dark-text) !important;
+}
+
+.shiplight-force-dark-text {
+  color: var(--shiplight-dark-text) !important;
+}
+
+/* Force Light Background - force white background */
+.shiplight-force-light {
+  background-color: var(--shiplight-light-bg) !important;
+  color: var(--shiplight-light-text) !important;
+}
+
+.shiplight-force-light-text {
+  color: var(--shiplight-light-text) !important;
+}
+
+/* Global Mantine overrides */
+.mantine-Tooltip-tooltip {
+  font-size: var(--tooltip-font-size) !important;
+  padding: var(--tooltip-padding) !important;
+  font-weight: normal !important;
+  line-height: 1.2 !important;
+}
+
+.alternative-tooltip {
+  --tooltip-bg: var(--shiplight-neutral-900);
+  font-size: 0.6rem !important;
+  padding: 0.3rem 0.45rem !important;
+  font-weight: normal !important;
+  line-height: 1.2 !important;
+}
+
+/* Badge styles */
+.badge-action {
+  background-color: var(--shiplight-badge-action-bg) !important;
+  color: var(--shiplight-badge-action-text) !important;
+}
+
+.badge-ai-action {
+  background-color: var(--shiplight-badge-ai-action-bg) !important;
+  color: var(--shiplight-badge-ai-action-text) !important;
+}
+
+.badge-assert {
+  background-color: var(--shiplight-badge-assert-bg) !important;
+  color: var(--shiplight-badge-assert-text) !important;
+}
+
+.badge-code {
+  background-color: var(--shiplight-badge-code-bg) !important;
+  color: var(--shiplight-badge-code-text) !important;
+}
+
+.badge-function {
+  background-color: var(--shiplight-badge-function-bg) !important;
+  color: var(--shiplight-badge-function-text) !important;
+}
+
+.badge-wait-until {
+  background-color: var(--shiplight-badge-wait-until-bg) !important;
+  color: var(--shiplight-badge-wait-until-text) !important;
+}
+
+.mantine-Textarea-input::placeholder,
+.mantine-TextInput-input::placeholder {
+  color: var(--shiplight-text-placeholder) !important;
+}
+
+/* Theme transition for smooth changes */
+* {
+  transition: var(--shiplight-transition-colors);
+}
+
+/* Running animation */
+@keyframes running-spin {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotate(360deg);
+    opacity: 0.7;
+  }
+}
+
+.running-icon-spin {
+  animation: running-spin var(--shiplight-running-animation-duration) var(--shiplight-running-animation-easing) infinite;
+}

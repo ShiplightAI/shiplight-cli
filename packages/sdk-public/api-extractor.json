@@ -1,0 +1,66 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+
+  // Rolls the per-file declarations emitted by `tsc -p tsconfig.build.json`
+  // into a single self-contained dist/index.d.ts.
+  "mainEntryPointFilePath": "<projectFolder>/.tmp/dts/index.d.ts",
+
+  // The published package must not reference these — they are private
+  // workspace packages that no npm consumer can resolve. `bundledPackages`
+  // inlines their declarations instead of importing from them. Public
+  // dependencies (playwright, zod) are deliberately left external.
+  "bundledPackages": ["sdk-core", "shiplight-types"],
+
+  "compiler": {
+    "tsconfigFilePath": "<projectFolder>/tsconfig.json"
+  },
+
+  "dtsRollup": {
+    "enabled": true,
+    // Untrimmed: the SDK does not use @alpha/@beta release tags, so trimming
+    // by release tag would strip the entire public surface.
+    //
+    // Written to a staging path, not straight to dist/. build-declarations.mjs
+    // moves it into place with a single rename, so an interrupted run (watch
+    // mode SIGTERMs this process on every save) can never leave a truncated
+    // dist/index.d.ts behind for pack or a `file:` consumer to pick up.
+    "untrimmedFilePath": "<projectFolder>/.tmp/rollup/index.d.ts"
+  },
+
+  "apiReport": { "enabled": false },
+  "docModel": { "enabled": false },
+  "tsdocMetadata": { "enabled": false },
+
+  // api-extractor is invoked WITHOUT `--local` (see scripts/build-declarations.mjs).
+  // In local mode it treats warnings as success — `succeeded = errorCount === 0` —
+  // so every diagnostic below would be advisory and the declaration build could
+  // not fail. Outside local mode, warnings are fatal, which is the point.
+  "messages": {
+    "compilerMessageReporting": {
+      // A TypeScript error while analyzing the entry point means the rollup is
+      // built from a broken type graph. It must stop the build.
+      "default": { "logLevel": "warning" }
+    },
+    "extractorMessageReporting": {
+      "default": { "logLevel": "warning" },
+      // The SDK does not use @alpha/@beta/@public tags and emits an untrimmed
+      // rollup, so release tags have no effect on the output.
+      "ae-missing-release-tag": { "logLevel": "none" },
+      // Types reachable from the public surface but not re-exported are still
+      // inlined, so consumers can hold the values and reach them through
+      // indexed access; they just cannot name them. Making every one nameable
+      // cascades (two distinct ActionEntity types collide as ActionEntity_2),
+      // so the set is pinned by the inlinedPrivateTypes baseline in
+      // src/__tests__/consumerDeclarations.test.ts instead — that test fails
+      // when the set changes, which is the drift this diagnostic would catch.
+      "ae-forgotten-export": { "logLevel": "none" },
+      // Doc comments inlined from sdk-core contain {@link} references to
+      // symbols that package exports but this one does not. The prose is
+      // harmless; the reference target is not part of our public surface.
+      "ae-unresolved-link": { "logLevel": "none" }
+    },
+    "tsdocMessageReporting": {
+      "default": { "logLevel": "none" }
+    }
+  }
+}

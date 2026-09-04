@@ -1,0 +1,346 @@
+# Brownfield reconstruction — round 1: published developer tooling.
+# Scope: the `shiplightai` CLI and `@shiplightai/mcp` server, plus the shared AI
+# automation engine they both bundle. Active features 001-003 are candidates
+# reconstructed from current code, awaiting ratified backfilled specs.
+#
+# The earlier testbox drafts (formerly specs/001-008) are NOT specs — they were
+# never kept current. They are archived under specs/_archive/ as LEGACY reference
+# only. See specs/_archive/README.md.
+
+project:
+  id: "shiplight"
+  name: "Shiplight"
+  summary: >-
+    AI-powered web test automation. Developers describe tests in
+    natural-language YAML steps; an AI agent resolves those steps into real
+    browser actions, produces self-healing locators, and records every
+    interaction as a replayable regression test. Shipped to developers as the
+    `shiplightai` CLI + Playwright library and the `@shiplightai/mcp` server for
+    coding agents. (A hosted testbox dev-box is a separate, later product
+    surface; its early design drafts are archived, not active.)
+  quality_policy_path: "TESTING.md"
+  source_refs:
+    - path: "https://docs.shiplight.ai/local"
+      label: "Public local-tooling docs (YAML tests, CLI reference) — SOURCE"
+    - path: "apps/cli/README.md"
+      label: "shiplightai package README (observed)"
+    - path: "apps/mcp-server/README.md"
+      label: "@shiplightai/mcp package README (observed)"
+
+product_docs:
+  - id: "docs-site-local"
+    path: "https://docs.shiplight.ai/local"
+    role: "product_requirements"
+    status: "current"
+
+roadmap:
+  current_milestone: "Published developer tooling"
+  release_areas:
+    - id: "published-local-tooling"
+      name: "Published developer tooling (CLI + MCP)"
+      description: >-
+        The two npm packages developers install directly: the `shiplightai` CLI
+        / Playwright library and the `@shiplightai/mcp` UI-automation server,
+        both driven by the shared AI web-agent engine. Judged for readiness
+        together because they bundle the same engine code and ship from the same
+        monorepo.
+      feature_ids:
+        [
+          "001-web-agent-engine",
+          "002-shiplightai-cli",
+          "003-shiplightai-mcp-server"
+        ]
+      exit_criteria:
+        - "Engine, CLI, and MCP each have a ratified spec backfilled from
+          current behavior."
+        - "Each feature has a quality-map with risk-weighted executable
+          evidence."
+        - "Publishing pipeline (full build + tarball-size + chrome-extension +
+          devtools-assets ordering) verified."
+    - id: "testbox-devbox-archived"
+      name: "Testbox dev-box (archived drafts — not active)"
+      description: >-
+        Early testbox design effort (container, UI, embedded debugger,
+        file-events, browser ownership, VSCode integration). Never kept current;
+        archived under specs/_archive/ as LEGACY reference for reconstruction.
+        Not part of any active readiness gate. See specs/_archive/README.md.
+      feature_ids: []
+      exit_criteria: []
+  feature_order:
+    - "001-web-agent-engine"
+    - "002-shiplightai-cli"
+    - "003-shiplightai-mcp-server"
+
+# Working pointer for this round. feature.json is realigned to 001-web-agent-engine.
+active_feature:
+  id: "001-web-agent-engine"
+  branch: "encore"
+  spec_path: "specs/001-web-agent-engine/spec.md"
+  phase: "quality-evidence" # gap-closure campaign: gaps 1-4 closed; runtime score gated on QC observation wiring (PR #2088)
+  updated_at: "2026-06-18"
+
+features:
+  - id: "001-web-agent-engine"
+    name: "AI Web-Agent Automation Engine"
+    description: >-
+      The shared brain behind both published products. Takes a natural-language
+      test step ("click the login button", "verify the success banner") plus the
+      live page and decides the concrete browser action to take; generates
+      self-healing semantic locators (getByRole/getByTestId, falling back to
+      XPath); auto-selects the LLM from whichever provider key is present; and
+      captures each resolved interaction as a replayable step. Bundled into the
+      CLI runner and the MCP server alike. Also exposes non-page-bound helpers
+      on the agent surface: `agent.ai()` runs natural-language analysis over
+      local files (not the live page), and `agent.login()` /
+      `agent.generate2faCode()` package common auth flows. Sensitive variables
+      are masked before reaching prompts.
+    status: "verified"
+    priority: "P0"
+    source_type: "IMPLEMENTATION"
+    dependencies: []
+    implements_prd_refs:
+      - path: "https://docs.shiplight.ai/local/yaml-tests"
+        anchor: null
+    artifacts:
+      spec_path: "specs/001-web-agent-engine/spec.md"
+      plan_path: "specs/001-web-agent-engine/plan.md"
+      tasks_path: "specs/001-web-agent-engine/tasks.md"
+      checklist_paths: []
+      quality_map_path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
+      test_report_path: "specs/001-web-agent-engine/test-report.md"
+    code_refs:
+      - "packages/sdk-core/src/agent  (webAgent, action-generation, llm, task,
+        aiAnalysis, agentServices)"
+      - "packages/sdk-core/src/actions  (action impls inc. generate_2fa_code)"
+      - "packages/sdk-core/src/dom  (dom-tree, accessibility/axtree)"
+      - "packages/sdk-core/src/llm_tools, providers, services"
+      - "packages/shiplight-types  (YAML test + action-entity types)"
+    evidence_refs:
+      - "packages/sdk-core/src/agent/__tests__  (inc. aiAnalysis,
+        webAgent.login, NL->action loop, secret-redaction)"
+      - "packages/sdk-core/src/**/__tests__  (engine action/dom/llm tests)"
+      - "apps/cli/src/yaml-transpiler/**/*.test.ts"
+    open_questions:
+      - "Is the README model-auto-selection matrix (ANTHROPIC_API_KEY ->
+        claude-haiku-4-5, GOOGLE_API_KEY -> gemini-2.5-pro) the current,
+        authoritative mapping?"
+      - "Self-healing locator durability: is the cloud-backed dynamic locator
+        cache shipped here or still upcoming design?"
+      - "Vertex AI routing belongs to the cloud service, NOT this engine — confirm none
+        of it leaks into sdk-core."
+    residual_risks:
+      - "Bundling: stale sub-package builds silently ship old engine code
+        (sdk-core -> mcp-tools rebuild order)."
+    priority_provenance: human
+
+  - id: "002-shiplightai-cli"
+    name: "shiplightai CLI & Playwright Library"
+    description: >-
+      The `shiplightai` npm package developers install into a Playwright
+      project — and, since the authoring-boundary change, the owner of the
+      ENTIRE test-authoring surface. Scaffolds a starter project (`create`,
+      with a non-clobbering merge contract, an agent-facing `--json` payload,
+      and a caret pin to the running CLI version — never a dist-tag), runs
+      mixed YAML + .test.ts suites forwarding Playwright flags (`test`), opens
+      the interactive visual debugger (`debug`), regenerates/merges HTML
+      reports (`report`), transpiles AND validates YAML (`transpile`, with a
+      `--strict` coverage gate that replaced MCP validate_yaml_test), and
+      prints the version-locked authoring references (`spec yaml`,
+      `spec actions`). The scaffolder and the normative YAML language spec live
+      in-package; the CLI has no mcp-tools dependency. `shiplightConfig()`
+      wires YAML support, .env discovery, and the reporter into
+      playwright.config. Enforces an explicit env-var allowlist for what the
+      agent can see. The visual debugger lives here; the testbox simply runs
+      this same debug server.
+    status: "verified"
+    priority: "P0"
+    source_type: "IMPLEMENTATION"
+    dependencies: [ "001-web-agent-engine" ]
+    implements_prd_refs:
+      - path: "https://docs.shiplight.ai/local/cli-reference"
+        anchor: null
+    artifacts:
+      spec_path: "specs/002-shiplightai-cli/spec.md"
+      plan_path: "specs/002-shiplightai-cli/plan.md"
+      tasks_path: "specs/002-shiplightai-cli/tasks.md"
+      checklist_paths: []
+      quality_map_path: ".quality/evidence/002-shiplightai-cli/quality-map.yaml"
+      test_report_path: "specs/002-shiplightai-cli/test-report.md"
+    code_refs:
+      - "apps/cli/src/commands  (create, test, debug, report, transpile,
+        inspect)"
+      - "apps/cli/src/debugger  (debugger server, routes, services)"
+      - "apps/cli/src/reporter, src/transpiler"
+      - "apps/cli/src/fixture.ts, config.ts, dotenvSource.ts (env allowlist),
+        versionCheck.ts"
+      - "apps/cli/src/yaml-transpiler (folded in from packages/shiplight-tools)"
+      - "packages/shiplight-types, packages/devtools-assets"
+    evidence_refs:
+      - "apps/cli/src/**/*.test.ts  (21 test files inc. fixture
+        allowlist/contextOptions, transpile, report, test vars e2e)"
+    legacy_refs:
+      - "specs/_archive/004-testbox-debugger  (debugger contracts/research —
+        mine, then re-validate against code)"
+      - "specs/_archive/007-cli-multi-session-shell  (multi-session shell plan —
+        reference only)"
+    open_questions:
+      - "Debugger: which of the archived 004 contracts/research still match
+        shipped behavior, and which are stale?"
+    residual_risks:
+      - "Publish pipeline: full `pnpm build` required (not bare tsup) so
+        debugger static assets build; tarball-size gate; publish devtools-assets
+        before shiplightai."
+      - "v1 decoupling: CLI dropped its the internal shared package dependency; a guard test
+        (scripts/__tests__/cluster-v1-dependency-boundary.test.mjs) +
+        .github/CODEOWNERS keep the cli/mcp/sdk cluster off v1 (internal-scope)
+        packages. Currently published as shiplightai@0.1.84."
+    priority_provenance: human
+
+  - id: "003-shiplightai-mcp-server"
+    name: "@shiplightai/mcp UI-Automation Server"
+    description: >-
+      The `@shiplightai/mcp` package coding agents (Claude Code, Cursor,
+      Windsurf) add as an MCP server to verify the UI changes they make. Its
+      tool surface is SESSION-BOUND: browser tools (navigate, act, inspect, get
+      locators, console/network logs), session-recording HTML reports, and
+      Chrome-tab attach via a relay extension. Every located action returns
+      replay-ready locator data (locator/xpath/frame_path) an agent embeds into
+      `.test.yaml` files authored with the shiplightai CLI (002) — the
+      authoring tools (scaffold_project, validate_yaml_test,
+      export_yaml_to_test) and the yaml-test-spec resource moved there so the
+      artifact that validates a test is the one that runs it, and standing
+      guard tests hold that boundary. Optionally syncs test cases to Shiplight
+      cloud when a token is set; cloud tools are gated to v1 tokens (withheld
+      and `requireApi()` throws when no token is present).
+    status: "verified"
+    priority: "P0"
+    source_type: "IMPLEMENTATION"
+    dependencies: [ "001-web-agent-engine" ]
+    implements_prd_refs:
+      - path: "apps/mcp-server/README.md"
+        anchor: null
+    artifacts:
+      spec_path: "specs/003-shiplightai-mcp-server/spec.md"
+      plan_path: "specs/003-shiplightai-mcp-server/plan.md"
+      tasks_path: "specs/003-shiplightai-mcp-server/tasks.md"
+      checklist_paths: []
+      quality_map_path: ".quality/evidence/003-shiplightai-mcp-server/quality-map.yaml"
+      test_report_path: "specs/003-shiplightai-mcp-server/test-report.md"
+    code_refs:
+      - "apps/mcp-server/src  (index, server, stdioGuards, telemetry,
+        actionIndicator)"
+      - "packages/mcp-tools/src/tools  (browserTools, sessionTools,
+        testCaseTools, dataTools, debugTools, relayTools, localTestTools,
+        testResultTools)"
+      - "packages/mcp-tools/src/backends/SessionManager.ts"
+      - "packages/mcp-tools/chrome-extension  (relay extension bundled at build)"
+    evidence_refs:
+      - "apps/mcp-server/src/stdioGuards.test.ts"
+      - "packages/mcp-tools/src/**/__tests__  (10 test files)"
+    open_questions:
+      - "Is PWDEBUG=console still a hard requirement for semantic locators, as
+        the README states?"
+    resolved_questions:
+      - "Cloud sync activation is strictly token-gated — RESOLVED: cloud tools
+        are withheld and requireApi() throws without a v1 token. Proven by
+        quality gap #3 (closeSessionFold + token-gating tests)."
+    residual_risks:
+      - "Publish pipeline: build must copy chrome-extension into the package;
+        missing copy silently shipped in @shiplightai/mcp@0.1.62."
+    priority_provenance: human
+
+cross_feature_concerns:
+  - id: "shared-engine-coupling"
+    title: "The web-agent engine is bundled into both published products"
+    status: "open"
+    feature_ids:
+      [
+        "001-web-agent-engine",
+        "002-shiplightai-cli",
+        "003-shiplightai-mcp-server"
+      ]
+    source_refs:
+      - path: "packages/sdk-core/src/index.ts"
+        label: "engine barrel that both products bundle via tsup path-aliases"
+    notes: >-
+      001 ships inside 002 and 003 through tsup path-aliases, not npm deps. A
+      stale sub-package build silently ships old engine code (sdk-core ->
+      mcp-tools rebuild order matters). Engine behavior changes must be
+      re-verified in BOTH product bundles, not just in sdk-core.
+  - id: "publishing-pipeline"
+    title: "Tarball correctness gates for both npm packages"
+    status: "open"
+    feature_ids: [ "002-shiplightai-cli", "003-shiplightai-mcp-server" ]
+    source_refs:
+      - path: "CLAUDE.md"
+        label: "npm Package Publishing rules"
+    notes: >-
+      Full `pnpm build` (not bare tsup); compare tarball size vs last published
+      and stop on increase; CLI must build debugger static assets; MCP must copy
+      the chrome-extension; publish devtools-assets before shiplightai. Past
+      regressions: @shiplightai/mcp@0.1.62 (missing extension), broken CLI
+      debugger assets.
+  - id: "env-var-allowlist"
+    title: "Explicit env-var allowlist governs agent visibility"
+    status: "open"
+    feature_ids: [ "002-shiplightai-cli", "003-shiplightai-mcp-server" ]
+    source_refs:
+      - path: "apps/cli/src/dotenvSource.ts"
+        label: "env source / allowlist"
+    notes: >-
+      Only allowlisted env vars reach the internal SDK config; everything else
+      is invisible to the agent by design. Security seam shared by CLI and MCP —
+      both specs must state the allowlist as accepted behavior.
+  - id: "v1-cluster-decoupling"
+    title: "The cli/mcp/sdk cluster is being decoupled from v1 (internal-scope) packages"
+    status: "in_progress"
+    feature_ids:
+      [
+        "001-web-agent-engine",
+        "002-shiplightai-cli",
+        "003-shiplightai-mcp-server"
+      ]
+    source_refs:
+      - path: "scripts/__tests__/cluster-v1-dependency-boundary.test.mjs"
+        label: "guard test forbidding internal-scope deps in the published cluster"
+      - path: ".github/CODEOWNERS"
+        label: "ownership boundary for the active cluster"
+    notes: >-
+      The published developer tooling (engine, CLI, MCP) is intentionally
+      severed from the v1 monorepo's internal-scope packages so it can ship
+      independently. CLI already dropped the internal shared package; a CI guard test fails
+      the build if any cluster package re-introduces a v1 dependency.
+      Cloud-touching surfaces route through v1 tokens / v2 APIs rather than
+      bundling v1 code.
+
+discovery:
+  mode: "brownfield"
+  source_types: [ "SOURCE", "IMPLEMENTATION", "INFERRED", "LEGACY", "DEPRECATED" ]
+  archived_drafts:
+    - "specs/_archive/001-008 — early testbox design drafts, LEGACY reference
+      only (see specs/_archive/README.md)"
+  notes:
+    - "Scaffolding (incl. non-empty-directory merge support) is owned solely
+      by 002 (`shiplight create` / `create --json`); the MCP `scaffold_project`
+      tool was removed in the authoring-boundary change and 003's surface is
+      session-bound."
+    - "Cloud/hosted surfaces (e.g. apps/frontend email-forwarding v2
+      integration) are out of scope for this published-tooling round and are not
+      modeled as features here."
+    - "Gap-closure campaign (.quality/notes/gap-closure-plan.md): ranked
+      gaps 1-4 closed with deterministic tests; per-feature test-spec.md
+      authored."
+    - "Quality-evidence improvement
+      (.quality/notes/improvement-progress.md): low runtime quality score
+      is an OBSERVATION-WIRING gap (unit lanes emit no ingestable JUnit), not a
+      missing-test gap. Observation wiring merged via PR #2088; awaits QC scan
+      to flip A+D items to observed."
+  orphan_code_refs: []
+  specs_without_implementation: []
+  implementation_without_specs: []
+  tests_without_specs: []
+  evidence_gaps:
+    - "About 22 expectations already have passing tests, but QC still shows them
+      as not yet observed. They will switch to observed once the unit tests save
+      their results to a file that QC can read in."
+  unresolved_drift: []

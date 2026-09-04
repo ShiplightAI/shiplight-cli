@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Required - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .access-denied {
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+        .access-denied .icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+        }
+        .access-denied h2 {
+            color: var(--danger);
+            margin-bottom: var(--spacing-md);
+        }
+        .protected-content {
+            display: none;
+        }
+        .protected-content.visible {
+            display: block;
+        }
+        .user-info {
+            background: var(--gray-50);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-xs);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Auth Required</span>
+            </div>
+            <span class="badge">Type D: Configuration</span>
+            <h1>Auth Required Page</h1>
+            <p class="description">This page requires authentication via a token parameter. Access is denied without valid credentials.</p>
+        </div>
+
+        <div class="test-content">
+            <div id="access-denied" class="access-denied">
+                <div class="icon">🔒</div>
+                <h2>Access Denied</h2>
+                <p>You must provide a valid authentication token to access this page.</p>
+                <p style="margin-top: var(--spacing-md); color: var(--text-muted);">
+                    Expected URL format: <code>?token=valid-token-123</code>
+                </p>
+            </div>
+
+            <div id="protected-content" class="protected-content">
+                <div class="user-info">
+                    <h3>Welcome, <span id="user-name">Test User</span></h3>
+                    <p>You are authenticated and viewing the protected dashboard.</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="value">142</div>
+                        <div class="label">Total Tests</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">98%</div>
+                        <div class="label">Pass Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">7</div>
+                        <div class="label">Active Runs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value">3</div>
+                        <div class="label">Failed Tests</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (token === 'valid-token-123') {
+            document.getElementById('access-denied').style.display = 'none';
+            document.getElementById('protected-content').classList.add('visible');
+        }
+    </script>
+</body>
+</html>

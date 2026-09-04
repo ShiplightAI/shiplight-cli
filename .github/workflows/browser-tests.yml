@@ -1,0 +1,103 @@
+name: Browser Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Behavioral tests that drive a real browser (Playwright/Chromium),
+# across every package that defines a `test:browser` task — currently:
+#   - mcp-tools: MCP browser tools + session lifecycle + log capture
+#   - sdk-core:  engine DOM/locator extraction (keyless) + live NL-loop (keyed)
+#   - apps/cli:  create / test (real run + exit codes) / debug server e2e
+# Separate from the unit lane because they need a browser install + built dist
+# (test:browser dependsOn build). Every test that needs an LLM key self-skips
+# when none is present, so this lane needs NO secrets; the keyless coverage
+# (DOM extraction, locator computation, command runtime, debug server) gates PRs.
+#
+# `test:browser` is declared in those three packages' own turbo.json, NOT in the
+# root config. A root-level task definition gives EVERY workspace a task node —
+# a no-op for the packages without the script, but each one still resolves
+# `dependsOn: ["build"]`, so the whole monorepo gets built. That is invisible
+# while `--affected` is narrow and catastrophic when it is not: any change to
+# pnpm-lock.yaml is a global dependency and marks every package affected.
+# Back when the v1 workspaces were still here that took this lane from ~2min to
+# 14-18min (the v1 API alone was 5m49s) to run 11s of browser tests.
+# Declaring the task per-package bounds the graph regardless of how wide
+# `--affected` gets, and keeps `--affected` meaningful.
+#
+# Note `--concurrency=1` is deliberate — the three suites each drive Chromium
+# and contend if parallelised. It applies to the builds too, which is only
+# tolerable because the graph above is now small.
+
+jobs:
+  run-browser-tests:
+    name: Run Browser Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # turbo --affected needs main as a LOCAL ref (see unit-tests.yml).
+      - name: Create local refs for turbo --affected base
+        run: |
+          for branch in main; do
+            if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+              git fetch --no-tags origin "$branch:$branch"
+            fi
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Setup Turborepo cache
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          # Branch belongs in the SAVE key — see the same fix in unit-tests.yml.
+          # A restore-key of `<os>-turbo-browser-<branch>-` never prefix-matches
+          # a key of `<os>-turbo-browser-<sha>`, so this lane never restored.
+          key: ${{ runner.os }}-turbo-browser-${{ github.head_ref || github.ref_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-browser-${{ github.head_ref || github.ref_name }}-
+            ${{ runner.os }}-turbo-browser-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium (with system deps)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser tests for affected packages
+        # Extension action popups are a headed-only Chrome surface. Playwright's
+        # --with-deps install above provides xvfb on the Ubuntu runner; -a gives
+        # the serial browser lane an available virtual display automatically.
+        run: xvfb-run -a pnpm turbo run test:browser --affected --concurrency=1
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'

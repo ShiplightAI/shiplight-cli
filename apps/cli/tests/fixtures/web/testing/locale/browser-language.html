@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Language - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .locale-highlight {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .greeting-text {
+            font-size: 1.25rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .sample-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Locale</span>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Browser Language</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Detected Language</h2>
+
+                <div class="locale-highlight" id="current-locale">--</div>
+                <div class="greeting-text" id="greeting-text">--</div>
+            </section>
+
+            <section class="test-section">
+                <h2>Sample Text</h2>
+                <p class="sample-text" id="sample-text" dir="auto">--</p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const GREETINGS = {
+            "en": "Hello! Welcome to the language test page.",
+            "fr": "Bonjour ! Bienvenue sur la page de test linguistique.",
+            "de": "Hallo! Willkommen auf der Sprachtestseite.",
+            "es": "\u00a1Hola! Bienvenido a la p\u00e1gina de prueba de idioma.",
+            "it": "Ciao! Benvenuto nella pagina di test della lingua.",
+            "pt": "Ol\u00e1! Bem-vindo \u00e0 p\u00e1gina de teste de idioma.",
+            "nl": "Hallo! Welkom op de taaltestpagina.",
+            "pl": "Cze\u015b\u0107! Witamy na stronie testowej j\u0119zyka.",
+            "ru": "\u041f\u0440\u0438\u0432\u0435\u0442! \u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u043d\u0430 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0443 \u0442\u0435\u0441\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u044f \u044f\u0437\u044b\u043a\u0430.",
+            "ja": "\u3053\u3093\u306b\u3061\u306f\uff01\u8a00\u8a9e\u30c6\u30b9\u30c8\u30da\u30fc\u30b8\u3078\u3088\u3046\u3053\u305d\u3002",
+            "ko": "\uc548\ub155\ud558\uc138\uc694! \uc5b8\uc5b4 \ud14c\uc2a4\ud2b8 \ud398\uc774\uc9c0\uc5d0 \uc624\uc2e0 \uac83\uc744 \ud658\uc601\ud569\ub2c8\ub2e4.",
+            "zh": "\u4f60\u597d\uff01\u6b22\u8fce\u6765\u5230\u8bed\u8a00\u6d4b\u8bd5\u9875\u9762\u3002",
+            "ar": "\u0645\u0631\u062d\u0628\u0627! \u0623\u0647\u0644\u0627 \u0628\u0643 \u0641\u064a \u0635\u0641\u062d\u0629 \u0627\u062e\u062a\u0628\u0627\u0631 \u0627\u0644\u0644\u063a\u0629.",
+            "tr": "Merhaba! Dil testi sayfas\u0131na ho\u015f geldiniz.",
+            "sv": "Hej! V\u00e4lkommen till spr\u00e5ktestsidan.",
+            "da": "Hej! Velkommen til sprogtestsiden.",
+            "fi": "Hei! Tervetuloa kielitestisivulle.",
+            "nb": "Hei! Velkommen til spr\u00e5ktestsiden.",
+            "cs": "Ahoj! V\u00edtejte na str\u00e1nce jazykov\u00e9ho testu.",
+            "hu": "Szia! \u00dcdv\u00f6z\u00f6lj\u00fck a nyelvi tesztoldalon.",
+            "ro": "Bun\u0103! Bine a\u021bi venit pe pagina de test lingvistic.",
+            "he": "\u05e9\u05dc\u05d5\u05dd! \u05d1\u05e8\u05d5\u05db\u05d9\u05dd \u05d4\u05d1\u05d0\u05d9\u05dd \u05dc\u05d3\u05e3 \u05d1\u05d3\u05d9\u05e7\u05ea \u05e9\u05e4\u05d4.",
+            "hi": "\u0928\u092e\u0938\u094d\u0924\u0947! \u092d\u093e\u0937\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u092a\u0943\u0937\u094d\u0920 \u092a\u0930 \u0906\u092a\u0915\u093e \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948\u0964",
+            "th": "\u0e2a\u0e27\u0e31\u0e2a\u0e14\u0e35! \u0e22\u0e34\u0e19\u0e14\u0e35\u0e15\u0e49\u0e2d\u0e19\u0e23\u0e31\u0e1a\u0e2a\u0e39\u0e48\u0e2b\u0e19\u0e49\u0e32\u0e17\u0e14\u0e2a\u0e2d\u0e1a\u0e20\u0e32\u0e29\u0e32",
+            "vi": "Xin ch\u00e0o! Ch\u00e0o m\u1eebng b\u1ea1n \u0111\u1ebfn trang th\u1eed nghi\u1ec7m ng\u00f4n ng\u1eef.",
+            "id": "Halo! Selamat datang di halaman uji bahasa.",
+        };
+
+        const SAMPLE_TEXTS = {
+            "en": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet and is commonly used for testing typography and fonts.",
+            "fr": "Le renard brun rapide saute par-dessus le chien paresseux. Cette phrase est utilis\u00e9e pour tester la typographie et les polices de caract\u00e8res en fran\u00e7ais.",
+            "de": "Der schnelle braune Fuchs springt \u00fcber den faulen Hund. Dieser Satz wird verwendet, um Typografie und Schriftarten auf Deutsch zu testen.",
+            "es": "El r\u00e1pido zorro marr\u00f3n salta sobre el perro perezoso. Esta oraci\u00f3n se utiliza para probar la tipograf\u00eda y las fuentes en espa\u00f1ol.",
+            "it": "La volpe marrone veloce salta sopra il cane pigro. Questa frase viene utilizzata per testare la tipografia e i caratteri in italiano.",
+            "pt": "A r\u00e1pida raposa marrom salta sobre o c\u00e3o pregui\u00e7oso. Esta frase \u00e9 usada para testar tipografia e fontes em portugu\u00eas.",
+            "nl": "De snelle bruine vos springt over de luie hond. Deze zin wordt gebruikt om typografie en lettertypen in het Nederlands te testen.",
+            "pl": "Szybki br\u0105zowy lis przeskakuje nad leniwym psem. To zdanie s\u0142u\u017cy do testowania typografii i czcionek w j\u0119zyku polskim.",
+            "ru": "\u0411\u044b\u0441\u0442\u0440\u0430\u044f \u043a\u043e\u0440\u0438\u0447\u043d\u0435\u0432\u0430\u044f \u043b\u0438\u0441\u0430 \u043f\u0435\u0440\u0435\u043f\u0440\u044b\u0433\u0438\u0432\u0430\u0435\u0442 \u0447\u0435\u0440\u0435\u0437 \u043b\u0435\u043d\u0438\u0432\u0443\u044e \u0441\u043e\u0431\u0430\u043a\u0443. \u042d\u0442\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0434\u043b\u044f \u0442\u0435\u0441\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u044f \u0442\u0438\u043f\u043e\u0433\u0440\u0430\u0444\u0438\u043a\u0438 \u0438 \u0448\u0440\u0438\u0444\u0442\u043e\u0432 \u043d\u0430 \u0440\u0443\u0441\u0441\u043a\u043e\u043c \u044f\u0437\u044b\u043a\u0435.",
+            "ja": "\u7d20\u65e9\u3044\u8336\u8272\u306e\u72d0\u304c\u6020\u3051\u8005\u306e\u72ac\u3092\u98db\u3073\u8d8a\u3048\u308b\u3002\u3053\u306e\u6587\u7ae0\u306f\u65e5\u672c\u8a9e\u306e\u30bf\u30a4\u30dd\u30b0\u30e9\u30d5\u30a3\u30fc\u3068\u30d5\u30a9\u30f3\u30c8\u306e\u30c6\u30b9\u30c8\u306b\u4f7f\u7528\u3055\u308c\u307e\u3059\u3002",
+            "ko": "\ube60\ub978 \uac08\uc0c9 \uc5ec\uc6b0\uac00 \uac8c\uc73c\ub978 \uac1c\ub97c \ub6f0\uc5b4\ub118\ub294\ub2e4. \uc774 \ubb38\uc7a5\uc740 \ud55c\uad6d\uc5b4 \ud0c0\uc774\ud3ec\uadf8\ub798\ud53c\uc640 \uae00\uaf34 \ud14c\uc2a4\ud2b8\uc5d0 \uc0ac\uc6a9\ub429\ub2c8\ub2e4.",
+            "zh": "\u5feb\u901f\u7684\u68d5\u8272\u72d0\u72f8\u8df3\u8fc7\u61d2\u72d7\u3002\u8fd9\u53e5\u8bdd\u7528\u4e8e\u6d4b\u8bd5\u4e2d\u6587\u7684\u6392\u7248\u548c\u5b57\u4f53\u3002",
+            "ar": "\u0627\u0644\u062b\u0639\u0644\u0628 \u0627\u0644\u0628\u0646\u064a \u0627\u0644\u0633\u0631\u064a\u0639 \u064a\u0642\u0641\u0632 \u0641\u0648\u0642 \u0627\u0644\u0643\u0644\u0628 \u0627\u0644\u0643\u0633\u0648\u0644. \u062a\u064f\u0633\u062a\u062e\u062f\u0645 \u0647\u0630\u0647 \u0627\u0644\u062c\u0645\u0644\u0629 \u0644\u0627\u062e\u062a\u0628\u0627\u0631 \u0627\u0644\u0637\u0628\u0627\u0639\u0629 \u0648\u0627\u0644\u062e\u0637\u0648\u0637 \u0628\u0627\u0644\u0644\u063a\u0629 \u0627\u0644\u0639\u0631\u0628\u064a\u0629.",
+            "tr": "H\u0131zl\u0131 kahverengi tilki tembel k\u00f6pe\u011fin \u00fczerinden atlar. Bu c\u00fcmle, T\u00fcrk\u00e7e tipografi ve yaz\u0131 tiplerini test etmek i\u00e7in kullan\u0131l\u0131r.",
+            "sv": "Den snabba bruna r\u00e4ven hoppar \u00f6ver den lata hunden. Denna mening anv\u00e4nds f\u00f6r att testa typografi och teckensnitt p\u00e5 svenska.",
+            "da": "Den hurtige brune r\u00e6v springer over den dovne hund. Denne s\u00e6tning bruges til at teste typografi og skrifttyper p\u00e5 dansk.",
+            "fi": "Nopea ruskea kettu hypp\u00e4\u00e4 laiskan koiran yli. T\u00e4t\u00e4 lausetta k\u00e4ytet\u00e4\u00e4n typografian ja fonttien testaamiseen suomeksi.",
+            "nb": "Den raske brune reven hopper over den late hunden. Denne setningen brukes til \u00e5 teste typografi og skrifttyper p\u00e5 norsk.",
+            "cs": "Rychl\u00e1 hn\u011bd\u00e1 li\u0161ka sk\u00e1\u010de p\u0159es l\u00edn\u00e9ho psa. Tato v\u011bta se pou\u017e\u00edv\u00e1 k testov\u00e1n\u00ed typografie a p\u00edsem v \u010de\u0161tin\u011b.",
+            "hu": "A gyors barna r\u00f3ka \u00e1tugrik a lusta kutya f\u00f6l\u00f6tt. Ez a mondat a magyar tipogr\u00e1fia \u00e9s bet\u0171t\u00edpusok tesztel\u00e9s\u00e9re szolg\u00e1l.",
+            "ro": "Vulpea maro rapid\u0103 sare peste c\u00e2inele lene\u0219. Aceast\u0103 propozi\u021bie este folosit\u0103 pentru a testa tipografia \u0219i fonturile \u00een limba rom\u00e2n\u0103.",
+            "he": "\u05d4\u05e9\u05d5\u05e2\u05dc \u05d4\u05d7\u05d5\u05dd \u05d4\u05de\u05d4\u05d9\u05e8 \u05e7\u05d5\u05e4\u05e5 \u05de\u05e2\u05dc \u05d4\u05db\u05dc\u05d1 \u05d4\u05e2\u05e6\u05dc\u05df. \u05de\u05e9\u05e4\u05d8 \u05d6\u05d4 \u05de\u05e9\u05de\u05e9 \u05dc\u05d1\u05d3\u05d9\u05e7\u05ea \u05d8\u05d9\u05e4\u05d5\u05d2\u05e8\u05e4\u05d9\u05d4 \u05d5\u05d2\u05d5\u05e4\u05e0\u05d9\u05dd \u05d1\u05e2\u05d1\u05e8\u05d9\u05ea.",
+            "hi": "\u0924\u0947\u091c\u093c \u092d\u0942\u0930\u0940 \u0932\u094b\u092e\u0921\u093c\u0940 \u0906\u0932\u0938\u0940 \u0915\u0941\u0924\u094d\u0924\u0947 \u0915\u0947 \u090a\u092a\u0930 \u0915\u0942\u0926\u0924\u0940 \u0939\u0948\u0964 \u092f\u0939 \u0935\u093e\u0915\u094d\u092f \u0939\u093f\u0902\u0926\u0940 \u091f\u093e\u0907\u092a\u094b\u0917\u094d\u0930\u093e\u092b\u0940 \u0914\u0930 \u092b\u093c\u0949\u0928\u094d\u091f \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0915\u0947 \u0932\u093f\u090f \u0909\u092a\u092f\u094b\u0917 \u0915\u093f\u092f\u093e \u091c\u093e\u0924\u093e \u0939\u0948\u0964",
+            "th": "\u0e2a\u0e38\u0e19\u0e31\u0e02\u0e08\u0e34\u0e49\u0e07\u0e08\u0e2d\u0e01\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e15\u0e32\u0e25\u0e01\u0e23\u0e30\u0e42\u0e14\u0e14\u0e02\u0e49\u0e32\u0e21\u0e2a\u0e38\u0e19\u0e31\u0e02\u0e02\u0e35\u0e49\u0e40\u0e01\u0e35\u0e22\u0e08 \u0e1b\u0e23\u0e30\u0e42\u0e22\u0e04\u0e19\u0e35\u0e49\u0e43\u0e0a\u0e49\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e17\u0e14\u0e2a\u0e2d\u0e1a\u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23\u0e41\u0e25\u0e30\u0e41\u0e1a\u0e1a\u0e2d\u0e31\u0e01\u0e29\u0e23\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22",
+            "vi": "Con c\u00e1o n\u00e2u nhanh nh\u1ea3y qua con ch\u00f3 l\u01b0\u1eddi. C\u00e2u n\u00e0y \u0111\u01b0\u1ee3c s\u1eed d\u1ee5ng \u0111\u1ec3 th\u1eed nghi\u1ec7m ki\u1ec3u ch\u1eef v\u00e0 ph\u00f4ng ch\u1eef b\u1eb1ng ti\u1ebfng Vi\u1ec7t.",
+            "id": "Rubah cokelat cepat melompati anjing yang malas. Kalimat ini digunakan untuk menguji tipografi dan font dalam bahasa Indonesia.",
+        };
+
+        const RTL_LANGUAGES = ["ar", "he"];
+
+        function updatePage() {
+            const locale = navigator.language;
+            const baseLang = locale.split("-")[0];
+
+            document.getElementById("current-locale").textContent = locale;
+            document.getElementById("greeting-text").textContent = GREETINGS[baseLang] || GREETINGS["en"];
+
+            const sampleEl = document.getElementById("sample-text");
+            sampleEl.textContent = SAMPLE_TEXTS[baseLang] || SAMPLE_TEXTS["en"];
+            if (RTL_LANGUAGES.includes(baseLang)) sampleEl.setAttribute("dir", "rtl");
+        }
+
+        updatePage();
+    </script>
+</body>
+</html>

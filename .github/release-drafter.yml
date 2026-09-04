@@ -1,0 +1,25 @@
+name-template: 'Next Release'
+tag-template: 'next'
+categories:
+  - title: 'Features'
+    labels:
+      - 'feature'
+  - title: 'Bug Fixes'
+    labels:
+      - 'bug'
+  - title: 'Enhancements'
+    labels:
+      - 'enhancement'
+exclude-labels:
+  - 'duplicate'
+  - 'wontfix'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS

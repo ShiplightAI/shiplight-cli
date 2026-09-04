@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pages - Browser Automation Testing</title>
+    <link rel="stylesheet" href="/testing/assets/styles.css">
+    <style>
+        .hero {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .category-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            border-left: 4px solid var(--primary);
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .category-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .category-header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .test-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .test-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .test-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .test-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .test-card .test-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-lightest);
+            color: var(--primary);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .test-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .test-card .test-meta {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+
+        .test-badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: var(--border-radius-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .test-badge.forms {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .test-badge.interactions {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .test-badge.files {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .test-badge.navigation {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .test-badge.dynamic {
+            background: #cffafe;
+            color: #155e75;
+        }
+
+        .test-badge.data {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+
+        .test-badge.media {
+            background: #ede9fe;
+            color: #6b21a8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .search-box {
+            margin-bottom: var(--spacing-2xl);
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1.125rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-lightest);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <!-- Hero Section -->
+        <div class="test-content">
+            <div class="hero">
+                <h1>🧪 Test Pages Collection</h1>
+                <p>Comprehensive test pages for browser automation and QA testing</p>
+            </div>
+
+            <!-- Forms Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">📝</div>
+                    <div>
+                        <h2>Forms & Inputs</h2>
+                        <p>Test form elements, inputs and dropdowns</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/forms/basic-form.html" class="test-card" data-keywords="form basic submit validation">
+                        <h3>
+                            <span class="test-icon">📄</span>
+                            Basic Form
+                        </h3>
+                        <p>Simple form with essential fields for testing basic form submission, validation, and error handling.</p>
+                        <div class="test-meta">
+                            <span class="test-badge forms">Forms</span>
+                        </div>
+                    </a>
+                    <a href="/testing/forms/custom-dropdown.html" class="test-card" data-keywords="dropdown scroll select custom country">
+                        <h3>
+                            <span class="test-icon">📑</span>
+                            Custom Dropdown
+                        </h3>
+                        <p>Tests custom dropdown with scrolling behavior and country selection. Includes dynamic filtering and keyboard navigation.</p>
+                        <div class="test-meta">
+                            <span class="test-badge forms">Forms</span>
+                        </div>
+                    </a>
+                    <a href="/testing/forms/native-dropdown-date-picker.html" class="test-card" data-keywords="native select dropdown date picker input type date">
+                        <h3>
+                            <span class="test-icon">🗓️</span>
+                            Native Dropdown + Date Picker
+                        </h3>
+                        <p>Simple page with native HTML controls: one select dropdown and one input type="date" picker for automation testing.</p>
+                        <div class="test-meta">
+                            <span class="test-badge forms">Forms</span>
+                        </div>
+                    </a>
+                    <a href="/testing/forms/two-factor-auth.html" class="test-card" data-keywords="2fa totp otp authenticator generate_2fa_code verification code">
+                        <h3>
+                            <span class="test-icon">🔐</span>
+                            2FA Code Verification
+                        </h3>
+                        <p>TOTP verification page with a Base32 secret and otpauth URI for testing generate_2fa_code style automation flows.</p>
+                        <div class="test-meta">
+                            <span class="test-badge forms">Forms</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Interactions Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #9333ea;">👆</div>
+                    <div>
+                        <h2>Interactions</h2>
+                        <p>Test mouse interactions</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/interactions/drag-and-drop.html" class="test-card" data-keywords="drag drop sortable reorder">
+                        <h3>
+                            <span class="test-icon">🖱️</span>
+                            Drag & Drop
+                        </h3>
+                        <p>Tests drag and drop functionality with sortable lists, image area selection, and text selection features.</p>
+                        <div class="test-meta">
+                            <span class="test-badge interactions">Interactions</span>
+                        </div>
+                    </a>
+                    <a href="/testing/interactions/mouse-actions.html" class="test-card" data-keywords="mouse click double click right click hover coordinates">
+                        <h3>
+                            <span class="test-icon">🖱️</span>
+                            Mouse Actions
+                        </h3>
+                        <p>Tests click, double click, right click, hover, and coordinate-based variants. Each action has a visible result display for automation assertions.</p>
+                        <div class="test-meta">
+                            <span class="test-badge interactions">Interactions</span>
+                        </div>
+                    </a>
+                    <a href="/testing/interactions/clipboard.html" class="test-card" data-keywords="clipboard copy paste read write permission">
+                        <h3>
+                            <span class="test-icon">📋</span>
+                            Clipboard
+                        </h3>
+                        <p>Tests clipboard read and write permissions using the Clipboard API. Copies text to clipboard and reads it back.</p>
+                        <div class="test-meta">
+                            <span class="test-badge interactions">Interactions</span>
+                        </div>
+                    </a>
+                    <a href="/testing/interactions/iframe-editor.html" class="test-card" data-keywords="iframe frame nested editor contenteditable rich text">
+                        <h3>
+                            <span class="test-icon">🪟</span>
+                            Iframe Editor
+                        </h3>
+                        <p>Rich text editor inside an iframe, plus nested iframes. Tests frame_path for cross-frame interactions.</p>
+                        <div class="test-meta">
+                            <span class="test-badge interactions">Interactions</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dynamic Content Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #06b6d4;">🔄</div>
+                    <div>
+                        <h2>Dynamic Content</h2>
+                        <p>Test dynamic elements and loading states</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/dynamic/dynamic-elements.html" class="test-card" data-keywords="dynamic id button element changing">
+                        <h3>
+                            <span class="test-icon">🔄</span>
+                            Dynamic Elements
+                        </h3>
+                        <p>Tests handling of dynamically generated elements with changing IDs and attributes. Useful for testing element detection.</p>
+                        <div class="test-meta">
+                            <span class="test-badge dynamic">Dynamic</span>
+                        </div>
+                    </a>
+                    <a href="/testing/dynamic/loading-states.html" class="test-card" data-keywords="loading modal wait spinner delay">
+                        <h3>
+                            <span class="test-icon">⏳</span>
+                            Loading States
+                        </h3>
+                        <p>Tests loading modals with different durations (5s, 30s, 60s). Useful for testing wait conditions and timeouts.</p>
+                        <div class="test-meta">
+                            <span class="test-badge dynamic">Dynamic</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Files Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #f59e0b;">📁</div>
+                    <div>
+                        <h2>File Operations</h2>
+                        <p>Test file uploads and downloads</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/files/upload.html" class="test-card" data-keywords="upload file input drag drop">
+                        <h3>
+                            <span class="test-icon">⬆️</span>
+                            File Upload
+                        </h3>
+                        <p>Modern file upload interface with drag & drop support, file validation, and progress indicators.</p>
+                        <div class="test-meta">
+                            <span class="test-badge files">Files</span>
+                        </div>
+                    </a>
+                    <a href="/testing/files/download.html" class="test-card" data-keywords="download pdf csv json text delayed">
+                        <h3>
+                            <span class="test-icon">⬇️</span>
+                            File Download
+                        </h3>
+                        <p>Comprehensive download testing including immediate downloads, delayed downloads, and different file types (PDF, Excel, CSV, JSON).</p>
+                        <div class="test-meta">
+                            <span class="test-badge files">Files</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Navigation Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #10b981;">🧭</div>
+                    <div>
+                        <h2>Navigation</h2>
+                        <p>Test window/tab management and navigation</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/navigation/new-tab.html" class="test-card" data-keywords="tab new open">
+                        <h3>
+                            <span class="test-icon">🪟</span>
+                            New Tab
+                        </h3>
+                        <p>Tests opening new tabs and handling multiple browser contexts. Essential for testing tab navigation.</p>
+                        <div class="test-meta">
+                            <span class="test-badge navigation">Navigation</span>
+                        </div>
+                    </a>
+                    <a href="/testing/navigation/scroll-down.html" class="test-card" data-keywords="scroll down scrolling infinite lazy load">
+                        <h3>
+                            <span class="test-icon">⬇️</span>
+                            Scroll Down
+                        </h3>
+                        <p>Tests various scrolling scenarios including scroll to element, infinite scroll, smooth scrolling, and scroll progress tracking.</p>
+                        <div class="test-meta">
+                            <span class="test-badge navigation">Navigation</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media & Devices Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #8b5cf6;">🎤</div>
+                    <div>
+                        <h2>Media & Devices</h2>
+                        <p>Test media input devices and permissions</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/media/microphone.html" class="test-card" data-keywords="microphone audio input permission voice visualization">
+                        <h3>
+                            <span class="test-icon">🎙️</span>
+                            Microphone Input
+                        </h3>
+                        <p>Tests microphone access and real-time audio visualization. Includes permission handling, waveform display, and volume meter.</p>
+                        <div class="test-meta">
+                            <span class="test-badge media">Media</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Failure Analysis Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #ef4444;">&#x1f50d;</div>
+                    <div>
+                        <h2>Failure Analysis</h2>
+                        <p>Test pages for AI failure analysis agent evaluation</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/failure-analysis/index.html" class="test-card" data-keywords="failure analysis type a b c d root cause classification fix">
+                        <h3>
+                            <span class="test-icon">&#x1f9ea;</span>
+                            All Failure Analysis Pages
+                        </h3>
+                        <p>22 test pages covering Type A (app bugs), Type B (test issues), flaky tests, and Type D (configuration issues) for failure analysis agent evaluation.</p>
+                        <div class="test-meta">
+                            <span class="test-badge" style="background: #fef2f2; color: #991b1b;">Type A</span>
+                            <span class="test-badge" style="background: #e0e7ff; color: #3730a3;">Type B</span>
+                            <span class="test-badge" style="background: #fffbeb; color: #92400e;">Flaky</span>
+                            <span class="test-badge" style="background: #f3f4f6; color: #374151;">Type D</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Locale & Language Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #0ea5e9;">&#x1f310;</div>
+                    <div>
+                        <h2>Locale & Language</h2>
+                        <p>Test browser language and timezone settings</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/locale/browser-language.html" class="test-card" data-keywords="language locale browser translation i18n internationalization">
+                        <h3>
+                            <span class="test-icon">&#x1f4ac;</span>
+                            Browser Language
+                        </h3>
+                        <p>Detects the browser locale and displays a localized greeting and sample text in the detected language.</p>
+                        <div class="test-meta">
+                            <span class="test-badge navigation">Locale</span>
+                        </div>
+                    </a>
+                    <a href="/testing/locale/browser-timezone.html" class="test-card" data-keywords="timezone time zone clock utc offset">
+                        <h3>
+                            <span class="test-icon">&#x1f552;</span>
+                            Browser Timezone
+                        </h3>
+                        <p>Displays the detected browser timezone and a live clock showing the current time in that timezone.</p>
+                        <div class="test-meta">
+                            <span class="test-badge navigation">Locale</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Miscellaneous Category -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon" style="background: #ec4899;">📦</div>
+                    <div>
+                        <h2>Miscellaneous</h2>
+                        <p>Various test pages and resources</p>
+                    </div>
+                </div>
+                <div class="test-grid">
+                    <a href="/testing/misc/product_feed.xml" class="test-card" data-keywords="xml data feed product">
+                        <h3>
+                            <span class="test-icon">📄</span>
+                            Product Feed XML
+                        </h3>
+                        <p>Sample XML product feed file for testing XML parsing and data extraction scenarios.</p>
+                        <div class="test-meta">
+                            <span class="test-badge data">Data</span>
+                        </div>
+                    </a>
+                    <a href="/testing/misc/playwright-common-elements.html" class="test-card" data-keywords="playwright common elements">
+                        <h3>
+                            <span class="test-icon">📄</span>
+                            Playwright Common Elements
+                        </h3>
+                        <p>Playwright common elements for testing locators.</p>
+                        <div class="test-meta">
+                            <span class="test-badge misc">Miscellaneous</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="info-box mt-4">
+                <h4>💡 About These Test Pages</h4>
+                <p>These test pages are designed for browser automation testing using tools like Playwright, Selenium, or Puppeteer. Each page tests specific UI patterns and edge cases to ensure your automation scripts handle various scenarios correctly.</p>
+                <ul>
+                    <li>All pages use consistent styling for better maintainability</li>
+                    <li>Organized by test purpose for easy discovery</li>
+                    <li>Includes edge cases and tricky scenarios</li>
+                    <li>Self-contained with no external dependencies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const testCards = document.querySelectorAll('.test-card');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+
+            testCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const keywords = card.dataset.keywords?.toLowerCase() || '';
+
+                const matches = title.includes(searchTerm) || 
+                               description.includes(searchTerm) || 
+                               keywords.includes(searchTerm);
+
+                if (matches) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Hide category sections if no cards are visible
+            document.querySelectorAll('.category-section').forEach(section => {
+                const visibleCards = section.querySelectorAll('.test-card[style="display: flex;"]');
+                section.style.display = visibleCards.length > 0 ? 'block' : 'none';
+            });
+        });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.blur();
+            }
+        });
+
+        // Keyboard shortcut: Cmd/Ctrl + K to focus search
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

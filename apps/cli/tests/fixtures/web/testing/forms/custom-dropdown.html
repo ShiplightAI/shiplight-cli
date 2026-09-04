@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Dropdown - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .dropdown-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-align: left;
+            color: var(--text-primary);
+        }
+
+        .dropdown-button:hover {
+            border-color: var(--primary);
+        }
+
+        .dropdown-button.open {
+            border-color: var(--primary);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .dropdown-arrow {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-secondary);
+            transition: transform 0.2s;
+        }
+
+        .dropdown-button.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-search {
+            position: sticky;
+            top: 0;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.875rem;
+        }
+
+        .dropdown-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .dropdown-options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dropdown-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-option:hover {
+            background: var(--primary-lightest);
+        }
+
+        .dropdown-option.selected {
+            background: var(--primary);
+            color: var(--text-inverse);
+        }
+
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .flag-emoji {
+            font-size: 1.25rem;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: sticky;
+            bottom: 0;
+            padding: 0.5rem;
+            background: linear-gradient(to top, var(--bg-primary), transparent);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Forms</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Custom Dropdown</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Country Selection</h2>
+                <p>This dropdown demonstrates custom behavior with a scrollable list of options and search functionality.</p>
+
+                <div class="form-group">
+                    <label for="country-dropdown">Select Your Country</label>
+                    <div class="custom-dropdown" id="country-dropdown">
+                        <button type="button" class="dropdown-button" id="dropdown-btn">
+                            <span id="selected-value">Choose a country</span>
+                            <span class="dropdown-arrow"></span>
+                        </button>
+                        <div class="dropdown-content" id="dropdown-content">
+                            <div class="dropdown-search">
+                                <input type="text" id="country-search" placeholder="Search countries..." />
+                            </div>
+                            <ul class="dropdown-options" id="dropdown-options"></ul>
+                            <div class="scroll-indicator">↓ Scroll for more options ↓</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="selection-result" class="alert alert-info" style="display: none; margin-top: 1rem;">
+                    <strong>Selected:</strong> <span id="result-text"></span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const countries = [
+            { code: 'af', name: 'Afghanistan', flag: '🇦🇫' },
+            { code: 'al', name: 'Albania', flag: '🇦🇱' },
+            { code: 'dz', name: 'Algeria', flag: '🇩🇿' },
+            { code: 'ar', name: 'Argentina', flag: '🇦🇷' },
+            { code: 'au', name: 'Australia', flag: '🇦🇺' },
+            { code: 'at', name: 'Austria', flag: '🇦🇹' },
+            { code: 'bd', name: 'Bangladesh', flag: '🇧🇩' },
+            { code: 'be', name: 'Belgium', flag: '🇧🇪' },
+            { code: 'br', name: 'Brazil', flag: '🇧🇷' },
+            { code: 'bg', name: 'Bulgaria', flag: '🇧🇬' },
+            { code: 'ca', name: 'Canada', flag: '🇨🇦' },
+            { code: 'cl', name: 'Chile', flag: '🇨🇱' },
+            { code: 'cn', name: 'China', flag: '🇨🇳' },
+            { code: 'co', name: 'Colombia', flag: '🇨🇴' },
+            { code: 'hr', name: 'Croatia', flag: '🇭🇷' },
+            { code: 'cz', name: 'Czech Republic', flag: '🇨🇿' },
+            { code: 'dk', name: 'Denmark', flag: '🇩🇰' },
+            { code: 'eg', name: 'Egypt', flag: '🇪🇬' },
+            { code: 'fi', name: 'Finland', flag: '🇫🇮' },
+            { code: 'fr', name: 'France', flag: '🇫🇷' },
+            { code: 'de', name: 'Germany', flag: '🇩🇪' },
+            { code: 'gr', name: 'Greece', flag: '🇬🇷' },
+            { code: 'hk', name: 'Hong Kong', flag: '🇭🇰' },
+            { code: 'hu', name: 'Hungary', flag: '🇭🇺' },
+            { code: 'in', name: 'India', flag: '🇮🇳' },
+            { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
+            { code: 'ir', name: 'Iran', flag: '🇮🇷' },
+            { code: 'ie', name: 'Ireland', flag: '🇮🇪' },
+            { code: 'il', name: 'Israel', flag: '🇮🇱' },
+            { code: 'it', name: 'Italy', flag: '🇮🇹' },
+            { code: 'jp', name: 'Japan', flag: '🇯🇵' },
+            { code: 'ke', name: 'Kenya', flag: '🇰🇪' },
+            { code: 'my', name: 'Malaysia', flag: '🇲🇾' },
+            { code: 'mx', name: 'Mexico', flag: '🇲🇽' },
+            { code: 'ma', name: 'Morocco', flag: '🇲🇦' },
+            { code: 'nl', name: 'Netherlands', flag: '🇳🇱' },
+            { code: 'nz', name: 'New Zealand', flag: '🇳🇿' },
+            { code: 'ng', name: 'Nigeria', flag: '🇳🇬' },
+            { code: 'no', name: 'Norway', flag: '🇳🇴' },
+            { code: 'pk', name: 'Pakistan', flag: '🇵🇰' },
+            { code: 'pe', name: 'Peru', flag: '🇵🇪' },
+            { code: 'ph', name: 'Philippines', flag: '🇵🇭' },
+            { code: 'pl', name: 'Poland', flag: '🇵🇱' },
+            { code: 'pt', name: 'Portugal', flag: '🇵🇹' },
+            { code: 'ro', name: 'Romania', flag: '🇷🇴' },
+            { code: 'ru', name: 'Russia', flag: '🇷🇺' },
+            { code: 'sa', name: 'Saudi Arabia', flag: '🇸🇦' },
+            { code: 'sg', name: 'Singapore', flag: '🇸🇬' },
+            { code: 'za', name: 'South Africa', flag: '🇿🇦' },
+            { code: 'kr', name: 'South Korea', flag: '🇰🇷' },
+            { code: 'es', name: 'Spain', flag: '🇪🇸' },
+            { code: 'se', name: 'Sweden', flag: '🇸🇪' },
+            { code: 'ch', name: 'Switzerland', flag: '🇨🇭' },
+            { code: 'tw', name: 'Taiwan', flag: '🇹🇼' },
+            { code: 'th', name: 'Thailand', flag: '🇹🇭' },
+            { code: 'tr', name: 'Turkey', flag: '🇹🇷' },
+            { code: 'ua', name: 'Ukraine', flag: '🇺🇦' },
+            { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪' },
+            { code: 'gb', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'us', name: 'United States', flag: '🇺🇸' },
+            { code: 'vn', name: 'Vietnam', flag: '🇻🇳' }
+        ];
+
+        const dropdownBtn = document.getElementById('dropdown-btn');
+        const dropdownContent = document.getElementById('dropdown-content');
+        const dropdownOptions = document.getElementById('dropdown-options');
+        const selectedValue = document.getElementById('selected-value');
+        const countrySearch = document.getElementById('country-search');
+        const selectionResult = document.getElementById('selection-result');
+        const resultText = document.getElementById('result-text');
+
+        let selectedCountry = null;
+        let filteredCountries = [...countries];
+
+        // Render options
+        function renderOptions(items) {
+            dropdownOptions.innerHTML = '';
+            items.forEach(country => {
+                const li = document.createElement('li');
+                li.className = 'dropdown-option';
+                li.dataset.code = country.code;
+                li.innerHTML = `<span class="flag-emoji">${country.flag}</span> ${country.name}`;
+                
+                if (selectedCountry && selectedCountry.code === country.code) {
+                    li.classList.add('selected');
+                }
+                
+                li.addEventListener('click', () => selectCountry(country));
+                dropdownOptions.appendChild(li);
+            });
+        }
+
+        // Select country
+        function selectCountry(country) {
+            selectedCountry = country;
+            selectedValue.textContent = `${country.flag} ${country.name}`;
+            resultText.textContent = `${country.name} (${country.code})`;
+            selectionResult.style.display = 'block';
+            closeDropdown();
+            renderOptions(filteredCountries);
+        }
+
+        // Toggle dropdown
+        function toggleDropdown() {
+            const isOpen = dropdownContent.classList.contains('show');
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        }
+
+        function openDropdown() {
+            dropdownContent.classList.add('show');
+            dropdownBtn.classList.add('open');
+            countrySearch.focus();
+        }
+
+        function closeDropdown() {
+            dropdownContent.classList.remove('show');
+            dropdownBtn.classList.remove('open');
+            countrySearch.value = '';
+            filteredCountries = [...countries];
+            renderOptions(filteredCountries);
+        }
+
+        // Search functionality
+        countrySearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filteredCountries = countries.filter(country => 
+                country.name.toLowerCase().includes(searchTerm)
+            );
+            renderOptions(filteredCountries);
+        });
+
+        // Button click
+        dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('country-dropdown').contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!dropdownContent.classList.contains('show')) return;
+
+            if (e.key === 'Escape') {
+                closeDropdown();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                // Simple implementation - you can enhance this
+                const firstOption = dropdownOptions.querySelector('.dropdown-option');
+                if (firstOption && document.activeElement !== countrySearch) {
+                    firstOption.focus();
+                }
+            }
+        });
+
+        // Initial render
+        renderOptions(countries);
+    </script>
+</body>
+</html>
+

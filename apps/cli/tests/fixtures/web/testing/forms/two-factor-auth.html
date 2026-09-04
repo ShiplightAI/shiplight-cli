@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2FA Code Verification - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .countdown {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Forms</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>2FA Verification</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Enter 2FA Code</h2>
+                <form id="verify-form">
+                    <div class="form-group">
+                        <label for="otp-input">6-digit code</label>
+                        <input
+                            id="otp-input"
+                            name="otp-input"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            maxlength="6"
+                            placeholder="123456"
+                            class="form-control"
+                            data-testid="otp-input"
+                            required
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary" data-testid="verify-btn">Verify Code</button>
+                        <button type="button" id="clear-btn" class="btn btn-secondary">Clear</button>
+                    </div>
+                </form>
+                <p id="countdown" class="countdown" data-testid="totp-countdown">Code refreshes in: 30s</p>
+                <div id="result" class="alert alert-info" data-testid="verification-result">Waiting for verification.</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
+        const DIGITS = 6;
+        const PERIOD_SECONDS = 30;
+
+        const countdownEl = document.getElementById('countdown');
+        const verifyForm = document.getElementById('verify-form');
+        const otpInput = document.getElementById('otp-input');
+        const clearBtn = document.getElementById('clear-btn');
+        const resultEl = document.getElementById('result');
+
+        function normalizeBase32(input) {
+            return input.toUpperCase().replace(/[^A-Z2-7]/g, '');
+        }
+
+        function decodeBase32(base32) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            const clean = normalizeBase32(base32);
+            let bits = '';
+
+            for (let i = 0; i < clean.length; i++) {
+                const value = alphabet.indexOf(clean[i]);
+                if (value === -1) {
+                    continue;
+                }
+                bits += value.toString(2).padStart(5, '0');
+            }
+
+            const bytes = [];
+            for (let i = 0; i + 8 <= bits.length; i += 8) {
+                bytes.push(parseInt(bits.slice(i, i + 8), 2));
+            }
+
+            return new Uint8Array(bytes);
+        }
+
+        function leftPadNumber(number, length) {
+            return String(number).padStart(length, '0');
+        }
+
+        async function generateTotpForCounter(secret, counter) {
+            const secretBytes = decodeBase32(secret);
+            const key = await crypto.subtle.importKey(
+                'raw',
+                secretBytes,
+                { name: 'HMAC', hash: 'SHA-1' },
+                false,
+                ['sign']
+            );
+
+            const buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            view.setUint32(0, Math.floor(counter / 0x100000000), false);
+            view.setUint32(4, counter >>> 0, false);
+
+            const signature = await crypto.subtle.sign('HMAC', key, buffer);
+            const hmac = new Uint8Array(signature);
+            const offset = hmac[hmac.length - 1] & 0x0f;
+            const binaryCode =
+                ((hmac[offset] & 0x7f) << 24) |
+                ((hmac[offset + 1] & 0xff) << 16) |
+                ((hmac[offset + 2] & 0xff) << 8) |
+                (hmac[offset + 3] & 0xff);
+
+            const otp = binaryCode % (10 ** DIGITS);
+            return leftPadNumber(otp, DIGITS);
+        }
+
+        async function getValidCodes(nowSeconds) {
+            const currentCounter = Math.floor(nowSeconds / PERIOD_SECONDS);
+            return Promise.all([
+                generateTotpForCounter(TOTP_SECRET, currentCounter - 1),
+                generateTotpForCounter(TOTP_SECRET, currentCounter),
+                generateTotpForCounter(TOTP_SECRET, currentCounter + 1)
+            ]);
+        }
+
+        function setResult(message, type) {
+            resultEl.className = `alert alert-${type}`;
+            resultEl.textContent = message;
+        }
+
+        function updateCountdown() {
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            const remaining = PERIOD_SECONDS - (nowSeconds % PERIOD_SECONDS);
+            countdownEl.textContent = `Code refreshes in: ${remaining}s`;
+        }
+
+        verifyForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const submittedCode = otpInput.value.trim();
+            if (!/^\d{6}$/.test(submittedCode)) {
+                setResult('Invalid format. Enter exactly 6 digits.', 'warning');
+                return;
+            }
+
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            const validCodes = await getValidCodes(nowSeconds);
+            if (validCodes.includes(submittedCode)) {
+                setResult('Success: 2FA code is valid.', 'success');
+            } else {
+                setResult('Invalid or expired code. Generate a fresh code and try again.', 'danger');
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            otpInput.value = '';
+            setResult('Waiting for verification.', 'info');
+            otpInput.focus();
+        });
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Data - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-xl);
+        }
+
+        .pricing-card {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-2xl) var(--spacing-xl);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-name {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .plan-description {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .plan-price {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .price-currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            vertical-align: super;
+        }
+
+        .price-period {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 var(--spacing-xl) 0;
+            text-align: left;
+        }
+
+        .plan-features li {
+            padding: var(--spacing-sm) 0;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-check {
+            color: var(--success);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .plan-cta .btn {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Missing Data</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>Missing Data</h1>
+            <p class="description">A pricing page that is missing the "Premium Plan" that should be displayed alongside the Basic and Standard plans.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Choose Your Plan</h2>
+                <p>Select the plan that best fits your needs. All plans include a 14-day free trial.</p>
+
+                <div class="pricing-grid" id="pricing-grid">
+                    <!-- BUG: Only Basic and Standard plans are rendered.
+                         The Premium Plan ($99/mo) is missing from the data array. -->
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>The pricing page should display three plans: Basic Plan ($9/mo), Standard Plan ($29/mo), and Premium Plan ($99/mo). All three plans should be visible to users.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // BUG: The Premium Plan is missing from this array.
+            // It should include: { name: 'Premium Plan', price: 99, ... }
+            var plans = [
+                {
+                    name: 'Basic Plan',
+                    description: 'Perfect for individuals and small projects',
+                    price: 9,
+                    featured: false,
+                    features: [
+                        '5 projects',
+                        '1 GB storage',
+                        'Basic analytics',
+                        'Email support',
+                        'API access'
+                    ],
+                    cta: 'Start Basic'
+                },
+                {
+                    name: 'Standard Plan',
+                    description: 'Great for growing teams and businesses',
+                    price: 29,
+                    featured: true,
+                    features: [
+                        '25 projects',
+                        '10 GB storage',
+                        'Advanced analytics',
+                        'Priority email support',
+                        'API access',
+                        'Team collaboration',
+                        'Custom integrations'
+                    ],
+                    cta: 'Start Standard'
+                }
+                // Premium Plan is missing here - it should be:
+                // { name: 'Premium Plan', price: 99, ... }
+            ];
+
+            function renderPlans() {
+                var grid = document.getElementById('pricing-grid');
+                grid.innerHTML = '';
+
+                plans.forEach(function(plan) {
+                    var card = document.createElement('div');
+                    card.className = 'pricing-card' + (plan.featured ? ' featured' : '');
+
+                    var featuresHtml = plan.features.map(function(f) {
+                        return '<li><span class="feature-check">&#10003;</span> ' + f + '</li>';
+                    }).join('');
+
+                    card.innerHTML = '<div class="plan-name">' + plan.name + '</div>' +
+                        '<div class="plan-description">' + plan.description + '</div>' +
+                        '<div class="plan-price">' +
+                        '<div class="price-amount"><span class="price-currency">$</span>' + plan.price + '</div>' +
+                        '<div class="price-period">per month</div>' +
+                        '</div>' +
+                        '<ul class="plan-features">' + featuresHtml + '</ul>' +
+                        '<div class="plan-cta">' +
+                        '<button class="btn ' + (plan.featured ? 'btn-primary' : 'btn-outline') + '">' + plan.cta + '</button>' +
+                        '</div>';
+
+                    grid.appendChild(card);
+                });
+            }
+
+            renderPlans();
+        })();
+    </script>
+</body>
+</html>

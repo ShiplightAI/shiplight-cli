@@ -1,0 +1,14 @@
+views:
+  - id: shiplightai
+    name: shiplightai
+    description: CLI package view for shiplightai plus the shared web-agent engine.
+    feature_ids:
+      - 001-web-agent-engine
+      - 002-shiplightai-cli
+  - id: mcp-server
+    name: mcp-server
+    description: MCP server package view for @shiplightai/mcp plus the shared
+      web-agent engine.
+    feature_ids:
+      - 001-web-agent-engine
+      - 003-shiplightai-mcp-server

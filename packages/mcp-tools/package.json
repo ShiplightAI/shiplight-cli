@@ -1,0 +1,101 @@
+{
+  "name": "mcp-tools",
+  "version": "1.0.0",
+  "description": "Shared MCP tools with injectable backends for Shiplight",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./interfaces": {
+      "types": "./dist/interfaces/index.d.ts",
+      "import": "./dist/interfaces/index.js",
+      "default": "./dist/interfaces/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.js",
+      "default": "./dist/tools/index.js"
+    },
+    "./registry": {
+      "types": "./dist/registry/index.d.ts",
+      "import": "./dist/registry/index.js",
+      "default": "./dist/registry/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
+    },
+    "./backends": {
+      "types": "./dist/backends/index.d.ts",
+      "import": "./dist/backends/index.js",
+      "default": "./dist/backends/index.js"
+    },
+    "./prompts": {
+      "types": "./dist/prompts/index.d.ts",
+      "import": "./dist/prompts/index.js",
+      "default": "./dist/prompts/index.js"
+    },
+    "./resources": {
+      "types": "./dist/resources/index.d.ts",
+      "import": "./dist/resources/index.js",
+      "default": "./dist/resources/index.js"
+    }
+  },
+  "scripts": {
+    "build": "pnpm typecheck && rimraf dist && tsup",
+    "dev": "tsup --watch",
+    "pretypecheck": "tsx ../../scripts/build-workspace-deps.mts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "pretest:unit": "tsx ../../scripts/build-workspace-deps.mts",
+    "test:unit": "node --test --import tsx 'src/**/__tests__/*.test.ts'",
+    "pretest:browser": "tsx ../../scripts/build-workspace-deps.mts",
+    "test:browser": "node --test --import tsx 'browser-tests/**/*.test.ts'",
+    "build:extension": "mkdir -p dist && cd chrome-extension && zip -r ../dist/shiplight-ai-chrome-extension.zip . -x 'README.md'"
+  },
+  "dependencies": {
+    "axios": "^1.15.0",
+    "sdk-core": "workspace:*",
+    "shiplight-types": "workspace:*",
+    "typescript": "^5.3.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.16.0",
+    "yaml": "^2.8.3",
+    "zod": "^3.22.0",
+    "zod-to-json-schema": "^3.24.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/uuid": "^9.0.0",
+    "@types/ws": "^8.5.10",
+    "playwright": "1.60.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.6"
+  },
+  "peerDependencies": {
+    "playwright": "^1.60.0",
+    "sdk-core": "workspace:*",
+    "shiplight-types": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "sdk-core": {
+      "optional": true
+    },
+    "shiplight-types": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,51 @@
+# Observation profiles only locate canonical quality-observations.json files.
+# The publish workflows convert their native JUnit and Playwright reports before
+# upload; parser selection does not belong in this source configuration.
+profiles:
+  - id: "monots-cli-publish"
+    name: "Monots CLI publish workflow"
+    description: "Fetch canonical CLI and shared SDK observations from publish-cli.yml."
+    transport: "github-actions"
+    observation_path: "quality-observations.json"
+    source_refs:
+      - path: ".github/workflows/publish-cli.yml"
+        label: "CLI publish workflow"
+      - path: ".github/workflows/sdk-tests.yml"
+        label: "Shared SDK release gate"
+      - path: ".quality/evidence/002-shiplightai-cli/quality-map.yaml"
+        label: "CLI quality map"
+      - path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
+        label: "Shared SDK quality map"
+    github:
+      repo: "ShiplightAI/monots"
+      workflow: "publish-cli.yml"
+      artifact_names:
+        - "quality-cli-observations"
+        - "sdk-tests-observations"
+    auth:
+      required_env:
+        - "GITHUB_TOKEN"
+
+  - id: "monots-mcp-publish"
+    name: "Monots MCP publish workflow"
+    description: "Fetch canonical MCP and shared SDK observations from publish-mcp.yml."
+    transport: "github-actions"
+    observation_path: "quality-observations.json"
+    source_refs:
+      - path: ".github/workflows/publish-mcp.yml"
+        label: "MCP publish workflow"
+      - path: ".github/workflows/sdk-tests.yml"
+        label: "Shared SDK release gate"
+      - path: ".quality/evidence/003-shiplightai-mcp-server/quality-map.yaml"
+        label: "MCP quality map"
+      - path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
+        label: "Shared SDK quality map"
+    github:
+      repo: "ShiplightAI/monots"
+      workflow: "publish-mcp.yml"
+      artifact_names:
+        - "quality-mcp-observations"
+        - "sdk-tests-observations"
+    auth:
+      required_env:
+        - "GITHUB_TOKEN"

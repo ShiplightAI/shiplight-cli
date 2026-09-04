@@ -1,0 +1,635 @@
+name: Publish @shiplightai/mcp
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run all gates but skip npm publish and bump push (test the workflow itself)"
+        type: boolean
+        default: false
+      max_size_increase_pct:
+        description: "Maximum approved tarball growth percentage; defaults to the standard +1% gate"
+        type: number
+        default: 1
+
+jobs:
+  # Hard gate: the shared web-agent SDK (001) this MCP server bundles must pass
+  # its own quality-map evidence before we can publish. Keyless; runs unconditionally.
+  sdk-tests:
+    uses: ./.github/workflows/sdk-tests.yml
+
+  publish:
+    needs: sdk-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # REQUIRED to publish: npm authenticates this workflow by OIDC (trusted
+      # publishing) and there is no NPM_TOKEN to fall back on, so without an
+      # id-token the publish step has no credential and dies with ENEEDAUTH.
+      id-token: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Catches the commonest misconfiguration — a job without `id-token: write`
+      # — before the gates below spend their time. npm authenticates this
+      # workflow by OIDC (trusted publishing); there is no NPM_TOKEN fallback,
+      # so a missing id-token surfaces as a bare ENEEDAUTH at the very last step.
+      - name: Assert the OIDC id-token is available to this job
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            printf '::%s::%s\n' error "No OIDC id-token in this job — trusted publishing needs 'permissions: id-token: write'"
+            exit 1
+          fi
+          echo "OIDC id-token endpoint present."
+
+      - name: Configure git identity
+        run: |
+          git config user.name "shiplight-release-bot"
+          git config user.email "release-bot@shiplight.ai"
+
+      - run: pnpm install
+
+      - name: Unit tests (hard gate)
+        id: unit_gate
+        # @shiplightai/mcp has no tests of its own; its logic lives in the
+        # bundled deps. The trailing "..." includes dependencies, so turbo runs
+        # test:unit for mcp-tools + sdk-core (and builds their deps first).
+        # These are browser-free node:test suites, so this runs pre-build.
+        run: pnpm turbo run test:unit --filter=@shiplightai/mcp...
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Emit mcp-tools unit JUnit (canonical observation input)
+        # Same suite the gate above ran (deps already built by its turbo ^build),
+        # re-run with a JUnit reporter so the canonical conversion step can carry
+        # per-test runtime proof for the 003 MCP expectations.
+        # Mirrors packages/mcp-tools `test:unit` exactly (plain tsx — the .tpl
+        # loader moved to apps/cli with the scaffolder; keep this in lockstep
+        # with the package script).
+        working-directory: packages/mcp-tools
+        run: |
+          mkdir -p /tmp/qc-observations/mcp
+          node --test --import tsx \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/mcp/unit.junit.xml \
+            'src/**/__tests__/*.test.ts'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Emit mcp-server stdio-guard unit JUnit (canonical observation input)
+        # apps/mcp-server's own unit suite (stdioGuards.test.ts) backs the 003
+        # exp-stdio-guards expectation. Source-only (tsx), no dist needed, so this
+        # runs pre-build and emits producer input for canonical observations.
+        # Non-zero exit fails the job.
+        working-directory: apps/mcp-server
+        run: |
+          mkdir -p /tmp/qc-observations/mcp
+          node --test --import tsx \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/mcp/mcp-server-unit.junit.xml \
+            'src/**/*.test.ts'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Emit shiplight-types test-flow JUnit (canonical observation input)
+        # The captured-as-rerunnable-.test.yaml promise (003 exp-yaml-export) is
+        # proven on the shared shiplight-types TestFlow<->YAML roundtrip primitives
+        # the MCP save/export tool relies on. The glob covers the whole test-flow
+        # directory rather than the roundtrip file alone: validateTestYaml.test.ts
+        # is the only proof for 002 exp-transpile-strict, and pinning one filename
+        # here left it unobserved while it passed.
+        working-directory: packages/types
+        run: |
+          mkdir -p /tmp/qc-observations/mcp
+          node --test --import tsx \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/mcp/types-roundtrip.junit.xml \
+            'src/test-flow/*.test.ts'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Compute OLD (live npm) and NEW versions
+        id: versions
+        # Default is patch+1 over the live npm version. A minor/major release is
+        # expressed by committing a higher version in package.json: if that is
+        # ahead of patch+1, it wins. Without this the computed patch would
+        # silently overwrite a deliberate breaking-change bump, since the next
+        # step rewrites package.json with NEW.
+        run: |
+          set -euo pipefail
+          OLD=$(npm view @shiplightai/mcp version)
+          DECLARED=$(node -p "require('./apps/mcp-server/package.json').version")
+          # Passed through the environment rather than interpolated into the
+          # script text: a version string carrying a quote or shell
+          # metacharacter would otherwise break parsing or inject code.
+          NEW=$(OLD="$OLD" DECLARED="$DECLARED" node -e "
+            const parse = (v, label) => {
+              const m = /^(\d+)\.(\d+)\.(\d+)\$/.exec(v);
+              if (!m) throw new Error(label + ' is not a plain semver version: ' + JSON.stringify(v));
+              return m.slice(1).map(Number);
+            };
+            const oldV = parse(process.env.OLD, 'npm version');
+            const declared = parse(process.env.DECLARED, 'package.json version');
+            const auto = [oldV[0], oldV[1], oldV[2] + 1];
+            const cmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+            console.log((cmp(declared, auto) > 0 ? declared : auto).join('.'));
+          ")
+          echo "OLD=$OLD"
+          echo "DECLARED=$DECLARED"
+          echo "NEW=$NEW"
+          echo "old=$OLD" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Assert NEW not already on npm
+        run: |
+          if npm view @shiplightai/mcp@${{ steps.versions.outputs.new }} version > /dev/null 2>&1; then
+            printf '::%s::%s\n' error "@shiplightai/mcp@${{ steps.versions.outputs.new }} already exists on npm"
+            exit 1
+          fi
+
+      - name: Bump apps/mcp-server/package.json and server.json to NEW
+        working-directory: apps/mcp-server
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        # server.json is the MCP registry manifest. Its root version is what the
+        # registry keys an entry on, and nothing else reads it, so a stale value
+        # is invisible until the registry advertises the wrong release. Bump it
+        # in the same step that bumps package.json rather than relying on anyone
+        # remembering.
+        #
+        # packages[].version is bumped too. The JSON Schema marks it optional
+        # (Package.required is registryType/identifier/transport), but the
+        # registry SERVER rejects an npm package without it — "package version is
+        # required for NPM packages", a 400 that `mcp-publisher validate` cannot
+        # see because validation is schema-only. Omitting it is what failed the
+        # 0.2.1 registry publish after npm had already been written.
+        run: |
+          set -euo pipefail
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.NEW_VERSION;fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');"
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('server.json','utf8'));if(!m.packages||!m.packages[0])throw new Error('server.json has no packages[0] to version');m.version=process.env.NEW_VERSION;m.packages[0].version=process.env.NEW_VERSION;fs.writeFileSync('server.json', JSON.stringify(m, null, 2) + '\n');"
+          printf 'package.json %s / server.json %s / packages[0] %s\n' \
+            "$(node -p "require('./package.json').version")" \
+            "$(node -p "require('./server.json').version")" \
+            "$(node -p "require('./server.json').packages[0].version")"
+
+      # Generate the CHANGELOG.md entry BEFORE pack so it ships inside the tarball
+      # (CHANGELOG.md is listed in apps/mcp-server/package.json `files`). Entries
+      # are derived from commits since the previous @shiplightai/mcp bump, scoped
+      # to the paths bundled into the tarball.
+      - name: Generate CHANGELOG entry
+        env:
+          NEW_VERSION: ${{ steps.versions.outputs.new }}
+        run: |
+          node scripts/gen-changelog.mjs \
+            --app-dir apps/mcp-server \
+            --package @shiplightai/mcp \
+            --version "$NEW_VERSION" \
+            --out apps/mcp-server/CHANGELOG.md \
+            --prev-bump-grep "bump @shiplightai/mcp to"
+
+      - name: Build MCP server with dependencies
+        run: pnpm turbo run build --filter=@shiplightai/mcp
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Assert build artifacts present
+        working-directory: apps/mcp-server
+        run: |
+          set -euo pipefail
+          # tsup output
+          if [ ! -s dist/index.js ]; then
+            printf '::%s::%s\n' error "Missing or empty dist/index.js"
+            exit 1
+          fi
+          # Chrome extension bundle (regressed silently in 0.1.62)
+          for f in chrome-extension/manifest.json chrome-extension/background.js; do
+            if [ ! -s "$f" ]; then
+              printf '::%s::%s\n' error "Missing or empty chrome-extension file: $f"
+              exit 1
+            fi
+          done
+          if [ ! -d chrome-extension/icons ] || [ -z "$(ls -A chrome-extension/icons)" ]; then
+            printf '::%s::%s\n' error "Missing or empty chrome-extension/icons/"
+            exit 1
+          fi
+          # MCP registry ownership validation reads mcpName from the published
+          # package.json. It is not referenced by any code, so nothing else would
+          # notice if an edit dropped it — the failure would only surface as a
+          # rejected registry publish.
+          MCP_NAME=$(node -p "require('./package.json').mcpName || ''")
+          if [ "$MCP_NAME" != "ai.shiplight/shiplight" ]; then
+            printf '::%s::%s\n' error "package.json mcpName is '$MCP_NAME', expected 'ai.shiplight/shiplight'"
+            exit 1
+          fi
+
+      - name: MCP stdio API smoke (hard gate)
+        working-directory: apps/mcp-server
+        # Drives the built dist/index.js over the real stdio transport: the
+        # JSON-RPC handshake, the exact advertised tool surface (tokenless and
+        # tokenful), every tool's schema, every resource and prompt, the error
+        # path, and that stdout carries only protocol frames. Hermetic — no
+        # browser, network, LLM or credential — so it is cheap enough to gate on.
+        # Runs before the browser lane so a broken wire format fails in seconds.
+        #
+        # Also covers all eight cloud (API-token) tools by pointing
+        # SHIPLIGHT_API_URL at a closed port: it asserts they register and that
+        # a backend failure surfaces as a clean JSON-RPC error rather than
+        # killing the server. Their happy path needs a real backend and is
+        # deliberately out of scope for a release gate.
+        run: pnpm run test:smoke
+
+      - name: Install Playwright Chromium (with system deps)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: MCP stdio browser-tool smoke (hard gate)
+        working-directory: apps/mcp-server
+        # Drives a real browser through the shipped binary's JSON-RPC transport:
+        # new_session, navigate, get_page_info, inspect_page (including the
+        # dom_file_path indirection), a deterministic act(click), console and
+        # network log retrieval, and close_session. The behaviour lane below
+        # calls mcp-tools in-process and never crosses the wire, so only this
+        # step proves the transport survives real browser work. LLM-free — every
+        # action used is in the deterministic ACT_SUPPORTED_ACTIONS subset — and
+        # the page is a local file fixture, so it needs no network or key.
+        run: pnpm run test:smoke:browser
+
+      - name: Browser behavior tests (hard gate)
+        id: browser_gate
+        # Real-headless-browser lane the quality map relies on for the product
+        # surface: mcp-tools browser tools (navigate/inspect/get_locators/act),
+        # session isolation/teardown, and console/network log capture. Keyless —
+        # the live act(verify) case self-skips with no provider key. The
+        # "Build MCP server with dependencies" step above (turbo build
+        # --filter=@shiplightai/mcp) builds mcp-tools and its deps via ^build,
+        # so this tsx lane resolves built artifacts without turbo's test:browser
+        # dependsOn:build edge.
+        working-directory: packages/mcp-tools
+        run: |
+          mkdir -p /tmp/qc-observations/mcp
+          node --test --import tsx --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/mcp/browser-tests.junit.xml 'browser-tests/**/*.test.ts'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Build canonical MCP observations
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qc-observations/mcp/shards
+
+          manifests=()
+          convert_junit() {
+            local source="$1"
+            local output="$2"
+            if [ ! -s "$source" ]; then
+              printf '::%s::%s\n' warning "Canonical observation input is unavailable: $source"
+              return
+            fi
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations from-junit \
+              "$source" --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical observation input was rejected: $source"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+          record_gate() {
+            local test_case="$1"
+            local outcome="$2"
+            local output="$3"
+            local status
+            case "$outcome" in
+              success) status=pass ;;
+              failure) status=fail ;;
+              cancelled) status=error ;;
+              ""|skipped) status=skipped ;;
+              *) status=error ;;
+            esac
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations record \
+              --path .github/workflows/publish-mcp.yml \
+              --test-case "$test_case" \
+              --status "$status" \
+              --note "GitHub Actions step outcome: $outcome" \
+              --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical gate outcome was rejected: $test_case"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+
+          convert_junit \
+            /tmp/qc-observations/mcp/unit.junit.xml \
+            /tmp/qc-observations/mcp/shards/unit.json
+          convert_junit \
+            /tmp/qc-observations/mcp/mcp-server-unit.junit.xml \
+            /tmp/qc-observations/mcp/shards/mcp-server-unit.json
+          convert_junit \
+            /tmp/qc-observations/mcp/types-roundtrip.junit.xml \
+            /tmp/qc-observations/mcp/shards/types-roundtrip.json
+          convert_junit \
+            /tmp/qc-observations/mcp/browser-tests.junit.xml \
+            /tmp/qc-observations/mcp/shards/browser-tests.json
+          record_gate \
+            "Unit tests (hard gate)" \
+            "${{ steps.unit_gate.outcome }}" \
+            /tmp/qc-observations/mcp/shards/unit-gate.json
+          record_gate \
+            "Browser behavior tests (hard gate)" \
+            "${{ steps.browser_gate.outcome }}" \
+            /tmp/qc-observations/mcp/shards/browser-gate.json
+
+          if [ ${#manifests[@]} -eq 0 ]; then
+            printf '::%s::%s\n' warning "No canonical observation shard survived; nothing to merge"
+            exit 0
+          fi
+          npx --yes @shiplightai/quality-tools@0.3.2 observations merge \
+            "${manifests[@]}" \
+            --output /tmp/qc-observations/mcp/quality-observations.json
+          npx --yes @shiplightai/quality-tools@0.3.2 observations validate \
+            /tmp/qc-observations/mcp/quality-observations.json
+
+      - name: Upload MCP observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-mcp-observations
+          path: /tmp/qc-observations/mcp/quality-observations.json
+
+      - name: Pack candidate tarball
+        working-directory: apps/mcp-server
+        run: pnpm pack
+
+      - name: Download baseline tarball (@shiplightai/mcp@OLD)
+        run: |
+          mkdir -p /tmp/baseline-tarball
+          cd /tmp/baseline-tarball
+          npm pack @shiplightai/mcp@${{ steps.versions.outputs.old }}
+
+      - name: Tarball size delta
+        id: size
+        env:
+          # Read through env rather than interpolated into the script: a
+          # workflow_dispatch input is caller-supplied text, and `${{ }}` inside
+          # run: would splice it into the shell before bash ever sees it.
+          MAX_SIZE_INCREASE_PCT: ${{ inputs.max_size_increase_pct }}
+        run: |
+          set -euo pipefail
+          if ! awk -v m="$MAX_SIZE_INCREASE_PCT" 'BEGIN { exit (m ~ /^[0-9]+([.][0-9]+)?$/) ? 0 : 1 }'; then
+            printf '::%s::%s\n' error "Invalid maximum size increase: $MAX_SIZE_INCREASE_PCT"
+            exit 1
+          fi
+          BASELINE=$(stat -c%s "/tmp/baseline-tarball/shiplightai-mcp-${{ steps.versions.outputs.old }}.tgz")
+          CANDIDATE=$(stat -c%s "apps/mcp-server/shiplightai-mcp-${{ steps.versions.outputs.new }}.tgz")
+          DELTA=$((CANDIDATE - BASELINE))
+          PCT=$(awk -v d="$DELTA" -v b="$BASELINE" 'BEGIN { printf "%.4f", (d / b) * 100 }')
+          echo "baseline_bytes=$BASELINE" >> "$GITHUB_OUTPUT"
+          echo "candidate_bytes=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          echo "delta_bytes=$DELTA" >> "$GITHUB_OUTPUT"
+          echo "delta_pct=$PCT" >> "$GITHUB_OUTPUT"
+          echo "baseline ${{ steps.versions.outputs.old }}: $BASELINE B"
+          echo "candidate ${{ steps.versions.outputs.new }}: $CANDIDATE B"
+          echo "delta: $DELTA B ($PCT%)"
+          if awk -v p="$PCT" -v m="$MAX_SIZE_INCREASE_PCT" 'BEGIN { exit (p > m) ? 0 : 1 }'; then
+            printf '::%s::%s\n' error "Tarball grew $PCT% (approved maximum +$MAX_SIZE_INCREASE_PCT%)"
+            exit 1
+          fi
+
+      - name: Baseline install (@shiplightai/mcp@OLD in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/baseline-smoke && cd /tmp/baseline-smoke
+          npm init -y > /dev/null
+          npm install @shiplightai/mcp@${{ steps.versions.outputs.old }} 2> baseline.warn
+
+      - name: Candidate install (./tarball in temp project)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/candidate-smoke && cd /tmp/candidate-smoke
+          npm init -y > /dev/null
+          npm install "${{ github.workspace }}/apps/mcp-server/shiplightai-mcp-${{ steps.versions.outputs.new }}.tgz" 2> candidate.warn
+
+      - name: Diff filtered warnings (deprecated | peer | audit)
+        id: warn_diff
+        run: |
+          set -uo pipefail
+          PATTERN='deprecated|npm warn peer|npm error|vulnerabilit'
+          grep -E "$PATTERN" /tmp/baseline-smoke/baseline.warn | sort -u > /tmp/baseline.filtered || true
+          grep -E "$PATTERN" /tmp/candidate-smoke/candidate.warn | sort -u > /tmp/candidate.filtered || true
+          NEW_LINES=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+          if [ -n "$NEW_LINES" ]; then
+            printf '::%s::%s\n' error "New filtered warnings vs. baseline ${{ steps.versions.outputs.old }}:"
+            echo "$NEW_LINES"
+            exit 1
+          fi
+          echo "No new filtered warnings."
+
+      - name: Functional smoke (--version / --help / --chrome-extension-path)
+        run: |
+          set -euo pipefail
+          cd /tmp/candidate-smoke
+          INSTALLED=$(node -p "require('./node_modules/@shiplightai/mcp/package.json').version")
+          if [ "$INSTALLED" != "${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "Installed version $INSTALLED != expected ${{ steps.versions.outputs.new }}"
+            exit 1
+          fi
+          # --version: assert printed version matches NEW
+          VERSION_OUT=$(npx shiplight-mcp --version)
+          echo "version output: $VERSION_OUT"
+          if [ "$VERSION_OUT" != "shiplight-mcp ${{ steps.versions.outputs.new }}" ]; then
+            printf '::%s::%s\n' error "--version printed '$VERSION_OUT', expected 'shiplight-mcp ${{ steps.versions.outputs.new }}'"
+            exit 1
+          fi
+          # --help: just run it (exits 0 if successful)
+          npx shiplight-mcp --help > /dev/null
+          # --chrome-extension-path: print path, assert it exists AND contains manifest.json / background.js / icons/
+          EXT_PATH=$(npx shiplight-mcp --chrome-extension-path)
+          echo "chrome-extension path: $EXT_PATH"
+          if [ ! -d "$EXT_PATH" ]; then
+            printf '::%s::%s\n' error "--chrome-extension-path printed '$EXT_PATH' but directory does not exist"
+            exit 1
+          fi
+          for f in "$EXT_PATH/manifest.json" "$EXT_PATH/background.js"; do
+            if [ ! -s "$f" ]; then
+              printf '::%s::%s\n' error "Installed chrome-extension missing or empty: $f"
+              exit 1
+            fi
+          done
+          if [ ! -d "$EXT_PATH/icons" ] || [ -z "$(ls -A "$EXT_PATH/icons")" ]; then
+            printf '::%s::%s\n' error "Installed chrome-extension/icons/ missing or empty"
+            exit 1
+          fi
+
+      - name: npm publish --dry-run
+        working-directory: apps/mcp-server
+        run: pnpm publish --dry-run --no-git-checks --access public
+
+      - name: npm publish
+        if: ${{ !inputs.dry_run }}
+        working-directory: apps/mcp-server
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Detect MCP registry credentials
+        id: registry_creds
+        # The `secrets` context is NOT available in a step-level `if`, so the
+        # presence check has to happen inside a `run` and be surfaced as an
+        # output. Only emits a boolean — never the key itself.
+        env:
+          MCP_REGISTRY_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "${MCP_REGISTRY_PRIVATE_KEY:-}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install mcp-publisher
+        # Runs on dry-runs too. Gating the whole registry path on !dry_run meant a
+        # dry-run could not catch registry-path breakage: a wrong download URL
+        # passed every dry-run green and only failed on the real release, after
+        # npm publish had already happened.
+        #
+        # The asset filename carries NO version segment — it is
+        # mcp-publisher_linux_amd64.tar.gz, not mcp-publisher_<version>_linux_amd64.tar.gz.
+        # --fail matters as much as the URL: without it curl exits 0 on a 404 and
+        # pipes the error page into tar, surfacing as a confusing gzip error.
+        run: |
+          set -euo pipefail
+          VERSION=1.8.0
+          ASSET=mcp-publisher_linux_amd64.tar.gz
+          BASE="https://github.com/modelcontextprotocol/registry/releases/download/v${VERSION}"
+          curl -sSLf -o "$ASSET" "${BASE}/${ASSET}"
+          # The release publishes checksums; verify before executing a binary that
+          # will be handed the domain signing key.
+          curl -sSLf -o checksums.txt "${BASE}/registry_${VERSION}_checksums.txt"
+          grep " ${ASSET}\$" checksums.txt | sha256sum -c -
+          tar -xzf "$ASSET" -C /usr/local/bin mcp-publisher
+          rm -f "$ASSET" checksums.txt
+          mcp-publisher --help >/dev/null
+
+      # Push the bump BEFORE touching the registry. npm is already serving the new
+      # version at this point, so the repo must record it even if the registry
+      # step then fails — otherwise the bump and the generated CHANGELOG entry are
+      # lost with the runner, and the next release computes a higher patch,
+      # permanently skipping that entry.
+      - name: Commit bump and push main
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          git add apps/mcp-server/package.json apps/mcp-server/server.json apps/mcp-server/CHANGELOG.md
+          git commit -m "chore(mcp): bump @shiplightai/mcp to ${{ steps.versions.outputs.new }}"
+          # main can move while this job runs; rebase the bump commit onto the
+          # latest main and retry so a concurrent push doesn't fail the release.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed bump on attempt $attempt"
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt) — rebasing onto latest main and retrying"
+            sleep $((attempt * 3))
+            git pull --rebase origin main || {
+              git rebase --abort 2>/dev/null || true
+              printf '::%s::%s\n' error "Rebase onto main failed (attempt $attempt) — aborting"
+              exit 1
+            }
+          done
+          # Push once more after the final rebase so the last rebase isn't wasted.
+          if git push origin HEAD:main; then
+            echo "Pushed bump after final rebase"
+            exit 0
+          fi
+          printf '::%s::%s\n' error "Failed to push version bump to main after all rebase-and-retry attempts"
+          exit 1
+
+      - name: Publish to the MCP registry
+        # Deliberately AFTER the bump push. The registry entry points at an npm
+        # package, so it must follow npm publish — but it must also follow the
+        # bump commit, so a registry failure cannot cost us the version bump and
+        # CHANGELOG entry for a release that is already public on npm.
+        #
+        # Skipped when the signing secret is absent so an npm release is never
+        # blocked on registry credentials.
+        if: ${{ !inputs.dry_run && steps.registry_creds.outputs.available == 'true' }}
+        working-directory: apps/mcp-server
+        env:
+          # The raw hex ed25519 key, not the PEM: nothing is written to the
+          # runner's disk and no openssl step is needed.
+          MCP_REGISTRY_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}
+        run: node --import tsx scripts/publish-mcp-registry.ts --publish
+
+      - name: Validate the registry manifest (dry-run path)
+        # The point of running this on dry-runs: it exercises the manifest, the
+        # script and the installed mcp-publisher without publishing, so a broken
+        # registry path fails a dry-run instead of surviving until a real release.
+        if: ${{ inputs.dry_run }}
+        working-directory: apps/mcp-server
+        run: node --import tsx scripts/publish-mcp-registry.ts
+
+      - name: Note when the registry publish was skipped
+        if: ${{ !inputs.dry_run && steps.registry_creds.outputs.available != 'true' }}
+        run: |
+          printf '::%s::%s\n' warning \
+            "MCP_REGISTRY_PRIVATE_KEY is not configured; npm publish succeeded but the MCP registry was not updated. Run apps/mcp-server/scripts/publish-mcp-registry.ts --publish locally to catch it up."
+
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-diagnostics-mcp-${{ steps.versions.outputs.new }}
+          path: |
+            apps/mcp-server/shiplightai-mcp-*.tgz
+            /tmp/baseline-tarball/shiplightai-mcp-*.tgz
+            /tmp/baseline-smoke/baseline.warn
+            /tmp/candidate-smoke/candidate.warn
+            /tmp/baseline.filtered
+            /tmp/candidate.filtered
+            /tmp/qc-observations/mcp/**
+
+      - name: Step summary
+        if: always()
+        env:
+          # Same reason as the size gate: the input is caller-supplied text, so
+          # it reaches bash as data. type: number makes a hostile value unlikely
+          # here, but a maintainer copying this step should copy the safe form.
+          MAX_SIZE_INCREASE_PCT: ${{ inputs.max_size_increase_pct }}
+        run: |
+          {
+            echo "## @shiplightai/mcp release"
+            echo ""
+            echo "- Version: \`${{ steps.versions.outputs.old }}\` → \`${{ steps.versions.outputs.new }}\`"
+            echo "- Tarball: \`${{ steps.size.outputs.baseline_bytes }} B\` → \`${{ steps.size.outputs.candidate_bytes }} B\` (\`${{ steps.size.outputs.delta_pct }}%\`)"
+            echo "- Approved size-growth maximum: \`$MAX_SIZE_INCREASE_PCT%\`"
+            echo "- Dry run: \`${{ inputs.dry_run }}\`"
+            echo ""
+            echo "### Filtered warnings — new vs. baseline"
+            echo '```'
+            if [ -f /tmp/baseline.filtered ] && [ -f /tmp/candidate.filtered ]; then
+              NEW=$(comm -13 /tmp/baseline.filtered /tmp/candidate.filtered || true)
+              if [ -z "$NEW" ]; then
+                echo "(no new filtered warnings)"
+              else
+                echo "$NEW"
+              fi
+            else
+              echo "(warning diff not produced — earlier step failed)"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

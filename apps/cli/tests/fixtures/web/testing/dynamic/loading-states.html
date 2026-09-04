@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading States - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-modal.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: var(--bg-primary);
+            padding: var(--spacing-2xl);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+            min-width: 320px;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing-lg);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .loading-timer {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-top: var(--spacing-md);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Loading States</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Loading Modal Tests</h2>
+                <p>Click buttons below to show loading modals that automatically hide after specified durations.</p>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="button-5s" onclick="showLoading(5)">
+                        Show Loading (5 seconds)
+                    </button>
+                    
+                    <button class="btn btn-warning" id="button-30s" onclick="showLoading(30)">
+                        Show Loading (30 seconds)
+                    </button>
+                    
+                    <button class="btn btn-success" id="button-60s" onclick="showLoading(60)">
+                        Show Loading (60 seconds)
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading...</div>
+            <div class="loading-timer" id="loadingTimer"></div>
+        </div>
+    </div>
+
+    <script>
+        let loadingTimer = null;
+        let countdownInterval = null;
+        let remainingSeconds = 0;
+
+        function showLoading(duration) {
+            const modal = document.getElementById('loadingModal');
+            const timerElement = document.getElementById('loadingTimer');
+            
+            // Clear any existing timers
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Show the modal
+            modal.classList.add('show');
+            remainingSeconds = duration;
+            
+            // Update timer display
+            updateTimerDisplay(timerElement, remainingSeconds);
+            
+            // Start countdown
+            countdownInterval = setInterval(() => {
+                remainingSeconds--;
+                updateTimerDisplay(timerElement, remainingSeconds);
+                
+                if (remainingSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+            
+            // Auto-hide after duration
+            loadingTimer = setTimeout(() => {
+                hideLoading();
+            }, duration * 1000);
+        }
+
+        function updateTimerDisplay(element, seconds) {
+            if (seconds > 0) {
+                element.textContent = `Auto-hiding in ${seconds} second${seconds !== 1 ? 's' : ''}...`;
+            } else {
+                element.textContent = 'Hiding...';
+            }
+        }
+
+        function hideLoading() {
+            const modal = document.getElementById('loadingModal');
+            modal.classList.remove('show');
+            
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        // Allow clicking outside modal to close
+        document.getElementById('loadingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideLoading();
+            }
+        });
+    </script>
+</body>
+</html>
+

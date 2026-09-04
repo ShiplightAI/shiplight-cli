@@ -1,0 +1,43 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # submit the review (approve / request-changes / comment)
+      issues: read
+      id-token: write # required: claude-code-action mints its App token via OIDC
+    steps:
+      - uses: ShiplightAI/internal-tools/claude-review@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          review-focus: |
+            This is the Shiplight test-automation monorepo (Turborepo: the
+            shiplightai CLI, the @shiplightai/mcp server, the public SDK, their
+            shared packages, and the debugger UI in packages/debugger-ui). Weight:
+            - ESM-only (no require()/module.exports; use import.meta.url) and
+              the no-`any` TypeScript rule; execFileSync over execSync.
+            - Test coverage: every PR must add tests that would fail without
+              the change (node:test, co-located). Flag missing regression
+              coverage for bug fixes and new conditional branches.
+            - npm publishing pitfalls for shiplightai / @shiplightai/mcp
+              (version-bump-before-build, bundled chrome-extension / static
+              assets, tarball-size regressions, workspace:* resolution).
+            - GitHub Actions: no literal ::error::/::warning::/::notice::
+              annotation commands in workflow YAML (a source guard fails the
+              build); watch for untrusted github.event.* interpolation in
+              run: blocks, secret handling, and least privilege.
+            - i18n: no hardcoded user-visible strings; keys added to both
+              en.json and zh-CN.json.
+
+            Severity calibration: if a finding concerns a change that is
+            entirely comments, docstrings, or documentation (no executable code
+            affected), or whose fix is purely a comment/doc edit, classify it at
+            most LOW. Stale, wrong, or missing comments/docs cannot cause a
+            runtime defect, so never rank them MEDIUM or higher and do not let
+            them block the merge.

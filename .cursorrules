@@ -1,0 +1,24 @@
+# Frontend Development Rules
+
+## Styling Guidelines
+
+- Use Tailwind CSS predefined variables: `bg-primary`, `text-primary`, `border-primary`, etc.
+- check `/lib/theme.css` for the color variables and `tailwind.config.js` for the color mapping
+- Avoid custom CSS variables like `--shiplight-bg-primary`, `--shiplight-text-primary`, etc.
+- Prefer Mantine components as they are already themed
+- Minimize custom styles - only add colors when explicitly needed
+
+## Component Development
+
+- Always check `src/components/common` directory first when implementing features
+- Create components in `src/components/common` for:
+  - Common capabilities
+  - Mantine components requiring extensive custom styles/behaviors
+- Prioritize reusing existing components over duplicate implementations
+
+## Technical Stack
+
+- Tailwind CSS for styling
+- Mantine for UI components
+- Follow component-based development principles
+- Maintain code consistency and simplicity

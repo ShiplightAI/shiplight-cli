@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Down Test - Navigation</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .scroll-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-2xl);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .scroll-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-content {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            z-index: 1000;
+        }
+
+        .scroll-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-to-top:hover {
+            background: var(--primary-hover);
+            transform: translateY(-3px);
+        }
+
+        .content-card {
+            background: white;
+            padding: var(--spacing-2xl);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .content-card h2 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .content-card p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .feature-box {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .feature-box .icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feature-box h3 {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .feature-box p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .scroll-target {
+            scroll-margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .scroll-section {
+                padding: var(--spacing-lg);
+            }
+
+            .content-card {
+                padding: var(--spacing-lg);
+            }
+
+            .content-card h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
+        ↑
+    </button>
+
+    <!-- Header -->
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="../index.html#navigation">Navigation</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Scroll Down</span>
+            </div>
+            <span class="badge" style="background: #d1fae5; color: #065f46;">NAVIGATION</span>
+            <h1>Scroll Down Test</h1>
+            <p class="description">Test various scrolling scenarios including scroll to element, smooth scrolling, and scroll progress tracking.</p>
+        </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="scroll-section scroll-target" id="section1" data-section="1">
+        <div class="section-content">
+            <div class="content-card">
+                <div class="section-number">1</div>
+                <h2>Welcome to Scroll Testing</h2>
+                <p>
+                    This page demonstrates various scrolling behaviors and interactions that are commonly used in web automation testing. 
+                    The page spans approximately three screens to provide adequate scrolling distance.
+                </p>
+                <p>
+                    As you scroll down, notice the progress bar at the top of the page that tracks your scroll position. 
+                    You can also use the navigation buttons below to jump directly to different sections.
+                </p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="scrollToSection('section2')">
+                        Go to Section 2 ↓
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('section3')">
+                        Go to Section 3 ↓
+                    </button>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <div class="icon">📊</div>
+                        <h3>Progress Tracking</h3>
+                        <p>Visual scroll progress indicator</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="icon">🎯</div>
+                        <h3>Smooth Scrolling</h3>
+                        <p>Smooth scroll to sections</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="icon">⬆️</div>
+                        <h3>Quick Return</h3>
+                        <p>Scroll to top button</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="scroll-section scroll-target" id="section2" data-section="2">
+        <div class="section-content">
+            <div class="content-card">
+                <div class="section-number">2</div>
+                <h2>Testing Scroll Behaviors</h2>
+                <p>
+                    Scroll testing is crucial for ensuring that your automation scripts can handle pages with varying content lengths. 
+                    Common scenarios include lazy loading content, infinite scroll implementations, and navigation to specific elements.
+                </p>
+                <p>
+                    This section can be targeted directly using the <code>scrollToSection('section2')</code> function, 
+                    demonstrating how automation tools can programmatically scroll to specific page elements.
+                </p>
+
+                <div class="info-box">
+                    <h4>💡 Testing Tips</h4>
+                    <ul>
+                        <li>Test scroll position tracking</li>
+                        <li>Verify elements become visible after scrolling</li>
+                        <li>Check smooth scroll animations</li>
+                        <li>Validate scroll-triggered events</li>
+                        <li>Test scroll restoration on back navigation</li>
+                    </ul>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-outline" onclick="scrollToSection('section1')">
+                        ↑ Back to Section 1
+                    </button>
+                    <button class="btn btn-primary" onclick="scrollToSection('section3')">
+                        Continue to Section 3 ↓
+                    </button>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <div class="icon">🔍</div>
+                        <h3>Element Visibility</h3>
+                        <p>Check if elements are in viewport</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="icon">📍</div>
+                        <h3>Anchor Links</h3>
+                        <p>Navigate via URL hash</p>
+                    </div>
+                    <div class="feature-box">
+                        <div class="icon">⚡</div>
+                        <h3>Scroll Events</h3>
+                        <p>Trigger on scroll actions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="scroll-section scroll-target" id="section3" data-section="3">
+        <div class="section-content">
+            <div class="content-card">
+                <div class="section-number">3</div>
+                <h2>Final Section</h2>
+                <p>
+                    You've reached the bottom of the test page! This section demonstrates end-of-page behaviors 
+                    and provides options to navigate back up the page.
+                </p>
+                <p>
+                    Notice how the "Scroll to Top" button appears on the right side of the screen once you've scrolled down. 
+                    This is a common UX pattern that helps users quickly return to the top of long pages.
+                </p>
+
+                <div class="alert alert-success">
+                    <strong>✓ Scroll Test Complete!</strong><br>
+                    You have successfully tested all scrolling behaviors on this page.
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-outline" onclick="scrollToSection('section1')">
+                        ↑ Back to Section 1
+                    </button>
+                    <button class="btn btn-outline" onclick="scrollToSection('section2')">
+                        ↑ Back to Section 2
+                    </button>
+                    <button class="btn btn-primary" onclick="scrollToTop()">
+                        ⬆️ Scroll to Top
+                    </button>
+                </div>
+
+                <div class="info-box" style="margin-top: var(--spacing-xl);">
+                    <h4>🎯 Automation Scenarios to Test</h4>
+                    <ul>
+                        <li><strong>Scroll to Element:</strong> Navigate to specific sections using IDs</li>
+                        <li><strong>Scroll Distance:</strong> Verify scroll position in pixels</li>
+                        <li><strong>Viewport Detection:</strong> Check if elements are visible in viewport</li>
+                        <li><strong>Scroll Events:</strong> Trigger and verify scroll-based interactions</li>
+                        <li><strong>Infinite Scroll:</strong> Test loading more content on scroll</li>
+                        <li><strong>Sticky Elements:</strong> Verify fixed/sticky positioning during scroll</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: var(--spacing-2xl); padding-top: var(--spacing-2xl); border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center; color: var(--text-secondary);">
+                        <a href="../index.html" class="btn btn-secondary">← Back to Test Pages</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Scroll Progress Indicator
+        function updateScrollProgress() {
+            const scrollProgress = document.getElementById('scrollProgress');
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = (window.scrollY / scrollHeight) * 100;
+            scrollProgress.style.width = scrolled + '%';
+        }
+
+        // Scroll to Top Button
+        function updateScrollToTopButton() {
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            if (window.scrollY > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        }
+
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Event Listeners
+        window.addEventListener('scroll', () => {
+            updateScrollProgress();
+            updateScrollToTopButton();
+        });
+
+        document.getElementById('scrollToTop').addEventListener('click', scrollToTop);
+
+        // Initial setup
+        updateScrollProgress();
+        updateScrollToTopButton();
+
+        // Log scroll events for automation testing
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const scrollY = window.scrollY;
+                const scrollPercent = Math.round((scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+                console.log(`Scroll position: ${scrollY}px (${scrollPercent}%)`);
+                
+                // Determine which section is in view
+                const sections = document.querySelectorAll('.scroll-section');
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                        console.log(`Currently viewing: Section ${section.dataset.section}`);
+                    }
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,7 @@
+observation_sets:
+  - id: "monots-publish-review"
+    name: "Monots Publish Review"
+    description: "Combine the monots CLI and MCP publish workflow observations into one saved runtime review."
+    profiles:
+      - profile_id: "monots-cli-publish"
+      - profile_id: "monots-mcp-publish"

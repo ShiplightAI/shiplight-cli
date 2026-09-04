@@ -1,0 +1,6 @@
+goal: Verify Example.com homepage with template
+base_url: https://example.com
+statements:
+  - URL: /
+  - template: templates/verify-page-basics.tmpl.yaml
+  - VERIFY: The page title contains Example Domain

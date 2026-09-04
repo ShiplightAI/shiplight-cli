@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Flow - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .checkout-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .progress-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: var(--primary);
+            color: var(--text-inverse);
+        }
+
+        .progress-dot.completed {
+            background: var(--success);
+            color: var(--text-inverse);
+        }
+
+        .progress-step-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .progress-step-label.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .progress-step-label.completed {
+            color: var(--success);
+        }
+
+        .progress-line {
+            width: 80px;
+            height: 3px;
+            background: var(--gray-200);
+            transition: background 0.3s;
+        }
+
+        .progress-line.completed {
+            background: var(--success);
+        }
+
+        /* Checkout Steps */
+        .checkout-step {
+            display: none;
+            animation: checkoutFadeIn 0.3s ease;
+        }
+
+        .checkout-step.active {
+            display: block;
+        }
+
+        @keyframes checkoutFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkout-step h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Cart items */
+        .cart-items {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item .item-image {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .cart-item .item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item .item-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .cart-item .item-variant {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .cart-item .item-qty {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .cart-item .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .cart-item .qty-btn:hover {
+            background: var(--primary-lightest);
+            border-color: var(--primary);
+        }
+
+        .cart-item .item-price {
+            font-weight: 700;
+            font-size: 1.125rem;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            font-size: 1.125rem;
+        }
+
+        .cart-total .total-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Payment form */
+        .payment-form {
+            max-width: 500px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-light);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
+        .payment-method .method-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* Complete step */
+        .order-complete {
+            text-align: center;
+            padding: var(--spacing-2xl) 0;
+        }
+
+        .order-complete .complete-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto var(--spacing-lg);
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .order-complete h2 {
+            color: var(--success);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .order-complete .order-number {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .order-complete .order-summary {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            display: inline-block;
+            text-align: left;
+        }
+
+        .checkout-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span>Simplified Flow</span>
+            </div>
+            <span class="badge">Type B: Test Issue</span>
+            <h1>Simplified Flow</h1>
+            <p class="description">The checkout was simplified by removing the "Confirm Address" step. The flow is now Cart &rarr; Payment &rarr; Complete. An old test that tries to click "Confirm Address" will fail because that step no longer exists.</p>
+        </div>
+
+        <div class="test-content">
+            <div class="info-box warning">
+                <h4>Failure Scenario: extraneous_step</h4>
+                <p>The checkout flow was streamlined by removing the address confirmation step.</p>
+                <ul>
+                    <li><strong>Old flow (4 steps):</strong> Cart &rarr; Confirm Address &rarr; Payment &rarr; Complete</li>
+                    <li><strong>New flow (3 steps):</strong> Cart &rarr; Payment &rarr; Complete</li>
+                    <li><strong>Old test behavior:</strong> After Cart, clicks "Confirm Address" button to proceed to address step</li>
+                    <li><strong>Expected fix:</strong> Remove the "Confirm Address" step from the test; go directly from Cart to Payment</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <div class="checkout-container">
+                    <!-- Progress - NOTE: no "Confirm Address" step anymore -->
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-step">
+                            <div class="progress-dot active" data-step="1">1</div>
+                            <span class="progress-step-label active">Cart</span>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step">
+                            <div class="progress-dot" data-step="2">2</div>
+                            <span class="progress-step-label">Payment</span>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step">
+                            <div class="progress-dot" data-step="3">3</div>
+                            <span class="progress-step-label">Complete</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Cart -->
+                    <div class="checkout-step active" data-step="1">
+                        <h2>Your Cart</h2>
+                        <div class="cart-items">
+                            <div class="cart-item">
+                                <div class="item-image" style="background: #eff6ff;">&#x1F4E6;</div>
+                                <div class="item-details">
+                                    <div class="item-name">Premium Headphones</div>
+                                    <div class="item-variant">Color: Midnight Black</div>
+                                </div>
+                                <div class="item-qty">
+                                    <button class="qty-btn" onclick="updateQty(0, -1)">-</button>
+                                    <span id="qty-0">1</span>
+                                    <button class="qty-btn" onclick="updateQty(0, 1)">+</button>
+                                </div>
+                                <div class="item-price">$149.00</div>
+                            </div>
+                            <div class="cart-item">
+                                <div class="item-image" style="background: #fef3c7;">&#x1F50C;</div>
+                                <div class="item-details">
+                                    <div class="item-name">USB-C Charging Cable</div>
+                                    <div class="item-variant">Length: 2m</div>
+                                </div>
+                                <div class="item-qty">
+                                    <button class="qty-btn" onclick="updateQty(1, -1)">-</button>
+                                    <span id="qty-1">2</span>
+                                    <button class="qty-btn" onclick="updateQty(1, 1)">+</button>
+                                </div>
+                                <div class="item-price">$25.98</div>
+                            </div>
+                            <div class="cart-item">
+                                <div class="item-image" style="background: #ecfdf5;">&#x1F3A7;</div>
+                                <div class="item-details">
+                                    <div class="item-name">Protective Case</div>
+                                    <div class="item-variant">Size: Universal</div>
+                                </div>
+                                <div class="item-qty">
+                                    <button class="qty-btn" onclick="updateQty(2, -1)">-</button>
+                                    <span id="qty-2">1</span>
+                                    <button class="qty-btn" onclick="updateQty(2, 1)">+</button>
+                                </div>
+                                <div class="item-price">$19.99</div>
+                            </div>
+                        </div>
+
+                        <div class="cart-total">
+                            <span>Order Total</span>
+                            <span class="total-amount" id="cartTotal">$194.97</span>
+                        </div>
+
+                        <!-- NOTE: There is NO "Confirm Address" button here. Only "Proceed to Payment" -->
+                        <div class="checkout-footer">
+                            <button class="btn btn-outline" disabled>Back</button>
+                            <button class="btn btn-primary" id="toPaymentBtn">Proceed to Payment</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Payment (was previously Step 3) -->
+                    <div class="checkout-step" data-step="2">
+                        <h2>Payment Details</h2>
+                        <div class="payment-form">
+                            <div class="payment-methods">
+                                <div class="payment-method selected" data-method="card">
+                                    <span class="method-icon">&#x1F4B3;</span>
+                                    Credit Card
+                                </div>
+                                <div class="payment-method" data-method="paypal">
+                                    <span class="method-icon">&#x1F4B0;</span>
+                                    PayPal
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="payCardName">Cardholder Name</label>
+                                <input type="text" id="payCardName" class="form-control" placeholder="Name on card">
+                            </div>
+                            <div class="form-group">
+                                <label for="payCardNumber">Card Number</label>
+                                <input type="text" id="payCardNumber" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                                <div class="form-group">
+                                    <label for="payExpiry">Expiry</label>
+                                    <input type="text" id="payExpiry" class="form-control" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="payCVC">CVC</label>
+                                    <input type="text" id="payCVC" class="form-control" placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-footer">
+                            <button class="btn btn-outline" id="backToCartBtn">Back to Cart</button>
+                            <button class="btn btn-success" id="placeOrderBtn">Place Order - $194.97</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Complete -->
+                    <div class="checkout-step" data-step="3">
+                        <div class="order-complete">
+                            <div class="complete-icon">&#x2713;</div>
+                            <h2>Order Placed Successfully!</h2>
+                            <p class="order-number">Order #ORD-2026-48291</p>
+                            <div class="order-summary">
+                                <p style="margin-bottom: var(--spacing-sm);"><strong>Total Charged:</strong> $194.97</p>
+                                <p style="margin-bottom: var(--spacing-sm);"><strong>Estimated Delivery:</strong> Feb 10 - Feb 14, 2026</p>
+                                <p style="margin: 0;"><strong>Confirmation sent to:</strong> your email</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentStep = 1;
+        var prices = [149.00, 12.99, 19.99];
+        var quantities = [1, 2, 1];
+
+        function updateQty(index, delta) {
+            quantities[index] = Math.max(1, quantities[index] + delta);
+            document.getElementById('qty-' + index).textContent = quantities[index];
+            updateTotal();
+        }
+
+        function updateTotal() {
+            var total = 0;
+            for (var i = 0; i < prices.length; i++) {
+                total += prices[i] * quantities[i];
+            }
+            document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+            var placeOrderBtn = document.getElementById('placeOrderBtn');
+            if (placeOrderBtn) {
+                placeOrderBtn.textContent = 'Place Order - $' + total.toFixed(2);
+            }
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            var allSteps = document.querySelectorAll('.checkout-step');
+            allSteps.forEach(function(s) { s.classList.remove('active'); });
+
+            var target = document.querySelector('.checkout-step[data-step="' + step + '"]');
+            if (target) target.classList.add('active');
+
+            // Update progress
+            var dots = document.querySelectorAll('.progress-dot');
+            var labels = document.querySelectorAll('.progress-step-label');
+            var lines = document.querySelectorAll('.progress-line');
+
+            dots.forEach(function(dot, i) {
+                dot.classList.remove('active', 'completed');
+                labels[i].classList.remove('active', 'completed');
+                var stepNum = i + 1;
+                if (stepNum === currentStep) {
+                    dot.classList.add('active');
+                    labels[i].classList.add('active');
+                } else if (stepNum < currentStep) {
+                    dot.classList.add('completed');
+                    labels[i].classList.add('completed');
+                }
+            });
+
+            lines.forEach(function(line, i) {
+                line.classList.toggle('completed', i + 1 < currentStep);
+            });
+        }
+
+        // Payment method selection
+        var methods = document.querySelectorAll('.payment-method');
+        methods.forEach(function(m) {
+            m.addEventListener('click', function() {
+                methods.forEach(function(mm) { mm.classList.remove('selected'); });
+                this.classList.add('selected');
+            });
+        });
+
+        // Navigation
+        document.getElementById('toPaymentBtn').addEventListener('click', function() {
+            goToStep(2);
+        });
+
+        document.getElementById('backToCartBtn').addEventListener('click', function() {
+            goToStep(1);
+        });
+
+        document.getElementById('placeOrderBtn').addEventListener('click', function() {
+            goToStep(3);
+        });
+    </script>
+</body>
+</html>

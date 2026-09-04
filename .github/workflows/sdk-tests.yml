@@ -1,0 +1,189 @@
+name: SDK Tests
+
+# Reusable release gate for the shared AI web-agent SDK / engine (feature 001).
+#
+# Both published products — `shiplightai` (002) and `@shiplightai/mcp` (003) —
+# bundle this SDK via tsup path-aliases, so a release of EITHER package is a
+# release of the SDK. This workflow runs 001's own quality-map evidence as a
+# hard gate so neither publish can ship a regressed engine:
+#   - sdk-core test:unit ........... deterministic decision/routing/locator units
+#   - sdk-core engine-fixture ...... keyless real-browser DOM + locator extraction
+#                                    (the keyed live NL-loop parts self-skip here)
+#
+# It is intentionally KEYLESS and runs unconditionally (NOT turbo --affected), so
+# it closes the diff-scoping hole in the PR-CI browser-tests lane: a PR that only
+# touches apps/cli still gets the SDK re-verified at publish time.
+#
+# Per-product, AS-BUNDLED engine proof stays in each publish workflow (CLI's keyed
+# example-homepage e2e, MCP's mcp-tools browser-tests) — that verifies the engine
+# inside each tarball, which this source-level gate deliberately does not.
+#
+# JUnit output is written to /tmp/qc-observations/engine/**, converted to the
+# canonical quality-observations.json contract, and uploaded for feature 001.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  sdk-tests:
+    name: SDK Tests (sdk-core unit + keyless browser)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.28.1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: sdk-core unit tests (hard gate)
+        id: sdk_unit_gate
+        # `^build` dependency builds sdk-core's deps first via turbo.
+        run: pnpm turbo run test:unit --filter=sdk-core
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          SUPABASE_URL: "http://localhost:54321"
+          SUPABASE_KEY: "test-key-for-ci"
+
+      - name: Emit sdk-core unit JUnit (canonical observation input)
+        # Same suite as the gate above (deps already built by its turbo ^build),
+        # re-run with a JUnit reporter so the canonical conversion step can carry
+        # per-test runtime proof for the 001 engine expectations.
+        working-directory: packages/sdk-core
+        run: |
+          mkdir -p /tmp/qc-observations/engine
+          node --experimental-test-module-mocks --test --import tsx \
+            --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination=/tmp/qc-observations/engine/sdk-core-unit.junit.xml \
+            'src/**/*.test.ts'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          SUPABASE_URL: "http://localhost:54321"
+          SUPABASE_KEY: "test-key-for-ci"
+
+      - name: Build sdk-core (engine-fixture browser lane needs dist)
+        run: pnpm turbo run build --filter=sdk-core
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Install Playwright Chromium (with system deps)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Engine-fixture browser tests — keyless (hard gate)
+        id: engine_fixture_gate
+        # exp-dom-extraction + keyless self-healing-locator proof. The keyed live
+        # agent.execute parts inside engine-fixture.spec.ts self-skip when no
+        # provider key is present, so this lane needs NO secrets.
+        # interactive-class-names.spec.ts is the remaining exp-dom-extraction
+        # proof (custom interactive class names reaching DOM analysis). It is
+        # equally keyless — inline HTML, no network, no model call — but ran in
+        # no workflow, which left that expectation partial.
+        working-directory: packages/sdk-core
+        run: |
+          mkdir -p /tmp/qc-observations/engine
+          pnpm exec playwright test \
+            --config=tests/playwright.config.ts \
+            tests/specs/engine-fixture.spec.ts \
+            tests/specs/interactive-class-names.spec.ts \
+            --reporter=list,junit
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: /tmp/qc-observations/engine/engine-fixture.junit.xml
+
+      - name: Build canonical SDK observations
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/qc-observations/engine/shards
+
+          manifests=()
+          convert_junit() {
+            local source="$1"
+            local output="$2"
+            if [ ! -s "$source" ]; then
+              printf '::%s::%s\n' warning "Canonical observation input is unavailable: $source"
+              return
+            fi
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations from-junit \
+              "$source" --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical observation input was rejected: $source"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+          record_gate() {
+            local test_case="$1"
+            local outcome="$2"
+            local output="$3"
+            local status
+            case "$outcome" in
+              success) status=pass ;;
+              failure) status=fail ;;
+              cancelled) status=error ;;
+              ""|skipped) status=skipped ;;
+              *) status=error ;;
+            esac
+            if ! npx --yes @shiplightai/quality-tools@0.3.2 observations record \
+              --path .github/workflows/sdk-tests.yml \
+              --test-case "$test_case" \
+              --status "$status" \
+              --note "GitHub Actions step outcome: $outcome" \
+              --output "$output"; then
+              printf '::%s::%s\n' warning "Canonical gate outcome was rejected: $test_case"
+              rm -f "$output"
+              return
+            fi
+            manifests+=("$output")
+          }
+
+          convert_junit \
+            /tmp/qc-observations/engine/sdk-core-unit.junit.xml \
+            /tmp/qc-observations/engine/shards/sdk-core-unit.json
+          convert_junit \
+            /tmp/qc-observations/engine/engine-fixture.junit.xml \
+            /tmp/qc-observations/engine/shards/engine-fixture.json
+          record_gate \
+            "sdk-core unit tests (hard gate)" \
+            "${{ steps.sdk_unit_gate.outcome }}" \
+            /tmp/qc-observations/engine/shards/sdk-unit-gate.json
+          record_gate \
+            "Engine-fixture browser tests — keyless (hard gate)" \
+            "${{ steps.engine_fixture_gate.outcome }}" \
+            /tmp/qc-observations/engine/shards/engine-fixture-gate.json
+
+          if [ ${#manifests[@]} -eq 0 ]; then
+            printf '::%s::%s\n' warning "No canonical observation shard survived; nothing to merge"
+            exit 0
+          fi
+          npx --yes @shiplightai/quality-tools@0.3.2 observations merge \
+            "${manifests[@]}" \
+            --output /tmp/qc-observations/engine/quality-observations.json
+          npx --yes @shiplightai/quality-tools@0.3.2 observations validate \
+            /tmp/qc-observations/engine/quality-observations.json
+
+      - name: Upload SDK test observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdk-tests-observations
+          path: /tmp/qc-observations/engine/quality-observations.json
+
+      - name: Upload SDK test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdk-tests-diagnostics
+          path: |
+            /tmp/qc-observations/engine/sdk-core-unit.junit.xml
+            /tmp/qc-observations/engine/engine-fixture.junit.xml

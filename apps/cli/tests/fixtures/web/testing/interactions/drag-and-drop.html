@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag & Drop - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .sortable-container {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            min-height: 300px;
+        }
+
+        .sortable-item {
+            background: var(--primary);
+            color: white;
+            padding: var(--spacing-lg);
+            margin: var(--spacing-md) 0;
+            border-radius: var(--border-radius);
+            cursor: grab;
+            user-select: none;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .sortable-item:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sortable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            transform: rotate(3deg);
+        }
+
+        .sortable-item.drag-over {
+            border-top: 3px solid var(--success);
+        }
+
+        .drag-handle {
+            font-size: 1.25rem;
+            cursor: grab;
+        }
+
+        .drop-zone {
+            min-height: 200px;
+            padding: var(--spacing-xl);
+            background: var(--bg-secondary);
+            border: 3px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-lightest);
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .dropped-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .dropped-item {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .remove-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.125rem;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .draggable-box {
+            width: 100px;
+            height: 100px;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            cursor: move;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .draggable-box:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .drag-source {
+            display: flex;
+            gap: var(--spacing-lg);
+            flex-wrap: wrap;
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Drag & Drop</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <section class="test-section">
+                <h2>Drag to Drop Zone</h2>
+                <p>Drag boxes from the source area to the drop zone below.</p>
+
+                <h3>Items</h3>
+                <div class="drag-source">
+                    <div class="draggable-box" draggable="true" data-color="red">🔴</div>
+                    <div class="draggable-box" draggable="true" data-color="blue">🔵</div>
+                    <div class="draggable-box" draggable="true" data-color="green">🟢</div>
+                    <div class="draggable-box" draggable="true" data-color="yellow">🟡</div>
+                    <div class="draggable-box" draggable="true" data-color="purple">🟣</div>
+                </div>
+
+                <h3 class="mt-3">Drop Zone</h3>
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-icon">📦</div>
+                    <div>Drop items here</div>
+                    <div class="dropped-items" id="dropped-items"></div>
+                </div>
+
+                <button class="btn btn-secondary btn-sm mt-2" id="clear-drops">Clear Dropped Items</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Drop zone functionality
+        const dropZone = document.getElementById('drop-zone');
+        const droppedItems = document.getElementById('dropped-items');
+        const draggableBoxes = document.querySelectorAll('.draggable-box');
+
+        draggableBoxes.forEach(box => {
+            box.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('color', e.target.dataset.color);
+                e.dataTransfer.setData('emoji', e.target.textContent);
+            });
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            const color = e.dataTransfer.getData('color');
+            const emoji = e.dataTransfer.getData('emoji');
+
+            if (color && emoji) {
+                const droppedItem = document.createElement('div');
+                droppedItem.className = 'dropped-item';
+                droppedItem.innerHTML = `
+                    ${emoji} ${color}
+                    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                `;
+                droppedItems.appendChild(droppedItem);
+            }
+        });
+
+        document.getElementById('clear-drops').addEventListener('click', () => {
+            droppedItems.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
+

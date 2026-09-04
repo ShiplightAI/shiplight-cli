@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Form - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-align: left;
+            color: var(--text-primary);
+        }
+
+        .dropdown-button:hover {
+            border-color: var(--primary);
+        }
+
+        .dropdown-button.open {
+            border-color: var(--primary);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .dropdown-arrow {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-secondary);
+            transition: transform 0.2s;
+        }
+
+        .dropdown-button.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-search {
+            position: sticky;
+            top: 0;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.875rem;
+        }
+
+        .dropdown-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .dropdown-options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dropdown-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-option:hover {
+            background: var(--primary-lightest);
+        }
+
+        .dropdown-option.selected {
+            background: var(--primary);
+            color: var(--text-inverse);
+        }
+
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .flag-emoji {
+            font-size: 1.25rem;
+        }
+
+        .scroll-indicator {
+            position: sticky;
+            bottom: 0;
+            padding: 0.5rem;
+            background: linear-gradient(to top, var(--bg-primary), transparent);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Forms</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Basic Form</span>
+            </div>
+        </header>
+
+        <main class="test-content">
+            <!-- Form Filling Example -->
+            <section class="test-section">
+                <h2>Contact Form</h2>
+                
+                <form id="validation-form" novalidate>
+                    <div class="form-group">
+                        <label for="form-name">Full Name *</label>
+                        <input type="text" id="form-name" name="form-name" class="form-control" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-email">Email Address *</label>
+                        <input type="email" id="form-email" name="form-email" class="form-control" required placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-birthdate">Birth Date *</label>
+                        <input type="date" id="form-birthdate" name="form-birthdate" class="form-control" required min="1900-01-01" max="2024-12-31" value="1990-01-01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-country">Country *</label>
+                        <div class="custom-dropdown" id="country-dropdown">
+                            <button type="button" class="dropdown-button" id="dropdown-btn">
+                                <span id="selected-value">Choose a country</span>
+                                <span class="dropdown-arrow"></span>
+                            </button>
+                            <div class="dropdown-content" id="dropdown-content">
+                                <div class="dropdown-search">
+                                    <input type="text" id="country-search" placeholder="Search countries..." />
+                                </div>
+                                <ul class="dropdown-options" id="dropdown-options"></ul>
+                                <div class="scroll-indicator">↓ Scroll for more options ↓</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="form-country" name="form-country" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-message">Message</label>
+                        <textarea id="form-message" name="form-message" class="form-control" rows="4" placeholder="Optional message..."></textarea>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="form-agree" name="form-agree" required>
+                        <label for="form-agree">I agree to the Terms and Conditions *</label>
+                    </div>
+
+                    <div class="button-group mt-3">
+                        <button type="submit" class="btn btn-primary">Submit Form</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+
+                    <div id="form-result" style="display: none; margin-top: 1rem;"></div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Countries data
+        const countries = [
+            { code: 'af', name: 'Afghanistan', flag: '🇦🇫' },
+            { code: 'al', name: 'Albania', flag: '🇦🇱' },
+            { code: 'dz', name: 'Algeria', flag: '🇩🇿' },
+            { code: 'ar', name: 'Argentina', flag: '🇦🇷' },
+            { code: 'au', name: 'Australia', flag: '🇦🇺' },
+            { code: 'at', name: 'Austria', flag: '🇦🇹' },
+            { code: 'bd', name: 'Bangladesh', flag: '🇧🇩' },
+            { code: 'be', name: 'Belgium', flag: '🇧🇪' },
+            { code: 'br', name: 'Brazil', flag: '🇧🇷' },
+            { code: 'bg', name: 'Bulgaria', flag: '🇧🇬' },
+            { code: 'ca', name: 'Canada', flag: '🇨🇦' },
+            { code: 'cl', name: 'Chile', flag: '🇨🇱' },
+            { code: 'cn', name: 'China', flag: '🇨🇳' },
+            { code: 'co', name: 'Colombia', flag: '🇨🇴' },
+            { code: 'hr', name: 'Croatia', flag: '🇭🇷' },
+            { code: 'cz', name: 'Czech Republic', flag: '🇨🇿' },
+            { code: 'dk', name: 'Denmark', flag: '🇩🇰' },
+            { code: 'eg', name: 'Egypt', flag: '🇪🇬' },
+            { code: 'fi', name: 'Finland', flag: '🇫🇮' },
+            { code: 'fr', name: 'France', flag: '🇫🇷' },
+            { code: 'de', name: 'Germany', flag: '🇩🇪' },
+            { code: 'gr', name: 'Greece', flag: '🇬🇷' },
+            { code: 'hk', name: 'Hong Kong', flag: '🇭🇰' },
+            { code: 'hu', name: 'Hungary', flag: '🇭🇺' },
+            { code: 'in', name: 'India', flag: '🇮🇳' },
+            { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
+            { code: 'ir', name: 'Iran', flag: '🇮🇷' },
+            { code: 'ie', name: 'Ireland', flag: '🇮🇪' },
+            { code: 'il', name: 'Israel', flag: '🇮🇱' },
+            { code: 'it', name: 'Italy', flag: '🇮🇹' },
+            { code: 'jp', name: 'Japan', flag: '🇯🇵' },
+            { code: 'ke', name: 'Kenya', flag: '🇰🇪' },
+            { code: 'my', name: 'Malaysia', flag: '🇲🇾' },
+            { code: 'mx', name: 'Mexico', flag: '🇲🇽' },
+            { code: 'ma', name: 'Morocco', flag: '🇲🇦' },
+            { code: 'nl', name: 'Netherlands', flag: '🇳🇱' },
+            { code: 'nz', name: 'New Zealand', flag: '🇳🇿' },
+            { code: 'ng', name: 'Nigeria', flag: '🇳🇬' },
+            { code: 'no', name: 'Norway', flag: '🇳🇴' },
+            { code: 'pk', name: 'Pakistan', flag: '🇵🇰' },
+            { code: 'pe', name: 'Peru', flag: '🇵🇪' },
+            { code: 'ph', name: 'Philippines', flag: '🇵🇭' },
+            { code: 'pl', name: 'Poland', flag: '🇵🇱' },
+            { code: 'pt', name: 'Portugal', flag: '🇵🇹' },
+            { code: 'ro', name: 'Romania', flag: '🇷🇴' },
+            { code: 'ru', name: 'Russia', flag: '🇷🇺' },
+            { code: 'sa', name: 'Saudi Arabia', flag: '🇸🇦' },
+            { code: 'sg', name: 'Singapore', flag: '🇸🇬' },
+            { code: 'za', name: 'South Africa', flag: '🇿🇦' },
+            { code: 'kr', name: 'South Korea', flag: '🇰🇷' },
+            { code: 'es', name: 'Spain', flag: '🇪🇸' },
+            { code: 'se', name: 'Sweden', flag: '🇸🇪' },
+            { code: 'ch', name: 'Switzerland', flag: '🇨🇭' },
+            { code: 'tw', name: 'Taiwan', flag: '🇹🇼' },
+            { code: 'th', name: 'Thailand', flag: '🇹🇭' },
+            { code: 'tr', name: 'Turkey', flag: '🇹🇷' },
+            { code: 'ua', name: 'Ukraine', flag: '🇺🇦' },
+            { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪' },
+            { code: 'gb', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'us', name: 'United States', flag: '🇺🇸' },
+            { code: 'vn', name: 'Vietnam', flag: '🇻🇳' }
+        ];
+
+        // Dropdown elements
+        const dropdownBtn = document.getElementById('dropdown-btn');
+        const dropdownContent = document.getElementById('dropdown-content');
+        const dropdownOptions = document.getElementById('dropdown-options');
+        const selectedValue = document.getElementById('selected-value');
+        const countrySearch = document.getElementById('country-search');
+        const countryInput = document.getElementById('form-country');
+
+        let selectedCountry = null;
+        let filteredCountries = [...countries];
+
+        // Render options
+        function renderOptions(items) {
+            dropdownOptions.innerHTML = '';
+            items.forEach(country => {
+                const li = document.createElement('li');
+                li.className = 'dropdown-option';
+                li.dataset.code = country.code;
+                li.innerHTML = `<span class="flag-emoji">${country.flag}</span> ${country.name}`;
+                
+                if (selectedCountry && selectedCountry.code === country.code) {
+                    li.classList.add('selected');
+                }
+                
+                li.addEventListener('click', () => selectCountry(country));
+                dropdownOptions.appendChild(li);
+            });
+        }
+
+        // Select country
+        function selectCountry(country) {
+            selectedCountry = country;
+            selectedValue.textContent = `${country.flag} ${country.name}`;
+            countryInput.value = country.code;
+            closeDropdown();
+            renderOptions(filteredCountries);
+        }
+
+        // Toggle dropdown
+        function toggleDropdown() {
+            const isOpen = dropdownContent.classList.contains('show');
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        }
+
+        function openDropdown() {
+            dropdownContent.classList.add('show');
+            dropdownBtn.classList.add('open');
+            countrySearch.focus();
+        }
+
+        function closeDropdown() {
+            dropdownContent.classList.remove('show');
+            dropdownBtn.classList.remove('open');
+            countrySearch.value = '';
+            filteredCountries = [...countries];
+            renderOptions(filteredCountries);
+        }
+
+        // Search functionality
+        countrySearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filteredCountries = countries.filter(country => 
+                country.name.toLowerCase().includes(searchTerm)
+            );
+            renderOptions(filteredCountries);
+        });
+
+        // Button click
+        dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('country-dropdown').contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!dropdownContent.classList.contains('show')) return;
+
+            if (e.key === 'Escape') {
+                closeDropdown();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const firstOption = dropdownOptions.querySelector('.dropdown-option');
+                if (firstOption && document.activeElement !== countrySearch) {
+                    firstOption.focus();
+                }
+            }
+        });
+
+        // Initial render
+        renderOptions(countries);
+
+        // Form validation
+        const form = document.getElementById('validation-form');
+        const formResult = document.getElementById('form-result');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate
+            const errors = [];
+            
+            if (!data['form-name']) {
+                errors.push('Name is required');
+            }
+            
+            if (!data['form-email']) {
+                errors.push('Email is required');
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data['form-email'])) {
+                errors.push('Email is invalid');
+            }
+
+            if (!data['form-birthdate']) {
+                errors.push('Birth date is required');
+            }
+
+            if (!data['form-country']) {
+                errors.push('Country is required');
+            }
+            
+            if (!data['form-agree']) {
+                errors.push('You must agree to the Terms and Conditions');
+            }
+            
+            // Show result
+            formResult.style.display = 'block';
+            
+            if (errors.length > 0) {
+                formResult.className = 'alert alert-danger';
+                formResult.innerHTML = '<strong>Validation Errors:</strong><ul>' + 
+                    errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
+            } else {
+                // Add country name to display
+                if (selectedCountry) {
+                    data['form-country-name'] = selectedCountry.name;
+                }
+                
+                formResult.className = 'alert alert-success';
+                formResult.innerHTML = '<strong>Success!</strong> Form submitted successfully.<br>' +
+                    '<code>' + JSON.stringify(data, null, 2) + '</code>';
+            }
+            
+            // Scroll to result
+            formResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        // Button click handlers for testing
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (!e.target.closest('form')) {
+                    console.log('Button clicked:', e.target.textContent);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

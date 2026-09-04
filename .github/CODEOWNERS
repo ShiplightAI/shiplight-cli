@@ -1,0 +1,28 @@
+# CODEOWNERS — required reviewers for the actively-developed cli/mcp/sdk cluster.
+#
+# Enforcement requires "Require review from Code Owners" enabled in branch
+# protection for `main`. Without that setting this file is advisory only.
+#
+# Owners must have write access to the repo and be members of the org, or the
+# entry is silently ignored (no protection). Owner is @feng-shiplight for now;
+# migrate to a team handle once more reviewers are on the cluster.
+#
+# Scope: the products and packages that ship. packages/debugger-ui is included
+# because apps/cli embeds its vite bundles in the published tarball.
+
+# --- Products ---
+/apps/cli/                  @feng-shiplight
+/apps/mcp-server/           @feng-shiplight
+
+# --- Cluster packages ---
+/packages/mcp-tools/        @feng-shiplight
+/packages/sdk-core/         @feng-shiplight
+/packages/sdk-public/       @feng-shiplight
+/packages/types/            @feng-shiplight
+/packages/debugger-ui/      @feng-shiplight
+
+# --- Release & ownership surface ---
+# Publish workflows and this file gate how the cluster ships.
+/.github/workflows/publish-cli.yml   @feng-shiplight
+/.github/workflows/publish-mcp.yml   @feng-shiplight
+/.github/CODEOWNERS                  @feng-shiplight

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Step Wizard - Agent Test</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .wizard-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 600px;
+      overflow: hidden;
+    }
+
+    .wizard-header {
+      background: #f8f9fa;
+      padding: 24px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .wizard-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .progress-container {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .progress-container::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #e9ecef;
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 4px;
+      background: #667eea;
+      transform: translateY(-50%);
+      transition: width 0.3s ease;
+      z-index: 1;
+    }
+
+    .step-indicator {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #6c757d;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .step-indicator.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .step-indicator.completed {
+      background: #28a745;
+      color: white;
+    }
+
+    .wizard-content {
+      padding: 32px;
+      min-height: 300px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .step p {
+      color: #6c757d;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .step-content {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+
+    .wizard-footer {
+      padding: 24px;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      background: #f8f9fa;
+    }
+
+    .btn {
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: #e9ecef;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #dee2e6;
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5a6fd6;
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: #28a745;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+
+    .success-icon svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+    }
+
+    .success-screen h2 {
+      color: #28a745;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .success-screen p {
+      color: #6c757d;
+      font-size: 18px;
+    }
+
+    #completion-message {
+      display: none;
+      background: #d4edda;
+      color: #155724;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+
+    /* Task info banner */
+    .task-info {
+      background: #e7f3ff;
+      border: 1px solid #b6d4fe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      color: #084298;
+    }
+
+    .task-info strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wizard-container">
+    <div class="wizard-header">
+      <h1 class="wizard-title">Account Setup Wizard</h1>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        <div class="step-indicator active" data-step="1">1</div>
+        <div class="step-indicator" data-step="2">2</div>
+        <div class="step-indicator" data-step="3">3</div>
+        <div class="step-indicator" data-step="4">4</div>
+        <div class="step-indicator" data-step="5">5</div>
+      </div>
+    </div>
+
+    <div class="wizard-content">
+      <!-- Step 1: Welcome -->
+      <div class="step active" data-step="1">
+        <h2>Welcome to the Setup Wizard</h2>
+        <div class="task-info">
+          <strong>Agent Test Task:</strong>
+          Click through all 5 steps by clicking the "Next" button repeatedly until you reach the completion screen.
+        </div>
+        <p>This wizard will guide you through setting up your account. You'll need to complete all steps to finish the setup process.</p>
+        <div class="step-content">
+          <p><strong>What you'll do:</strong></p>
+          <ul style="margin-left: 20px; color: #6c757d;">
+            <li>Step 1: Read this welcome message</li>
+            <li>Step 2: Enter personal information</li>
+            <li>Step 3: Choose preferences</li>
+            <li>Step 4: Review settings</li>
+            <li>Step 5: Confirm and complete</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 2: Personal Info -->
+      <div class="step" data-step="2">
+        <h2>Personal Information</h2>
+        <p>Please provide your basic information below.</p>
+        <div class="step-content">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" value="Test User">
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email" value="test@example.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Preferences -->
+      <div class="step" data-step="3">
+        <h2>Your Preferences</h2>
+        <p>Customize your experience by selecting your preferences.</p>
+        <div class="step-content">
+          <div class="form-group">
+            <label for="theme">Theme</label>
+            <select id="theme">
+              <option value="light">Light Mode</option>
+              <option value="dark">Dark Mode</option>
+              <option value="auto">Auto (System)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="language">Language</label>
+            <select id="language">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Review -->
+      <div class="step" data-step="4">
+        <h2>Review Your Settings</h2>
+        <p>Please review your information before proceeding.</p>
+        <div class="step-content">
+          <div style="margin-bottom: 12px;">
+            <strong>Name:</strong> <span id="reviewName">Test User</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <strong>Email:</strong> <span id="reviewEmail">test@example.com</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <strong>Theme:</strong> <span id="reviewTheme">Light Mode</span>
+          </div>
+          <div>
+            <strong>Language:</strong> <span id="reviewLanguage">English</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Confirm -->
+      <div class="step" data-step="5">
+        <h2>Confirm Setup</h2>
+        <p>You're almost done! Click "Complete Setup" to finish.</p>
+        <div class="step-content">
+          <div class="checkbox-group">
+            <input type="checkbox" id="termsCheckbox" checked>
+            <label for="termsCheckbox">I agree to the terms and conditions</label>
+          </div>
+          <div class="checkbox-group" style="margin-top: 12px;">
+            <input type="checkbox" id="newsletterCheckbox" checked>
+            <label for="newsletterCheckbox">Send me product updates and news</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Screen -->
+      <div class="step" data-step="success">
+        <div class="success-screen">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+          <h2>Setup Complete!</h2>
+          <p>Your account has been successfully configured.</p>
+          <div id="completion-message">
+            Task completed successfully! The agent has navigated through all 5 steps.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
+      <button class="btn btn-primary" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+
+    const steps = document.querySelectorAll('.step');
+    const indicators = document.querySelectorAll('.step-indicator');
+    const progressBar = document.getElementById('progressBar');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const completionMessage = document.getElementById('completion-message');
+
+    function updateWizard() {
+      // Update steps visibility
+      steps.forEach(step => {
+        step.classList.remove('active');
+        if (step.dataset.step === String(currentStep)) {
+          step.classList.add('active');
+        }
+        if (step.dataset.step === 'success' && currentStep > totalSteps) {
+          step.classList.add('active');
+        }
+      });
+
+      // Update indicators
+      indicators.forEach(indicator => {
+        const stepNum = parseInt(indicator.dataset.step);
+        indicator.classList.remove('active', 'completed');
+        if (stepNum === currentStep && currentStep <= totalSteps) {
+          indicator.classList.add('active');
+        } else if (stepNum < currentStep) {
+          indicator.classList.add('completed');
+        }
+      });
+
+      // Update progress bar
+      const progress = ((currentStep - 1) / totalSteps) * 100;
+      progressBar.style.width = `${Math.min(progress, 100)}%`;
+
+      // Update buttons
+      prevBtn.disabled = currentStep === 1;
+
+      if (currentStep === totalSteps) {
+        nextBtn.textContent = 'Complete Setup';
+        nextBtn.classList.remove('btn-primary');
+        nextBtn.classList.add('btn-success');
+      } else if (currentStep > totalSteps) {
+        // Hide buttons on success screen
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        completionMessage.style.display = 'block';
+
+        // Mark all indicators as completed
+        indicators.forEach(indicator => {
+          indicator.classList.remove('active');
+          indicator.classList.add('completed');
+        });
+        progressBar.style.width = '100%';
+      } else {
+        nextBtn.textContent = 'Next';
+        nextBtn.classList.remove('btn-success');
+        nextBtn.classList.add('btn-primary');
+      }
+
+      // Update review page if we're on step 4
+      if (currentStep === 4) {
+        document.getElementById('reviewName').textContent = document.getElementById('fullName').value || 'Not provided';
+        document.getElementById('reviewEmail').textContent = document.getElementById('email').value || 'Not provided';
+        document.getElementById('reviewTheme').textContent = document.getElementById('theme').options[document.getElementById('theme').selectedIndex].text;
+        document.getElementById('reviewLanguage').textContent = document.getElementById('language').options[document.getElementById('language').selectedIndex].text;
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (currentStep <= totalSteps) {
+        currentStep++;
+        updateWizard();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateWizard();
+      }
+    });
+
+    // Initialize
+    updateWizard();
+  </script>
+</body>
+</html>

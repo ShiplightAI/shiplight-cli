@@ -1,0 +1,92 @@
+{
+  "name": "@shiplightai/mcp",
+  "version": "0.2.1",
+  "mcpName": "ai.shiplight/shiplight",
+  "type": "module",
+  "description": "Shiplight MCP server for AI-powered test automation",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": {
+    "shiplight-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "chrome-extension",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && rm -rf ./chrome-extension && cp -r ../../packages/mcp-tools/chrome-extension ./chrome-extension",
+    "build:deps": "turbo run build --filter=@shiplightai/mcp",
+    "clean": "rm -rf dist chrome-extension",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "pretest:unit": "tsx ../../scripts/build-workspace-deps.mts",
+    "test:unit": "tsx --test 'src/**/*.test.ts' 'scripts/**/*.test.ts'",
+    "pretest:smoke": "pnpm build:deps",
+    "test:smoke": "node --test --import tsx 'smoke/stdioSmoke.test.ts'",
+    "pretest:smoke:browser": "pnpm build:deps",
+    "test:smoke:browser": "node --test --import tsx 'smoke/stdioBrowserSmoke.test.ts'",
+    "save-resources": "node scripts/save-resources.mjs",
+    "pretypecheck": "tsx ../../scripts/build-workspace-deps.mts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p smoke/tsconfig.json && tsc --noEmit -p scripts/tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.24",
+    "@ai-sdk/google": "^4.0.28",
+    "@ai-sdk/google-vertex": "^5.0.35",
+    "@ai-sdk/openai": "^4.0.24",
+    "@ai-sdk/provider": "^4.0.4",
+    "@babel/parser": "^7.28.5",
+    "@google/genai": "^1.34.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@playwright/test": "1.60.0",
+    "ai": "^7.0.42",
+    "axios": "^1.15.0",
+    "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.0.3",
+    "fs-extra": "^11.2.0",
+    "google-auth-library": "^10.0.0",
+    "html-to-text": "^9.0.5",
+    "mammoth": "^1.12.0",
+    "openai": "^6.25.0",
+    "ora": "^5.4.1",
+    "otplib": "^13.4.0",
+    "p-retry": "^6.2.1",
+    "pdf-parse": "^2.4.5",
+    "playwright": "1.60.0",
+    "sharp": "^0.35.3",
+    "typescript": "^5.5.4",
+    "uuid": "^11.1.0",
+    "ws": "^8.16.0",
+    "yaml": "^2.8.3",
+    "zod": "^3.22.0",
+    "zod-to-json-schema": "^3.24.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "mcp-tools": "workspace:*",
+    "sdk-core": "workspace:*",
+    "shiplight-telemetry": "workspace:*",
+    "shiplight-types": "workspace:*",
+    "tsup": "^8.3.5"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShiplightAI/shiplight-cli.git",
+    "directory": "apps/mcp-server"
+  },
+  "homepage": "https://github.com/ShiplightAI/shiplight-cli#readme",
+  "bugs": {
+    "url": "https://github.com/ShiplightAI/shiplight-cli/issues"
+  }
+}

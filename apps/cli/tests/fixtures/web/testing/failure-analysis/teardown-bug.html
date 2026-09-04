@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teardown Ineffective - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .create-form {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: flex-end;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .create-form .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .account-list {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            min-height: 60px;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        .account-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .account-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .account-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .account-date {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .account-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .deleted-label {
+            font-size: 0.8125rem;
+            color: var(--danger);
+            font-weight: 500;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: #fef2f2;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .empty-state {
+            padding: var(--spacing-2xl);
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .account-count {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Teardown Ineffective</span>
+            </div>
+            <span class="badge">Type A: App Bug</span>
+            <h1>Teardown Ineffective</h1>
+            <p class="description">An account management page where deleting an account only hides it visually. Refreshing the list reveals the account was never actually removed.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Create Account</h2>
+                <p>Enter a name to create a new account. The account will appear in the list below.</p>
+
+                <div class="create-form">
+                    <div class="form-group">
+                        <label for="account-name">Account Name</label>
+                        <input type="text" id="account-name" class="form-control" placeholder="Enter account name">
+                    </div>
+                    <button class="btn btn-primary" id="create-btn">Create Account</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Accounts</h2>
+                <div class="list-header">
+                    <span class="account-count" id="account-count">0 accounts</span>
+                    <button class="btn btn-secondary btn-sm" id="refresh-btn">Refresh List</button>
+                </div>
+
+                <div class="account-list" id="account-list">
+                    <div class="empty-state">No accounts created yet.</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Expected Behavior</h4>
+                <p>After deleting an account and clicking "Refresh List", the deleted account should not reappear. The deletion should be permanent and persist across refreshes.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // This is the "server-side" data store
+            var accounts = [];
+            var nextId = 1;
+
+            function getInitial(name) {
+                return name.charAt(0).toUpperCase();
+            }
+
+            function formatDate() {
+                var d = new Date();
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            function renderAccounts() {
+                var listEl = document.getElementById('account-list');
+                listEl.innerHTML = '';
+
+                if (accounts.length === 0) {
+                    listEl.innerHTML = '<div class="empty-state">No accounts created yet.</div>';
+                    document.getElementById('account-count').textContent = '0 accounts';
+                    return;
+                }
+
+                accounts.forEach(function(account) {
+                    var item = document.createElement('div');
+                    item.className = 'account-item';
+                    item.setAttribute('data-account-id', account.id);
+                    item.innerHTML = '<div class="account-info">' +
+                        '<div class="account-avatar">' + getInitial(account.name) + '</div>' +
+                        '<div>' +
+                        '<div class="account-name">' + account.name + '</div>' +
+                        '<div class="account-date">Created ' + account.createdAt + '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="account-actions">' +
+                        '<button class="btn btn-danger btn-sm delete-btn" data-id="' + account.id + '">Delete Account</button>' +
+                        '</div>';
+                    listEl.appendChild(item);
+                });
+
+                document.getElementById('account-count').textContent = accounts.length + ' account' + (accounts.length !== 1 ? 's' : '');
+            }
+
+            // Create account
+            document.getElementById('create-btn').addEventListener('click', function() {
+                var nameInput = document.getElementById('account-name');
+                var name = nameInput.value.trim();
+                if (!name) return;
+
+                accounts.push({
+                    id: nextId++,
+                    name: name,
+                    createdAt: formatDate()
+                });
+
+                nameInput.value = '';
+                renderAccounts();
+            });
+
+            // Handle Enter key in input
+            document.getElementById('account-name').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('create-btn').click();
+                }
+            });
+
+            // Delete account (buggy)
+            document.getElementById('account-list').addEventListener('click', function(e) {
+                var btn = e.target.closest('.delete-btn');
+                if (!btn) return;
+
+                var accountId = parseInt(btn.getAttribute('data-id'), 10);
+                var itemEl = btn.closest('.account-item');
+
+                // BUG: Only hides the DOM element visually, but does NOT remove
+                // the account from the "accounts" array (the server-side data).
+                // When the list is refreshed, it re-renders from the array and
+                // the "deleted" account comes back.
+                if (itemEl) {
+                    // Show "Deleted!" label instead of the delete button
+                    var actionsEl = itemEl.querySelector('.account-actions');
+                    actionsEl.innerHTML = '<span class="deleted-label">Deleted!</span>';
+
+                    // Fade out the item visually
+                    itemEl.style.opacity = '0.4';
+                    itemEl.style.textDecoration = 'line-through';
+
+                    // BUG: This line is missing:
+                    // accounts = accounts.filter(function(a) { return a.id !== accountId; });
+
+                    // Update count to look like it worked
+                    var visibleItems = document.querySelectorAll('.account-item:not([style*="opacity: 0.4"])');
+                    document.getElementById('account-count').textContent = visibleItems.length + ' account' + (visibleItems.length !== 1 ? 's' : '');
+                }
+            });
+
+            // Refresh list - re-renders from the data store
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                // This re-renders from the accounts array,
+                // which still contains the "deleted" accounts
+                renderAccounts();
+            });
+
+            // Initial render
+            renderAccounts();
+        })();
+    </script>
+</body>
+</html>

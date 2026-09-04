@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Standard Clickable Elements - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        .avatar-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.125rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card {
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .nav-item:hover {
+            background: var(--bg-secondary);
+        }
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--primary-lightest);
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .sidebar {
+            width: 240px;
+            border-right: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-xl);
+        }
+
+        .layout {
+            display: flex;
+            min-height: 400px;
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        #result {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--success);
+            color: white;
+            border-radius: var(--border-radius);
+            display: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <h1>Non-Standard Clickable Elements</h1>
+        <p class="subtitle">Tests that the element extractor picks up clickable elements that aren't standard buttons or links.</p>
+
+        <!-- Header with avatar icon (like HeyGen's Q icon) -->
+        <div class="header-bar">
+            <h2>My App</h2>
+            <div class="header-actions">
+                <!-- Icon button using a span -->
+                <span class="icon-btn" onclick="handleClick('notifications')" title="Notifications">
+                    🔔
+                </span>
+                <!-- Avatar icon (the exact pattern that failed in HeyGen) -->
+                <div class="avatar-icon" onclick="handleClick('avatar')" id="user-avatar" title="User Menu">
+                    Q
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout with sidebar nav items (div-based, not buttons) -->
+        <div class="layout">
+            <div class="sidebar">
+                <div class="nav-item" onclick="handleClick('home')">
+                    <span>🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="handleClick('projects')">
+                    <span>📁</span>
+                    <span>Projects</span>
+                </div>
+                <div class="nav-item" onclick="handleClick('settings')">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                    <span class="badge" onclick="event.stopPropagation(); handleClick('badge')">3</span>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <h3>Content Area</h3>
+
+                <!-- Clickable card (div, not button/link) -->
+                <div class="card" onclick="handleClick('card')">
+                    <h4>Project Alpha</h4>
+                    <p>Click this card to open the project.</p>
+                </div>
+
+                <div id="result"></div>
+                <div id="click-log" style="margin-top: var(--spacing-md); font-family: monospace; font-size: 0.875rem; color: var(--text-secondary);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const clicks = [];
+
+        function handleClick(element) {
+            clicks.push(element);
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.textContent = `Last clicked: ${element}`;
+
+            const log = document.getElementById('click-log');
+            log.textContent = `Click history: ${clicks.join(' → ')}`;
+        }
+    </script>
+</body>
+</html>

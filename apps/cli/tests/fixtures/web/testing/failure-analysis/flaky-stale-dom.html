@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stale DOM Reference - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .process-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .results-section {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            min-height: 200px;
+            transition: border-color 0.3s ease;
+            position: relative;
+        }
+
+        .results-section.removed {
+            border-color: var(--danger);
+            border-style: dashed;
+            background: #fef2f2;
+        }
+
+        .results-section.fresh {
+            border-color: var(--success);
+            background: #ecfdf5;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .results-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .dom-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--border-radius);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dom-status.original {
+            background: var(--gray-100);
+            color: var(--text-secondary);
+        }
+
+        .dom-status.stale {
+            background: #fef2f2;
+            color: #991b1b;
+            animation: blink 0.8s ease infinite;
+        }
+
+        .dom-status.fresh {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .result-content {
+            padding: var(--spacing-md);
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item .key {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 120px;
+        }
+
+        .result-item .value {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+        }
+
+        .removed-notice {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: #991b1b;
+        }
+
+        .removed-notice h4 {
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .removed-notice p {
+            color: #991b1b;
+            opacity: 0.8;
+        }
+
+        .timeline {
+            margin-top: var(--spacing-xl);
+            position: relative;
+            padding-left: var(--spacing-xl);
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-entry {
+            position: relative;
+            padding-bottom: var(--spacing-lg);
+            padding-left: var(--spacing-md);
+        }
+
+        .timeline-entry:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-entry::before {
+            content: '';
+            position: absolute;
+            left: calc(-1 * var(--spacing-xl) + 4px);
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            border: 2px solid var(--bg-primary);
+        }
+
+        .timeline-entry.active::before {
+            background: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-lightest);
+        }
+
+        .timeline-entry.danger::before {
+            background: var(--danger);
+            box-shadow: 0 0 0 3px #fef2f2;
+        }
+
+        .timeline-entry.success::before {
+            background: var(--success);
+            box-shadow: 0 0 0 3px #ecfdf5;
+        }
+
+        .timeline-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.9375rem;
+        }
+
+        .timeline-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .timeline-time {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        .dom-id-display {
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--gray-900);
+            color: var(--gray-100);
+            border-radius: var(--border-radius-sm);
+            margin-top: var(--spacing-sm);
+            display: inline-block;
+        }
+
+        .dom-id-display .old { color: #f87171; text-decoration: line-through; }
+        .dom-id-display .new { color: #4ade80; }
+
+        .process-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Stale DOM Reference</span>
+            </div>
+            <span class="badge">Flaky Test</span>
+            <h1>Stale DOM Reference</h1>
+            <p class="description">The results section is removed and re-created during processing, causing stale element references in automated tests.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Data Processor</h2>
+                <p>Click "Process Data" to start. The results section is immediately removed from the DOM, then a completely new results section is rendered after 500ms. Any reference to the old element becomes stale.</p>
+
+                <div class="process-controls">
+                    <button class="btn btn-primary btn-lg" id="process-btn">Process Data</button>
+                    <span class="process-count" id="process-count">Processed 0 times</span>
+                </div>
+
+                <div id="results-wrapper">
+                    <div class="results-section" id="results-section">
+                        <div class="results-header">
+                            <span class="results-title">Results</span>
+                            <span class="dom-status original" id="dom-status">Original DOM</span>
+                        </div>
+                        <div class="result-content" id="result-content">
+                            <div class="result-item">
+                                <span class="key">Status</span>
+                                <span class="value" id="result-status">Idle - waiting for processing</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="key">Data</span>
+                                <span class="value" id="result-data">No data processed yet</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="key">DOM Node ID</span>
+                                <span class="value" id="result-node-id">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Processing Timeline</h2>
+                <p>This timeline shows the sequence of DOM operations during processing.</p>
+                <div class="timeline" id="timeline">
+                    <div class="timeline-entry">
+                        <div class="timeline-label">Waiting for action</div>
+                        <div class="timeline-desc">Click "Process Data" to see the DOM lifecycle</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <h4>Why This Causes Flaky Tests</h4>
+                <p>When a test grabs a reference to the results element and then the processing removes and re-creates it, the old reference points to a detached DOM node. Any assertion on that reference will fail or return stale data.</p>
+                <ul>
+                    <li>Clicking "Process Data" immediately removes the results section from the DOM</li>
+                    <li>After 500ms, a brand new results section is inserted</li>
+                    <li>Old <code>document.querySelector('#results-section')</code> references become stale</li>
+                    <li>Fix: Re-query elements after actions that cause DOM re-renders</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var processCount = 0;
+            var nodeCounter = 0;
+            var processBtn = document.getElementById('process-btn');
+            var wrapper = document.getElementById('results-wrapper');
+            var timelineEl = document.getElementById('timeline');
+            var isProcessing = false;
+
+            function generateNodeId() {
+                nodeCounter++;
+                return 'node-' + Date.now() + '-' + nodeCounter;
+            }
+
+            function timestamp() {
+                return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+            }
+
+            function clearTimeline() {
+                timelineEl.innerHTML = '';
+            }
+
+            function addTimelineEntry(label, desc, type) {
+                var entry = document.createElement('div');
+                entry.className = 'timeline-entry ' + (type || '');
+                entry.innerHTML = '<div class="timeline-label">' + label + '</div>' +
+                    '<div class="timeline-desc">' + desc + '</div>' +
+                    '<div class="timeline-time">' + timestamp() + '</div>';
+                timelineEl.appendChild(entry);
+            }
+
+            function createResultsSection(status, data, nodeId, domStatusText, domStatusClass, sectionClass) {
+                var section = document.createElement('div');
+                section.className = 'results-section' + (sectionClass ? ' ' + sectionClass : '');
+                section.id = 'results-section';
+                section.innerHTML = '<div class="results-header">' +
+                    '<span class="results-title">Results</span>' +
+                    '<span class="dom-status ' + domStatusClass + '" id="dom-status">' + domStatusText + '</span>' +
+                    '</div>' +
+                    '<div class="result-content" id="result-content">' +
+                    '<div class="result-item">' +
+                    '<span class="key">Status</span>' +
+                    '<span class="value" id="result-status">' + status + '</span>' +
+                    '</div>' +
+                    '<div class="result-item">' +
+                    '<span class="key">Data</span>' +
+                    '<span class="value" id="result-data">' + data + '</span>' +
+                    '</div>' +
+                    '<div class="result-item">' +
+                    '<span class="key">DOM Node ID</span>' +
+                    '<span class="value" id="result-node-id">' + nodeId + '</span>' +
+                    '</div>' +
+                    '</div>';
+                return section;
+            }
+
+            processBtn.addEventListener('click', function() {
+                if (isProcessing) return;
+                isProcessing = true;
+                processCount++;
+                processBtn.disabled = true;
+                processBtn.textContent = 'Processing...';
+                document.getElementById('process-count').textContent = 'Processed ' + processCount + ' time' + (processCount === 1 ? '' : 's');
+
+                var oldNodeId = document.getElementById('result-node-id') ? document.getElementById('result-node-id').textContent : '--';
+                var newNodeId = generateNodeId();
+
+                clearTimeline();
+                addTimelineEntry('Button clicked', 'User initiated processing (attempt #' + processCount + ')', 'active');
+
+                // Step 1: Immediately remove the results section
+                var existingSection = document.getElementById('results-section');
+                if (existingSection) {
+                    existingSection.remove();
+                }
+
+                // Show a removed notice
+                var notice = document.createElement('div');
+                notice.className = 'results-section removed';
+                notice.id = 'results-section-removed';
+                notice.innerHTML = '<div class="removed-notice">' +
+                    '<h4>Results section removed from DOM</h4>' +
+                    '<p>The element has been detached. Any existing reference is now stale.</p>' +
+                    '<div class="dom-id-display"><span class="old">Old: ' + oldNodeId + '</span></div>' +
+                    '</div>';
+                wrapper.appendChild(notice);
+
+                addTimelineEntry('DOM removed', 'Results section removed from DOM tree. Old references are now stale.', 'danger');
+
+                // Step 2: After 500ms, re-render with new content
+                setTimeout(function() {
+                    var removedNotice = document.getElementById('results-section-removed');
+                    if (removedNotice) {
+                        removedNotice.remove();
+                    }
+
+                    var newSection = createResultsSection(
+                        'Processing complete! Result: Success',
+                        'Processed ' + processCount + ' record(s) - checksum: ' + Math.random().toString(36).substring(2, 10),
+                        newNodeId,
+                        'Fresh DOM (re-rendered)',
+                        'fresh',
+                        'fresh'
+                    );
+                    wrapper.appendChild(newSection);
+
+                    addTimelineEntry('DOM re-created', 'Brand new results section inserted into DOM with new node ID.', 'success');
+
+                    var idDisplay = document.createElement('div');
+                    idDisplay.className = 'dom-id-display';
+                    idDisplay.innerHTML = '<span class="old">Old: ' + oldNodeId + '</span> &rarr; <span class="new">New: ' + newNodeId + '</span>';
+                    timelineEl.lastElementChild.appendChild(idDisplay);
+
+                    isProcessing = false;
+                    processBtn.disabled = false;
+                    processBtn.textContent = 'Process Data';
+                }, 500);
+            });
+
+            // Set initial node ID
+            var initialNodeId = generateNodeId();
+            document.getElementById('result-node-id').textContent = initialNodeId;
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MCP Smoke Fixture</title>
+  </head>
+  <body>
+    <h1 id="heading">MCP Smoke Fixture</h1>
+    <!--
+      The two states are deliberately non-overlapping strings. An earlier
+      version used "not clicked" -> "clicked", which made the post-click
+      assertion pass even when the handler was removed, because /clicked/
+      matches "not clicked" as a substring.
+    -->
+    <button id="target" onclick="document.getElementById('result').textContent = 'CLICK_HANDLED'">
+      Click me
+    </button>
+    <p id="result">AWAITING_CLICK</p>
+    <script>
+      // Exercised by get_browser_console_logs.
+      console.log('smoke-fixture-console-marker');
+    </script>
+  </body>
+</html>

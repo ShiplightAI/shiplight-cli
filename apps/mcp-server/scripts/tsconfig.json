@@ -1,0 +1,13 @@
+{
+  // Separate from the package tsconfig for the same reason as smoke/: that one
+  // sets rootDir to ./src, so pulling scripts/ into it trips TS6059. Without
+  // this file these scripts would run under tsx but never be type-checked —
+  // and this one holds the release path to the MCP registry.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false
+  },
+  "include": ["**/*.ts"]
+}

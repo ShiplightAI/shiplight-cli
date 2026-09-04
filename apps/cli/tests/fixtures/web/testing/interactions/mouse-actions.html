@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Actions - Test Page</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Shared result display */
+        .result-display {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            min-height: 2.75rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .result-display.success {
+            background: #ecfdf5;
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .result-display.active {
+            background: var(--primary-lightest);
+            border-color: var(--primary);
+            color: var(--primary-hover);
+        }
+
+        /* ── Click ── */
+        #click-target {
+            padding: 1rem 2.5rem;
+            font-size: 1.125rem;
+        }
+
+        #click-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* ── Double Click ── */
+        .dbl-click-card {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-xl);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            width: fit-content;
+        }
+
+        .dbl-click-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .dbl-click-card.unlocked {
+            border-color: var(--success);
+            background: #ecfdf5;
+        }
+
+        .dbl-click-icon {
+            font-size: 2.5rem;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .dbl-click-card.unlocked .dbl-click-icon {
+            transform: rotate(-15deg);
+        }
+
+        .dbl-click-label {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .dbl-click-card.unlocked .dbl-click-label {
+            color: var(--success);
+        }
+
+        /* ── Right Click ── */
+        .right-click-area {
+            padding: var(--spacing-xl);
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            user-select: none;
+            transition: border-color 0.2s;
+        }
+
+        .right-click-area:hover {
+            border-color: var(--primary-light);
+        }
+
+        /* ── Hover ── */
+        .hover-targets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+            align-items: flex-start;
+        }
+
+        .hover-box {
+            position: relative;
+            width: 140px;
+            height: 80px;
+            background: var(--primary);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: default;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .hover-box:hover {
+            background: var(--primary-hover);
+            transform: scale(1.04);
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-900);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.8125rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .hover-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--gray-900);
+        }
+
+        .hover-box:hover .hover-tooltip {
+            opacity: 1;
+        }
+
+        /* ── Coordinate targets ── */
+        .coord-target {
+            position: relative;
+            width: 320px;
+            height: 200px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            cursor: crosshair;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .coord-target:hover {
+            border-color: var(--primary-light);
+        }
+
+        .coord-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--gray-200) 1px, transparent 1px),
+                linear-gradient(90deg, var(--gray-200) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .coord-label {
+            position: absolute;
+            top: var(--spacing-sm);
+            left: var(--spacing-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            pointer-events: none;
+            font-family: var(--font-mono);
+        }
+
+        .coord-marker {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: none;
+        }
+
+        .coord-marker.click-marker {
+            background: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-lightest);
+        }
+
+        .coord-marker.dbl-marker {
+            background: var(--success);
+            box-shadow: 0 0 0 3px #d1fae5;
+        }
+
+        .coord-marker.right-marker {
+            background: var(--danger);
+            box-shadow: 0 0 0 3px #fee2e2;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <header class="test-page-header">
+            <span class="badge">Test Page</span>
+            <div class="breadcrumb">
+                <a href="../index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Interactions</span>
+                <span class="breadcrumb-separator">›</span>
+                <span>Mouse Actions</span>
+            </div>
+            <h1>Mouse Actions</h1>
+            <p class="description">Test page for all mouse interaction actions: click, double click, right click, hover, and coordinate-based variants.</p>
+        </header>
+
+        <main class="test-content">
+
+            <!-- ── 1. Click ── -->
+            <section class="test-section" id="section-click">
+                <h2>Click</h2>
+                <p>Click the button to increment the counter.</p>
+                <div class="button-group">
+                    <button id="click-target" class="btn btn-primary" data-testid="click-target">
+                        Click me
+                    </button>
+                    <button id="click-reset" class="btn btn-outline btn-sm">Reset</button>
+                </div>
+                <div class="result-display" id="click-result" data-testid="click-result">
+                    Click count: <strong id="click-count">0</strong>
+                </div>
+            </section>
+
+            <!-- ── 2. Double Click ── -->
+            <section class="test-section" id="section-double-click">
+                <h2>Double Click</h2>
+                <p>Double-click the card to toggle its locked/unlocked state.</p>
+                <div class="dbl-click-card" id="dbl-click-target" data-testid="dbl-click-target">
+                    <span class="dbl-click-icon">🔒</span>
+                    <span class="dbl-click-label" id="dbl-click-label">Locked — double-click to unlock</span>
+                </div>
+                <div class="result-display" id="dbl-click-result" data-testid="dbl-click-result">
+                    State: <strong id="dbl-click-state">locked</strong>
+                </div>
+            </section>
+
+            <!-- ── 3. Right Click ── -->
+            <section class="test-section" id="section-right-click">
+                <h2>Right Click</h2>
+                <p>Right-click the area below to open a custom context menu.</p>
+                <div class="right-click-area" id="right-click-target" data-testid="right-click-target">
+                    Right-click anywhere in this area
+                </div>
+                <div class="result-display" id="right-click-result" data-testid="right-click-result">
+                    Last action: <strong id="right-click-action">none</strong>
+                </div>
+            </section>
+
+            <!-- ── 4. Hover ── -->
+            <section class="test-section" id="section-hover">
+                <h2>Hover</h2>
+                <p>Hover over the button to reveal its tooltip.</p>
+                <div class="hover-targets">
+                    <div class="hover-box" data-testid="hover-box-1">
+                        Hover me
+                        <div class="hover-tooltip">I appeared on hover!</div>
+                    </div>
+                </div>
+                <div class="result-display" id="hover-result" data-testid="hover-result">
+                    Hovering: <strong id="hover-state">none</strong>
+                </div>
+            </section>
+
+            <!-- ── 5. Click by Coordinates ── -->
+            <section class="test-section" id="section-click-coords">
+                <h2>Click by Coordinates</h2>
+                <p>Click anywhere on the grid. The coordinates (relative to the element) will be recorded.</p>
+                <div class="coord-target" id="click-coord-target" data-testid="click-coord-target">
+                    <div class="coord-grid"></div>
+                    <div class="coord-label">click anywhere</div>
+                    <div class="coord-marker click-marker" id="click-coord-marker"></div>
+                </div>
+                <div class="result-display" id="click-coord-result" data-testid="click-coord-result">
+                    Last click: <strong id="click-coord-value">—</strong>
+                </div>
+            </section>
+
+            <!-- ── 6. Double Click by Coordinates ── -->
+            <section class="test-section" id="section-dbl-click-coords">
+                <h2>Double Click by Coordinates</h2>
+                <p>Double-click anywhere on the grid to place a marker at that position.</p>
+                <div class="coord-target" id="dbl-click-coord-target" data-testid="dbl-click-coord-target">
+                    <div class="coord-grid"></div>
+                    <div class="coord-label">double-click anywhere</div>
+                    <div class="coord-marker dbl-marker" id="dbl-coord-marker"></div>
+                </div>
+                <div class="result-display" id="dbl-click-coord-result" data-testid="dbl-click-coord-result">
+                    Last double-click: <strong id="dbl-coord-value">—</strong>
+                </div>
+            </section>
+
+            <!-- ── 7. Right Click by Coordinates ── -->
+            <section class="test-section" id="section-right-click-coords">
+                <h2>Right Click by Coordinates</h2>
+                <p>Right-click anywhere on the grid to record the position.</p>
+                <div class="coord-target" id="right-click-coord-target" data-testid="right-click-coord-target">
+                    <div class="coord-grid"></div>
+                    <div class="coord-label">right-click anywhere</div>
+                    <div class="coord-marker right-marker" id="right-coord-marker"></div>
+                </div>
+                <div class="result-display" id="right-click-coord-result" data-testid="right-click-coord-result">
+                    Last right-click: <strong id="right-coord-value">—</strong>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // ── 1. Click ──
+        let clickCount = 0;
+        const clickTarget = document.getElementById('click-target');
+        const clickCountEl = document.getElementById('click-count');
+        const clickResult = document.getElementById('click-result');
+
+        clickTarget.addEventListener('click', () => {
+            clickCount++;
+            clickCountEl.textContent = clickCount;
+            clickResult.classList.add('success');
+        });
+
+        document.getElementById('click-reset').addEventListener('click', () => {
+            clickCount = 0;
+            clickCountEl.textContent = 0;
+            clickResult.classList.remove('success');
+        });
+
+        // ── 2. Double Click ──
+        let isUnlocked = false;
+        const dblTarget = document.getElementById('dbl-click-target');
+        const dblIcon = dblTarget.querySelector('.dbl-click-icon');
+        const dblLabel = document.getElementById('dbl-click-label');
+        const dblState = document.getElementById('dbl-click-state');
+        const dblResult = document.getElementById('dbl-click-result');
+
+        dblTarget.addEventListener('dblclick', () => {
+            isUnlocked = !isUnlocked;
+            dblTarget.classList.toggle('unlocked', isUnlocked);
+            dblIcon.textContent = isUnlocked ? '🔓' : '🔒';
+            dblLabel.textContent = isUnlocked ? 'Unlocked — double-click to lock' : 'Locked — double-click to unlock';
+            dblState.textContent = isUnlocked ? 'unlocked' : 'locked';
+            dblResult.classList.toggle('success', isUnlocked);
+        });
+
+        // ── 3. Right Click ──
+        const rightClickTarget = document.getElementById('right-click-target');
+        const rightClickAction = document.getElementById('right-click-action');
+        const rightClickResult = document.getElementById('right-click-result');
+
+        rightClickTarget.addEventListener('mousedown', (e) => {
+            if (e.button !== 2) return;
+            rightClickAction.textContent = 'Right click';
+            rightClickResult.classList.add('success');
+        });
+
+        rightClickTarget.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // ── 4. Hover ──
+        const hoverState = document.getElementById('hover-state');
+        const hoverResult = document.getElementById('hover-result');
+        const hoverTargets = document.querySelectorAll('[data-testid^="hover-box-"]');
+
+        hoverTargets.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                hoverState.textContent = el.dataset.testid;
+                hoverResult.classList.add('active');
+            });
+            el.addEventListener('mouseleave', () => {
+                hoverState.textContent = 'none';
+                hoverResult.classList.remove('active');
+            });
+        });
+
+        // ── 5. Click by Coordinates ──
+        const clickCoordTarget = document.getElementById('click-coord-target');
+        const clickCoordMarker = document.getElementById('click-coord-marker');
+        const clickCoordValue = document.getElementById('click-coord-value');
+        const clickCoordResult = document.getElementById('click-coord-result');
+
+        clickCoordTarget.addEventListener('click', (e) => {
+            const rect = clickCoordTarget.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            clickCoordMarker.style.left = x + 'px';
+            clickCoordMarker.style.top = y + 'px';
+            clickCoordMarker.style.display = 'block';
+            clickCoordValue.textContent = `x=${x}, y=${y}`;
+            clickCoordResult.classList.add('success');
+        });
+
+        // ── 6. Double Click by Coordinates ──
+        const dblCoordTarget = document.getElementById('dbl-click-coord-target');
+        const dblCoordMarker = document.getElementById('dbl-coord-marker');
+        const dblCoordValue = document.getElementById('dbl-coord-value');
+        const dblCoordResult = document.getElementById('dbl-click-coord-result');
+
+        dblCoordTarget.addEventListener('dblclick', (e) => {
+            const rect = dblCoordTarget.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            dblCoordMarker.style.left = x + 'px';
+            dblCoordMarker.style.top = y + 'px';
+            dblCoordMarker.style.display = 'block';
+            dblCoordValue.textContent = `x=${x}, y=${y}`;
+            dblCoordResult.classList.add('success');
+        });
+
+        // ── 7. Right Click by Coordinates ──
+        const rightCoordTarget = document.getElementById('right-click-coord-target');
+        const rightCoordMarker = document.getElementById('right-coord-marker');
+        const rightCoordValue = document.getElementById('right-coord-value');
+        const rightCoordResult = document.getElementById('right-click-coord-result');
+
+        rightCoordTarget.addEventListener('mousedown', (e) => {
+            if (e.button !== 2) return;
+            const rect = rightCoordTarget.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            rightCoordMarker.style.left = x + 'px';
+            rightCoordMarker.style.top = y + 'px';
+            rightCoordMarker.style.display = 'block';
+            rightCoordValue.textContent = `x=${x}, y=${y}`;
+            rightCoordResult.classList.add('success');
+        });
+
+        rightCoordTarget.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

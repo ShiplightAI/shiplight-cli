@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Element Ordering - Failure Analysis Test</title>
+    <link rel="stylesheet" href="../../assets/styles.css">
+    <style>
+        .list-container {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item:hover {
+            background: var(--gray-50);
+        }
+
+        .list-number {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: var(--text-inverse);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .list-item-content {
+            flex: 1;
+        }
+
+        .list-item-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .list-item-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .order-display {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--gray-900);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--gray-100);
+        }
+
+        .order-display .label {
+            color: var(--gray-400);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+
+        .order-display .order-value {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .order-display .original-value {
+            color: var(--success);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comparison-box {
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-color);
+        }
+
+        .comparison-box h4 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) 0;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .comparison-item .index {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            min-width: 30px;
+        }
+
+        .match-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .match-indicator.match { background: var(--success); }
+        .match-indicator.mismatch { background: var(--danger); }
+
+        .shuffle-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .shuffle-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .match-summary {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .match-summary.all-match {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid var(--success);
+        }
+
+        .match-summary.some-mismatch {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-page-wrapper">
+        <div class="test-page-header">
+            <div class="breadcrumb">
+                <a href="../../index.html">Test Pages</a>
+                <span class="breadcrumb-separator">›</span>
+                <a href="./index.html">Failure Analysis</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Random Element Ordering</span>
+            </div>
+            <span class="badge">Flaky Test</span>
+            <h1>Random Element Ordering</h1>
+            <p class="description">List items are randomly shuffled on every page load, causing position-based assertions to fail intermittently.</p>
+        </div>
+        <div class="test-content">
+            <div class="test-section">
+                <h2>Shuffled Item List</h2>
+                <p>The five items below are displayed in a random order on each page load. A test asserting that the second item is "Beta" would only pass when the shuffle happens to place "Beta" in position 2.</p>
+
+                <div class="shuffle-controls">
+                    <button class="btn btn-primary" id="reshuffle-btn">Reshuffle List</button>
+                    <span class="shuffle-count" id="shuffle-count">Shuffled 1 time</span>
+                </div>
+
+                <div class="list-container" id="item-list"></div>
+            </div>
+
+            <div class="test-section">
+                <h2>Order Comparison</h2>
+                <p>Compare the current shuffled order against the original order to see which positions match.</p>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <h4>Original Order</h4>
+                        <div id="original-order"></div>
+                    </div>
+                    <div class="comparison-box">
+                        <h4>Current Shuffled Order</h4>
+                        <div id="shuffled-order"></div>
+                    </div>
+                </div>
+
+                <div id="match-summary" class="match-summary"></div>
+            </div>
+
+            <div class="test-section">
+                <h2>Technical Details</h2>
+                <div class="order-display">
+                    <span class="label">// Original order (never changes)</span>
+                    <div><span class="original-value" id="original-array"></span></div>
+                    <br>
+                    <span class="label">// Current shuffled order (changes each load/reshuffle)</span>
+                    <div><span class="order-value" id="shuffled-array"></span></div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <h4>Why This Causes Flaky Tests</h4>
+                <p>Tests that rely on element position (e.g., "the 2nd list item should contain 'Beta'") will fail whenever the shuffle produces a different order. With 5 items, there are 120 possible orderings, so any position-based assertion has only a 1-in-5 chance of being correct.</p>
+                <ul>
+                    <li>Items are shuffled using Fisher-Yates algorithm on each page load</li>
+                    <li>A test asserting <code>items[1].text === "Beta"</code> passes only 20% of the time</li>
+                    <li>Fix: Assert on content presence rather than position, or sort before asserting</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var originalItems = [
+                { name: 'Alpha', detail: 'First letter of the Greek alphabet. Symbolizes the beginning.' },
+                { name: 'Beta', detail: 'Second letter. Commonly used to denote a testing phase.' },
+                { name: 'Gamma', detail: 'Third letter. Used in physics for gamma rays and radiation.' },
+                { name: 'Delta', detail: 'Fourth letter. Represents change or difference in mathematics.' },
+                { name: 'Epsilon', detail: 'Fifth letter. Denotes an arbitrarily small positive quantity.' }
+            ];
+            var shuffleCount = 0;
+
+            function fisherYatesShuffle(array) {
+                var shuffled = array.slice();
+                for (var i = shuffled.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = shuffled[i];
+                    shuffled[i] = shuffled[j];
+                    shuffled[j] = temp;
+                }
+                return shuffled;
+            }
+
+            function renderList(items) {
+                var listEl = document.getElementById('item-list');
+                listEl.innerHTML = '';
+                items.forEach(function(item, index) {
+                    var div = document.createElement('div');
+                    div.className = 'list-item';
+                    div.setAttribute('data-item-name', item.name);
+                    div.innerHTML = '<div class="list-number">' + (index + 1) + '</div>' +
+                        '<div class="list-item-content">' +
+                        '<div class="list-item-name">' + item.name + '</div>' +
+                        '<div class="list-item-detail">' + item.detail + '</div>' +
+                        '</div>';
+                    listEl.appendChild(div);
+                });
+            }
+
+            function renderComparison(shuffledItems) {
+                var originalEl = document.getElementById('original-order');
+                var shuffledEl = document.getElementById('shuffled-order');
+                var matchCount = 0;
+
+                originalEl.innerHTML = '';
+                shuffledEl.innerHTML = '';
+
+                originalItems.forEach(function(item, index) {
+                    var div = document.createElement('div');
+                    div.className = 'comparison-item';
+                    div.innerHTML = '<span class="index">[' + index + ']</span> ' + item.name;
+                    originalEl.appendChild(div);
+                });
+
+                shuffledItems.forEach(function(item, index) {
+                    var matches = item.name === originalItems[index].name;
+                    if (matches) matchCount++;
+                    var div = document.createElement('div');
+                    div.className = 'comparison-item';
+                    div.innerHTML = '<span class="match-indicator ' + (matches ? 'match' : 'mismatch') + '"></span>' +
+                        '<span class="index">[' + index + ']</span> ' + item.name;
+                    shuffledEl.appendChild(div);
+                });
+
+                var summaryEl = document.getElementById('match-summary');
+                if (matchCount === originalItems.length) {
+                    summaryEl.className = 'match-summary all-match';
+                    summaryEl.textContent = 'All ' + matchCount + ' positions match the original order. A position-based test would pass this time.';
+                } else {
+                    summaryEl.className = 'match-summary some-mismatch';
+                    summaryEl.textContent = matchCount + ' of ' + originalItems.length + ' positions match. A position-based test asserting a mismatched position would fail.';
+                }
+            }
+
+            function renderArrays(shuffledItems) {
+                document.getElementById('original-array').textContent =
+                    '["' + originalItems.map(function(i) { return i.name; }).join('", "') + '"]';
+                document.getElementById('shuffled-array').textContent =
+                    '["' + shuffledItems.map(function(i) { return i.name; }).join('", "') + '"]';
+            }
+
+            function doShuffle() {
+                shuffleCount++;
+                var shuffled = fisherYatesShuffle(originalItems);
+                renderList(shuffled);
+                renderComparison(shuffled);
+                renderArrays(shuffled);
+                document.getElementById('shuffle-count').textContent = 'Shuffled ' + shuffleCount + ' time' + (shuffleCount === 1 ? '' : 's');
+            }
+
+            // Initial shuffle on load
+            doShuffle();
+
+            document.getElementById('reshuffle-btn').addEventListener('click', doShuffle);
+        })();
+    </script>
+</body>
+</html>

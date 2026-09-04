@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declarationMap": false,
+    "outDir": ".tmp/dts"
+  },
+  "include": ["src"],
+  // Tests are excluded because example.integration.ts imports
+  // '@shiplightai/sdk' by name — it resolves through dist/index.d.ts, which
+  // this very step is what produces.
+  "exclude": ["node_modules", "dist", ".tmp", "**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"]
+}
