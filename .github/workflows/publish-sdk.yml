@@ -39,8 +39,25 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
-          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          # Falls back to the job's own token: RELEASE_PUSH_TOKEN exists to push
+          # the version bump back to main, and that step is gated on
+          # `!inputs.dry_run`. Without the fallback an unset secret is passed as
+          # an empty string, which actions/checkout rejects outright — so a dry
+          # run died at step one on a credential it never needed.
+          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
           fetch-depth: 0
+
+      # The fallback above keeps dry runs working without any secret. A real run
+      # still needs RELEASE_PUSH_TOKEN to push the bump, so require it here —
+      # otherwise the failure lands on the push step, an hour of gates later.
+      - name: Guard — RELEASE_PUSH_TOKEN required for a real run
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if [ -z "${{ secrets.RELEASE_PUSH_TOKEN }}" ]; then
+            printf '::%s::%s\n' error "Secret RELEASE_PUSH_TOKEN is not set. A real publish pushes the version bump back to main and cannot complete without it. Re-run with dry_run: true to exercise the gates only."
+            exit 1
+          fi
+          echo "RELEASE_PUSH_TOKEN is set."
 
       - uses: pnpm/action-setup@v5
         with:

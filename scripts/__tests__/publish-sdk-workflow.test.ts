@@ -20,7 +20,13 @@ test('SDK publish workflow auto-bumps the live npm patch version before building
 
   const checkout = stepNamed('Checkout main');
   assert.equal(checkout.with.ref, 'main');
-  assert.equal(checkout.with.token, '${{ secrets.RELEASE_PUSH_TOKEN }}');
+  // Falls back to the job token so a dry run needs no secret at all; a real
+  // run is still held to RELEASE_PUSH_TOKEN by the guard asserted below,
+  // which fails at the start rather than at the push an hour later.
+  assert.equal(checkout.with.token, '${{ secrets.RELEASE_PUSH_TOKEN || github.token }}');
+  const pushTokenGuard = stepNamed('Guard — RELEASE_PUSH_TOKEN required for a real run');
+  assert.equal(pushTokenGuard.if, '${{ !inputs.dry_run }}');
+  assert.match(pushTokenGuard.run, /RELEASE_PUSH_TOKEN/);
   assert.equal(checkout.with['fetch-depth'], 0);
 
   const versions = stepNamed('Compute OLD (live npm) and NEW (patch+1) versions');

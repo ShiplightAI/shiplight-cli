@@ -48,8 +48,25 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
-          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          # Falls back to the job's own token: RELEASE_PUSH_TOKEN exists to push
+          # the version bump back to main, and that step is gated on
+          # `!inputs.dry_run`. Without the fallback an unset secret is passed as
+          # an empty string, which actions/checkout rejects outright — so a dry
+          # run died at step one on a credential it never needed.
+          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
           fetch-depth: 0
+
+      # The fallback above keeps dry runs working without any secret. A real run
+      # still needs RELEASE_PUSH_TOKEN to push the bump, so require it here —
+      # otherwise the failure lands on the push step, an hour of gates later.
+      - name: Guard — RELEASE_PUSH_TOKEN required for a real run
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if [ -z "${{ secrets.RELEASE_PUSH_TOKEN }}" ]; then
+            printf '::%s::%s\n' error "Secret RELEASE_PUSH_TOKEN is not set. A real publish pushes the version bump back to main and cannot complete without it. Re-run with dry_run: true to exercise the gates only."
+            exit 1
+          fi
+          echo "RELEASE_PUSH_TOKEN is set."
 
       - uses: pnpm/action-setup@v5
         with:
@@ -80,39 +97,30 @@ jobs:
 
       - run: pnpm install
 
-      # Google auth for the live-AI E2E gates below. The org moved off
-      # GOOGLE_API_KEY (AI Studio) to ADC/Vertex; auth here mints short-lived
-      # credentials via workload-identity federation and exports
-      # GOOGLE_APPLICATION_CREDENTIALS for every later step (google-auth-library
-      # picks it up ambiently; the SDK routes to Vertex via GOOGLE_GENAI_USE_VERTEXAI).
-      # Placed before the Vertex auth so an unset variable fails here, with a
-      # readable message, rather than surfacing later as an opaque GenAI SDK
-      # error inside a live-AI E2E gate.
-      - name: Guard — GCP_PROJECT_ID must be configured
+      # The live-AI E2E gates below reach a model through the Shiplight LLM
+      # proxy, using the same SHIPLIGHT_API_TOKEN that publish-sdk.yml needs.
+      # One credential for both release workflows, and no cloud-provider
+      # identity to bind to this repository.
+      - name: Guard — SHIPLIGHT_API_TOKEN must be configured
         run: |
-          if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
-            printf '::%s::%s\n' error "Repository variable GCP_PROJECT_ID is not set. The live-AI E2E gates route through Vertex AI and need the GCP project to bill and route to. Set it under Settings > Secrets and variables > Actions > Variables."
+          if [ -z "${{ secrets.SHIPLIGHT_API_TOKEN }}" ]; then
+            printf '::%s::%s\n' error "Secret SHIPLIGHT_API_TOKEN is not set. The live-AI E2E gates route through the Shiplight LLM proxy and cannot reach a model without it."
             exit 1
           fi
-          echo "GCP_PROJECT_ID is set."
+          echo "SHIPLIGHT_API_TOKEN is set."
 
-      - name: Authenticate to GCP (Vertex AI via workload identity)
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
-
-      # Belt-and-suspenders: resolveWebAgentModelFromEnv checks GOOGLE_API_KEY
-      # BEFORE Vertex/ADC, so a stray GOOGLE_API_KEY in the env would shadow ADC
-      # and force the retired AI-Studio path (dead key -> "API key not valid").
-      # Fail fast if one is ever reintroduced into this job's environment.
-      - name: Guard — GOOGLE_API_KEY must not shadow ADC
+      # resolveWebAgentModelFromEnv checks provider keys BEFORE
+      # SHIPLIGHT_API_TOKEN, so a stray key in this job's environment would
+      # silently route the gates somewhere other than the proxy — and bill it.
+      - name: Guard — no provider key may shadow the proxy token
         run: |
-          if [ -n "${GOOGLE_API_KEY:-}" ]; then
-            printf '::%s::%s\n' error "GOOGLE_API_KEY is set; it takes precedence over Vertex/ADC in resolveWebAgentModelFromEnv and forces the retired AI-Studio path. Unset it — the org runs live-AI via Vertex/ADC."
-            exit 1
-          fi
-          echo "GOOGLE_API_KEY not set — live-AI routes through Vertex/ADC."
+          for key in GOOGLE_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY; do
+            if [ -n "$(eval echo \"\${$key:-}\")" ]; then
+              printf '::%s::%s\n' error "$key is set; it takes precedence over SHIPLIGHT_API_TOKEN in resolveWebAgentModelFromEnv, so the gates would not exercise the proxy path. Unset it."
+              exit 1
+            fi
+          done
+          echo "No provider key set — live-AI routes through the Shiplight proxy."
 
       - name: Compute OLD (live npm) and NEW (patch+1) versions
         id: versions
@@ -396,9 +404,7 @@ jobs:
         id: example_homepage_gate
         working-directory: apps/cli
         env:
-          GOOGLE_GENAI_USE_VERTEXAI: "true"
-          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
-          GOOGLE_CLOUD_LOCATION: global
+          SHIPLIGHT_API_TOKEN: ${{ secrets.SHIPLIGHT_API_TOKEN }}
           PLAYWRIGHT_JSON_OUTPUT_FILE: /tmp/qc-observations/cli/example-homepage.playwright.json
         run: pnpm exec playwright test -c playwright.config.ts tests/examples/example-homepage.yaml.spec.ts
 
@@ -406,9 +412,7 @@ jobs:
         continue-on-error: true
         working-directory: apps/cli
         env:
-          GOOGLE_GENAI_USE_VERTEXAI: "true"
-          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
-          GOOGLE_CLOUD_LOCATION: global
+          SHIPLIGHT_API_TOKEN: ${{ secrets.SHIPLIGHT_API_TOKEN }}
           PLAYWRIGHT_JSON_OUTPUT_FILE: /tmp/qc-observations/cli/google-search.playwright.json
         run: pnpm exec playwright test -c playwright.config.ts tests/examples/google-search.yaml.spec.ts
 
@@ -457,9 +461,7 @@ jobs:
         # (e.g. cloud-feature tests against app.shiplight.ai).
         working-directory: examples-repo/yaml-examples
         env:
-          GOOGLE_GENAI_USE_VERTEXAI: "true"
-          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
-          GOOGLE_CLOUD_LOCATION: global
+          SHIPLIGHT_API_TOKEN: ${{ secrets.SHIPLIGHT_API_TOKEN }}
         run: |
           set -euo pipefail
           # Record which examples commit this gate ran against (checkout is HEAD
@@ -750,7 +752,12 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
-          token: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          # Falls back to the job's own token: RELEASE_PUSH_TOKEN exists to push
+          # the version bump back to main, and that step is gated on
+          # `!inputs.dry_run`. Without the fallback an unset secret is passed as
+          # an empty string, which actions/checkout rejects outright — so a dry
+          # run died at step one on a credential it never needed.
+          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v6
