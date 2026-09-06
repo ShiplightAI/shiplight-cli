@@ -20,13 +20,16 @@ test('SDK publish workflow auto-bumps the live npm patch version before building
 
   const checkout = stepNamed('Checkout main');
   assert.equal(checkout.with.ref, 'main');
-  // Falls back to the job token so a dry run needs no secret at all; a real
-  // run is still held to RELEASE_PUSH_TOKEN by the guard asserted below,
-  // which fails at the start rather than at the push an hour later.
-  assert.equal(checkout.with.token, '${{ secrets.RELEASE_PUSH_TOKEN || github.token }}');
-  const pushTokenGuard = stepNamed('Guard — RELEASE_PUSH_TOKEN required for a real run');
-  assert.equal(pushTokenGuard.if, '${{ !inputs.dry_run }}');
-  assert.match(pushTokenGuard.run, /RELEASE_PUSH_TOKEN/);
+  // The bump push uses a GitHub App installation token, not the job token and
+  // not a release PAT. github.token cannot do this job: pushes made with it do
+  // not trigger workflows, so the bump would never reach release-drafter, and
+  // it is subject to branch protection. The app token is the same credential
+  // sync-yaml-spec.yml uses, so the repository needs one fewer secret.
+  assert.equal(checkout.with.token, '${{ steps.app_token.outputs.token }}');
+  const appToken = publishJob.steps.find((s) => s.id === 'app_token');
+  assert.ok(appToken, 'the checkout token must come from a create-github-app-token step');
+  assert.match(String(appToken.uses), /create-github-app-token/);
+  assert.match(String(appToken.with?.['private-key']), /SHIPLIGHT_OPS_GITHUB_APP_KEY/);
   assert.equal(checkout.with['fetch-depth'], 0);
 
   const versions = stepNamed('Compute OLD (live npm) and NEW (patch+1) versions');

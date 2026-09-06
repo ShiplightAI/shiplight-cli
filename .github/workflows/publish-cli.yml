@@ -44,29 +44,27 @@ jobs:
       # gates below.
       id-token: write
     steps:
+      # The release push needs a credential the job token cannot provide: pushes
+      # made with github.token deliberately do not trigger workflows, so the
+      # bump would never reach release-drafter, and they are subject to branch
+      # protection like any other push. A GitHub App installation token does
+      # both, is not tied to a person, and is the same credential
+      # sync-yaml-spec.yml already uses — so there is no separate release PAT.
+      - name: Generate GitHub App Token
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          owner: ${{ vars.ORGANIZATION_NAME }}
+          app-id: ${{ vars.SHIPLIGHT_OPS_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SHIPLIGHT_OPS_GITHUB_APP_KEY }}
+          repositories: ${{ github.event.repository.name }}
+
       - name: Checkout main
         uses: actions/checkout@v6
         with:
           ref: main
-          # Falls back to the job's own token: RELEASE_PUSH_TOKEN exists to push
-          # the version bump back to main, and that step is gated on
-          # `!inputs.dry_run`. Without the fallback an unset secret is passed as
-          # an empty string, which actions/checkout rejects outright — so a dry
-          # run died at step one on a credential it never needed.
-          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
+          token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
-
-      # The fallback above keeps dry runs working without any secret. A real run
-      # still needs RELEASE_PUSH_TOKEN to push the bump, so require it here —
-      # otherwise the failure lands on the push step, an hour of gates later.
-      - name: Guard — RELEASE_PUSH_TOKEN required for a real run
-        if: ${{ !inputs.dry_run }}
-        run: |
-          if [ -z "${{ secrets.RELEASE_PUSH_TOKEN }}" ]; then
-            printf '::%s::%s\n' error "Secret RELEASE_PUSH_TOKEN is not set. A real publish pushes the version bump back to main and cannot complete without it. Re-run with dry_run: true to exercise the gates only."
-            exit 1
-          fi
-          echo "RELEASE_PUSH_TOKEN is set."
 
       - uses: pnpm/action-setup@v5
         with:
@@ -652,8 +650,6 @@ jobs:
         if: ${{ !inputs.dry_run }}
         working-directory: apps/cli
         run: pnpm publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit bump and push main
         if: ${{ !inputs.dry_run }}
@@ -748,16 +744,26 @@ jobs:
       # (run 32774879615) failed after every guard had passed.
       id-token: write
     steps:
+      # The release push needs a credential the job token cannot provide: pushes
+      # made with github.token deliberately do not trigger workflows, so the
+      # bump would never reach release-drafter, and they are subject to branch
+      # protection like any other push. A GitHub App installation token does
+      # both, is not tied to a person, and is the same credential
+      # sync-yaml-spec.yml already uses — so there is no separate release PAT.
+      - name: Generate GitHub App Token
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          owner: ${{ vars.ORGANIZATION_NAME }}
+          app-id: ${{ vars.SHIPLIGHT_OPS_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SHIPLIGHT_OPS_GITHUB_APP_KEY }}
+          repositories: ${{ github.event.repository.name }}
+
       - name: Checkout main
         uses: actions/checkout@v6
         with:
           ref: main
-          # Falls back to the job's own token: RELEASE_PUSH_TOKEN exists to push
-          # the version bump back to main, and that step is gated on
-          # `!inputs.dry_run`. Without the fallback an unset secret is passed as
-          # an empty string, which actions/checkout rejects outright — so a dry
-          # run died at step one on a credential it never needed.
-          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
+          token: ${{ steps.app_token.outputs.token }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v6
@@ -913,8 +919,6 @@ jobs:
         # which is about npm re-packing workspace protocols — does not apply to an
         # already-pnpm-packed tarball.
         run: npm publish "${{ steps.guard.outputs.tarball }}" --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump apps/cli/package.json and push main
         env:
