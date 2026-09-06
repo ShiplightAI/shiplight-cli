@@ -1,6 +1,6 @@
 {
   "name": "@shiplightai/mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "mcpName": "ai.shiplight/shiplight",
   "type": "module",
   "description": "Shiplight MCP server for AI-powered test automation",

@@ -2,6 +2,13 @@
 
 All notable changes to `@shiplightai/mcp` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## 0.2.2 (2026-09-06)
+
+### Other Changes
+
+- Keep server.json's repository field omitted while the repo is not public (29ab1de)
+- Initial commit (de28541)
+
 ## 0.2.1 (2026-08-05)
 
 ### Features

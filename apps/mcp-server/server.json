@@ -3,13 +3,13 @@
   "name": "ai.shiplight/shiplight",
   "title": "Shiplight",
   "description": "An MCP server that provides browser automation",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "websiteUrl": "https://www.shiplight.ai",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@shiplightai/mcp",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "transport": {
         "type": "stdio"
       },
