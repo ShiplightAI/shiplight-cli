@@ -2,6 +2,13 @@
 
 All notable changes to `shiplightai` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## 0.1.104 (2026-09-08)
+
+### Other Changes
+
+- Pin @shiplightai/devtools-assets exactly, and guard the pin (83bdf30)
+- Initial commit (de28541)
+
 ## 0.1.103 (2026-09-02)
 
 ### Features
