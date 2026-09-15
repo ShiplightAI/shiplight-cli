@@ -98,3 +98,5 @@ packages/*/.claude/*
 
 # Quality Center tool-generated recommendations (regenerated each scan)
 .quality/generated/
+
+shiplight-report/
