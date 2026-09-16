@@ -551,6 +551,7 @@ export const SDK_ENV_ALLOWLIST = [
   'GOOGLE_API_KEY',
   'ANTHROPIC_API_KEY',
   'OPENAI_API_KEY',
+  'OPENROUTER_API_KEY',
   // Custom endpoint for OpenAI-compatible APIs (self-hosted, proxies, Ollama)
   'OPENAI_BASE_URL',
   // Route Anthropic and Google through Vertex AI
@@ -599,6 +600,21 @@ export function buildSdkEnv(
     env[key] = source[key] ?? '';
   }
   return env;
+}
+
+/** Require a resolved model and explain OpenRouter's explicit model format. */
+export function requireWebAgentModel(
+  env: Record<string, string | undefined>,
+  model: string | undefined,
+): string {
+  if (model) return model;
+  if (env.OPENROUTER_API_KEY) {
+    throw new Error(
+      'OPENROUTER_API_KEY requires an explicit OpenRouter model. ' +
+      'Set WEB_AGENT_MODEL=openrouter:<provider>/<model> in your .env file.',
+    );
+  }
+  throw new Error('No AI model configured. Set WEB_AGENT_MODEL, GOOGLE_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, SHIPLIGHT_API_TOKEN, or Google Vertex via ADC (GOOGLE_GENAI_USE_VERTEXAI=true + GOOGLE_CLOUD_PROJECT) in your .env file (or in the runner environment for CI).');
 }
 
 /**
@@ -988,10 +1004,7 @@ export const test = base.extend<ShiplightFixtures>({
     // as buildSdkEnv() above: shell-level provider keys must not silently
     // override what the user declared in their project's .env.
     const shiplightEnv = getShiplightEnv();
-    const model = resolveWebAgentModelFromEnv(shiplightEnv);
-    if (!model) {
-      throw new Error('No AI model configured. Set WEB_AGENT_MODEL, GOOGLE_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, SHIPLIGHT_API_TOKEN, or Google Vertex via ADC (GOOGLE_GENAI_USE_VERTEXAI=true + GOOGLE_CLOUD_PROJECT) in your .env file (or in the runner environment for CI).');
-    }
+    const model = requireWebAgentModel(shiplightEnv, resolveWebAgentModelFromEnv(shiplightEnv));
     const computerUseModel = resolveComputerUseModelFromEnv(shiplightEnv);
     // Fallback chain (WEB_AGENT_FALLBACK_MODELS; on by default, opt out with an
     // empty value). Resolved here alongside the primary model and passed via

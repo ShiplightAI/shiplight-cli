@@ -203,6 +203,7 @@ describe('hasDirectProviderCredentials', () => {
     assert.strictEqual(hasDirectProviderCredentials({ GOOGLE_API_KEY: 'AIza' }), true);
     assert.strictEqual(hasDirectProviderCredentials({ ANTHROPIC_API_KEY: 'sk-ant' }), true);
     assert.strictEqual(hasDirectProviderCredentials({ OPENAI_API_KEY: 'sk' }), true);
+    assert.strictEqual(hasDirectProviderCredentials({ OPENROUTER_API_KEY: 'sk-or-v1' }), true);
     assert.strictEqual(
       hasDirectProviderCredentials({
         GOOGLE_GENAI_USE_VERTEXAI: 'true',

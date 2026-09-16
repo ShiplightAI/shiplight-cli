@@ -57,6 +57,8 @@ describe('resolveTemperature', () => {
     // Bedrock cross-region inference ids carry a `<xx>.` prefix.
     assert.strictEqual(resolveTemperature('bedrock:us.anthropic.claude-sonnet-5', 0), undefined);
     assert.strictEqual(resolveTemperature('bedrock:eu.anthropic.claude-opus-4-8', 0), undefined);
+    assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-sonnet-5', 0), undefined);
+    assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-opus-4-8', 0.7), undefined);
   });
 
   it('only gates Anthropic Claude models — non-Claude models on any provider keep temperature', () => {

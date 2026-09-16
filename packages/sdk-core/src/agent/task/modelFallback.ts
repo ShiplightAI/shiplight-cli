@@ -77,6 +77,19 @@ export function shouldFallBackToNextModel(error: unknown): boolean {
   return true;
 }
 
+/** Compact error detail for fallback logs, including the useful inner retry error. */
+export function describeModelFallbackError(error: unknown): string {
+  const status = statusCodeOf(error);
+  const message = error instanceof Error ? error.message : String(error);
+  const lastError = RetryError.isInstance(error) ? error.lastError : undefined;
+  const lastMessage = lastError instanceof Error ? lastError.message : undefined;
+  return [
+    status !== undefined ? `HTTP ${status}` : undefined,
+    message,
+    lastMessage && lastMessage !== message ? `last error: ${lastMessage}` : undefined,
+  ].filter((part): part is string => Boolean(part)).join('; ');
+}
+
 /**
  * Run `run` against each model in `models` (order = [primary, ...fallbacks]),
  * failing over to the next on an availability error and returning the first

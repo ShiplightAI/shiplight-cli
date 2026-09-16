@@ -58,6 +58,13 @@ describe('resolveWebAgentModelFromEnv', () => {
       assert.strictEqual(result, DEFAULT_OPENAI_MODEL);
     });
 
+    it('does not guess a model from OPENROUTER_API_KEY alone', () => {
+      assert.strictEqual(
+        resolveWebAgentModelFromEnv({ OPENROUTER_API_KEY: 'sk-or-v1-xxx' }),
+        undefined,
+      );
+    });
+
     it('prefers Google over Anthropic', () => {
       const result = resolveWebAgentModelFromEnv({
         GOOGLE_API_KEY: 'AIza-xxx',

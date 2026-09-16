@@ -10,6 +10,7 @@ import {
   parseVarsOverrideEnv,
   resolveAuthState,
   resolveProjectRoot,
+  requireWebAgentModel,
   resolveTestDataDir,
   resolveTestPage,
   resolveUserPath,
@@ -17,6 +18,25 @@ import {
 } from './fixture.js';
 import type { VariableStore } from 'shiplight-types';
 import type { BrowserContext, Page, TestInfo } from '@playwright/test';
+
+describe('requireWebAgentModel', () => {
+  it('returns the resolved model unchanged', () => {
+    assert.equal(
+      requireWebAgentModel(
+        { OPENROUTER_API_KEY: 'sk-or-v1-test' },
+        'openrouter:openai/gpt-4o',
+      ),
+      'openrouter:openai/gpt-4o',
+    );
+  });
+
+  it('explains the required OpenRouter model format when only its key is set', () => {
+    assert.throws(
+      () => requireWebAgentModel({ OPENROUTER_API_KEY: 'sk-or-v1-test' }, undefined),
+      /WEB_AGENT_MODEL=openrouter:<provider>\/<model>/,
+    );
+  });
+});
 
 /** Minimal VariableStore mock matching the interface createTestContext expects */
 function createMockVariableStore(): VariableStore & { isSensitive(key: string): boolean } {

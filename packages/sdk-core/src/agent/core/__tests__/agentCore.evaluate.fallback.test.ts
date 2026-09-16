@@ -17,6 +17,8 @@ let calledModels: string[] = [];
 // Per-model injected error / conclusion for the fallback tests.
 let errorByModel: Record<string, unknown> = {};
 let conclusionByModel: Record<string, string> = {};
+let fallbackLogs: string[] = [];
+let debugLogs: string[] = [];
 
 function rateLimited429(): APICallError {
   return new APICallError({
@@ -88,6 +90,20 @@ mock.module('../../../services/knowledgeService', {
   },
 });
 
+mock.module('../../../utils/agentLogger', {
+  namedExports: {
+    agentLogger: {
+      log: (message: string) => fallbackLogs.push(message),
+    },
+  },
+});
+
+mock.module('../../../utils/logger', {
+  defaultExport: {
+    debug: (message: string) => debugLogs.push(message),
+  },
+});
+
 // agentCore imports both action generators at module top (for its dispatcher,
 // which evaluate() doesn't use). Stub them so their heavy transitive graphs
 // (CUA providers, DOM) don't load under the mocked `../../llm` barrel.
@@ -123,6 +139,8 @@ describe('agentCore.evaluate: model fallback on availability failure', () => {
     calledModels = [];
     errorByModel = {};
     conclusionByModel = {};
+    fallbackLogs = [];
+    debugLogs = [];
   });
 
   it('falls over to the fallback model when the primary is rate-limited (429)', async () => {
@@ -133,6 +151,9 @@ describe('agentCore.evaluate: model fallback on availability failure', () => {
 
     assert.strictEqual(result.success, true, 'assertion should resolve via the fallback model');
     assert.deepStrictEqual(calledModels, ['test-model', 'fallback-model']); // primary 429 → fallback
+    assert.equal(fallbackLogs.length, 1);
+    assert.match(fallbackLogs[0]!, /test-model.*Resource exhausted.*fallback-model/);
+    assert.deepStrictEqual(debugLogs, fallbackLogs);
   });
 
   it('unwraps an exhausted-retry RetryError (AI_RetryError) and still falls over', async () => {

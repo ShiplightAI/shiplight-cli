@@ -17,6 +17,7 @@ import {
 	AnthropicProviderOptionsResult,
 } from './anthropic';
 import { getOpenAIModel, getOpenAIProviderOptions, OpenAIProviderOptionsResult } from './openai';
+import { getOpenRouterModel, getOpenRouterProviderOptions, OpenRouterProviderOptionsResult } from './openrouter';
 
 // ---------------------------------------------------------------------------
 // Model name → provider auto-detection (when no provider: prefix is given)
@@ -53,6 +54,7 @@ const PROVIDER_FACTORIES: Record<string, ModelFactory> = {
 	anthropic: getAnthropicModel,
 	google: getGoogleModel,
 	openai: getOpenAIModel,
+	openrouter: getOpenRouterModel,
 };
 
 // ---------------------------------------------------------------------------
@@ -113,7 +115,7 @@ export function getModel(modelString: string): LanguageModelV4 {
 /**
  * Provider options result type
  */
-export type ProviderOptionsResult = GoogleProviderOptionsResult | AnthropicProviderOptionsResult | OpenAIProviderOptionsResult;
+export type ProviderOptionsResult = GoogleProviderOptionsResult | AnthropicProviderOptionsResult | OpenAIProviderOptionsResult | OpenRouterProviderOptionsResult;
 
 /**
  * Get provider-specific options for the model.
@@ -131,6 +133,9 @@ export function getProviderOptions(modelString: string, imageCount: number): Pro
 	}
 	if (provider === 'openai' || provider === 'azure') {
 		return getOpenAIProviderOptions(modelId);
+	}
+	if (provider === 'openrouter') {
+		return getOpenRouterProviderOptions(modelId);
 	}
 	if (provider === 'bedrock') {
 		// Bedrock hosts models from multiple providers; detect from model ID
@@ -176,6 +181,9 @@ export function resolveTemperature(
 		// cross-region `<xx>.` prefix (e.g. `us.anthropic.claude-sonnet-5`).
 		const match = modelId.match(/^(?:[a-z]{2}\.)?anthropic\.(claude-.+)$/);
 		if (match) claudeId = match[1];
+	} else if (provider === 'openrouter') {
+		const match = modelId.match(/^anthropic\/(claude-.+)$/);
+		if (match) claudeId = match[1];
 	}
 
 	if (claudeId !== undefined) {
@@ -188,3 +196,4 @@ export function resolveTemperature(
 export { getGoogleModel, getGoogleProviderOptions, isUsingVertexAI, type GoogleProviderOptionsResult } from './google';
 export { getAnthropicModel, getAnthropicProviderOptions, anthropicModelSupportsSamplingParams, type AnthropicProviderOptionsResult } from './anthropic';
 export { getOpenAIModel, getOpenAIProviderOptions, type OpenAIProviderOptionsResult } from './openai';
+export { getOpenRouterModel, getOpenRouterProviderOptions, type OpenRouterProviderOptionsResult } from './openrouter';

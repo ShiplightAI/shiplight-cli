@@ -302,7 +302,11 @@ export function resolveTierSelection(env: Env): TierSelection {
  */
 export function hasDirectProviderCredentials(env: Env): boolean {
   return Boolean(
-    env.GOOGLE_API_KEY || isGoogleVertexEnv(env) || env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY,
+    env.GOOGLE_API_KEY ||
+      isGoogleVertexEnv(env) ||
+      env.ANTHROPIC_API_KEY ||
+      env.OPENAI_API_KEY ||
+      env.OPENROUTER_API_KEY,
   );
 }
 

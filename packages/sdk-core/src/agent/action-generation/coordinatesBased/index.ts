@@ -10,10 +10,10 @@
  *   2. Import it here and add an entry to `PROVIDERS`.
  */
 
-import { getSdkConfig } from "../../../config";
 import { agentLogger } from "../../../utils/agentLogger";
+import logger from "../../../utils/logger";
 import { parseModel } from "../../llm";
-import { runWithModelFallback } from "../../task/modelFallback";
+import { describeModelFallbackError, runWithModelFallback } from "../../task/modelFallback";
 import { AgentOptions, GeneratedAction, TaskExecutionContext } from "../../core/types";
 import { runGeminiCua } from "./gemini";
 import { runOpenAICua } from "./openai";
@@ -75,15 +75,29 @@ export async function generateAction(
     return await runWithModelFallback(
       modelChain,
       (candidateModel) => {
-        const { modelId } = parseModel(candidateModel);
-        const providerKey = detectProvider(modelId);
+        const { provider: explicitProvider, modelId } = parseModel(candidateModel);
+        if (explicitProvider === "openrouter") {
+          throw new Error("OpenRouter computer use is not supported");
+        }
+        // Only providers with native CUA implementations participate in explicit
+        // routing. Preserve the legacy model-id detection for recognized prefixes
+        // such as vertex/azure/bedrock, which were historically ignored here.
+        const providerKey =
+          explicitProvider === "google" || explicitProvider === "openai"
+            ? explicitProvider
+            : detectProvider(modelId);
         const provider = PROVIDERS[providerKey];
         agentLogger.log(`Using CUA provider: ${providerKey} (model: ${modelId})`);
         const ctx: CuaContext = { statement, page, screenshotB64, viewportWidth, viewportHeight, modelId };
         return provider(ctx);
       },
-      (failedModel, nextModel) =>
-        agentLogger.log(`CUA model ${failedModel} unavailable; falling back to ${nextModel}`),
+      (failedModel, nextModel, error) => {
+        const message =
+          `CUA model ${failedModel} failed (${describeModelFallbackError(error)}); ` +
+          `falling back to ${nextModel}`;
+        agentLogger.log(message);
+        logger.debug(message);
+      },
     );
   } catch (error: any) {
     agentLogger.error(`CUA provider threw an error`, error);

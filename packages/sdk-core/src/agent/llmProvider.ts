@@ -14,7 +14,10 @@ export {
 	isUsingVertexAI,
 	getAnthropicModel,
 	getAnthropicProviderOptions,
+	getOpenRouterModel,
+	getOpenRouterProviderOptions,
 	type GoogleProviderOptionsResult,
 	type AnthropicProviderOptionsResult,
+	type OpenRouterProviderOptionsResult,
 	type ProviderOptionsResult,
 } from './llm';

@@ -140,7 +140,7 @@ export function buildSelfHealFailureError(originalError: unknown, healError: unk
   const suffix = isProviderConfigError(healError)
     ? `AI self-heal unavailable: the LLM provider is not configured (${healMessage}). ` +
       'That is an AI provider setting and is unrelated to the failure above. ' +
-      'Set a provider key (GOOGLE_API_KEY, ANTHROPIC_API_KEY or OPENAI_API_KEY) or SHIPLIGHT_API_TOKEN to enable self-healing.'
+      'Set a provider key (GOOGLE_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY or OPENROUTER_API_KEY) or SHIPLIGHT_API_TOKEN to enable self-healing.'
     : `Self-healing also failed: ${stripSelfHealPrefix(healMessage)}`;
 
   const combined = new Error(`${originalMessage}\n\n${suffix}`, { cause: originalError });

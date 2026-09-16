@@ -168,7 +168,7 @@ export async function fetchOrgSettings(
       fatal:
         `Shiplight API rejected SHIPLIGHT_API_TOKEN (HTTP ${response.status}). ` +
         `This run has no provider API key, so every AI call would go through the Shiplight proxy and fail once the browsers are already running. ` +
-        `Check SHIPLIGHT_API_TOKEN, or set a provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY) to run without Shiplight cloud.`,
+        `Check SHIPLIGHT_API_TOKEN, or set a provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY) to run without Shiplight cloud.`,
     };
   }
 
@@ -276,7 +276,7 @@ export function describeTierSelection(env: Env): { info: string[]; warnings: str
   if (selection.ignoredEnvVars.length > 0) {
     warnings.push(
       `Ignoring ${selection.ignoredEnvVars.join(', ')}: on the Shiplight LLM proxy the tier selects the model, and this run is using ${selection.webagent.primary}. ` +
-        `Set a provider API key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY) to choose models yourself.`,
+        `Set a provider API key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY) to choose models yourself.`,
     );
   }
 
