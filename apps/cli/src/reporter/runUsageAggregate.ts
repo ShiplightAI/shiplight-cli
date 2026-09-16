@@ -107,12 +107,23 @@ export function resolveRoutingProvider(provider: string, model: string): string 
  * customer-paid, and counts-only is the conservative label — never claim
  * billable traffic that can't be attributed.
  */
-export function detectUsageRouting(provider: string, env: ShiplightEnvStash): LlmRouting {
+export function detectUsageRouting(
+  provider: string,
+  env: ShiplightEnvStash,
+  model?: string,
+): LlmRouting {
   const override = env.SHIPLIGHT_USAGE_ROUTING;
   if (override === 'proxy' || override === 'byok' || override === 'custom_endpoint') return override;
+  // Token usage drops the routing prefix, but OpenRouter keeps its
+  // vendor-qualified `provider/model` slug. Use both signals so a native
+  // Gemini/OpenAI call remains attributed to its own routing when multiple
+  // provider keys are configured.
+  if (env.OPENROUTER_API_KEY && model?.includes('/')) return 'byok';
   const routingFor = PROVIDER_ROUTING[provider];
   if (routingFor) return routingFor(env);
-  const anyDirect = Object.values(PROVIDER_ROUTING).some((fn) => fn(env) !== 'proxy');
+  const anyDirect =
+    Boolean(env.OPENROUTER_API_KEY) ||
+    Object.values(PROVIDER_ROUTING).some((fn) => fn(env) !== 'proxy');
   return anyDirect ? 'byok' : 'proxy';
 }
 
@@ -167,7 +178,7 @@ export function aggregateRunUsageSummary(
   const summary = buildRunUsageSummary(details, { routing: 'proxy' });
   const byOperation = summary.by_operation.map((b) => {
     const provider = resolveRoutingProvider(b.provider, b.model);
-    return { ...b, provider, routing: detectUsageRouting(provider, env) };
+    return { ...b, provider, routing: detectUsageRouting(provider, env, b.model) };
   });
   // Re-sort: the unknown→openai provider rename can leave buckets out of
   // order relative to their published provider.

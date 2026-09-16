@@ -31,6 +31,7 @@ Examples:
 WEB_AGENT_MODEL=claude-sonnet-4-6         # → anthropic
 WEB_AGENT_MODEL=gemini-2.5-pro            # → google
 WEB_AGENT_MODEL=gpt-4o                    # → openai
+WEB_AGENT_MODEL=openrouter:openai/gpt-4o  # → OpenRouter
 WEB_AGENT_MODEL=o3-mini                   # → openai
 
 # Explicit provider prefix — override auto-detection
@@ -62,6 +63,9 @@ When `WEB_AGENT_MODEL` is not set, the first available API key determines the mo
 | `OPENAI_API_KEY` | `gpt-5.4-mini` |
 
 Priority follows the order above. If multiple keys are set, the first match wins.
+
+OpenRouter is not auto-selected from its key because its catalog spans providers;
+set an explicit `openrouter:<provider>/<model>` model.
 
 ## Providers
 
@@ -95,6 +99,16 @@ OPENAI_API_KEY=sk-...               # or any string for local servers
 OPENAI_BASE_URL=http://localhost:11434/v1
 WEB_AGENT_MODEL=openai:llama3       # prefix required for non-standard model names
 ```
+
+### OpenRouter
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-...
+WEB_AGENT_MODEL=openrouter:openai/gpt-4o
+```
+
+Coordinate-based computer use is not supported through OpenRouter; use it for
+the element-based web agent.
 
 ### Google Vertex AI
 
@@ -188,6 +202,7 @@ packages/sdk-core/src/agent/llm/
 ├── anthropic.ts        # Anthropic direct API
 ├── google.ts           # Google AI direct API
 ├── openai.ts           # OpenAI direct API
+├── openrouter.ts       # OpenRouter direct API
 ├── vertex.ts           # Vertex AI (Anthropic + Google models)
 ├── azure.ts            # Azure OpenAI
 └── bedrock.ts          # AWS Bedrock
@@ -214,6 +229,7 @@ The legacy flags are checked as fallback when no `provider:` prefix is present o
 | `GOOGLE_API_KEY` | For Google AI | Google AI API key |
 | `OPENAI_API_KEY` | For OpenAI | OpenAI API key |
 | `OPENAI_BASE_URL` | No | Custom endpoint for OpenAI-compatible APIs |
+| `OPENROUTER_API_KEY` | For OpenRouter | OpenRouter API key; requires `WEB_AGENT_MODEL=openrouter:<provider>/<model>` |
 | `AZURE_OPENAI_API_KEY` | For Azure | Azure OpenAI API key |
 | `AZURE_OPENAI_ENDPOINT` | For Azure | Azure OpenAI endpoint URL |
 | `AWS_REGION` | For Bedrock | AWS region |

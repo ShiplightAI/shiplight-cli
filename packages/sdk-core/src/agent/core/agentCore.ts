@@ -14,10 +14,12 @@ import { createKnowledgeParts, countKnowledgeImages } from '../../services/knowl
 import { toStrictOutputSchema } from '../../llm_tools/strictSchema';
 import { buildPageContext } from '../../utils/pageContext';
 import { convertUsageToTokenUsage } from '../../utils/tokenUsage';
+import { agentLogger } from '../../utils/agentLogger';
+import logger from '../../utils/logger';
 import { generateAction as generateActionWithCoordinatesBased } from '../action-generation/coordinatesBased';
 import { generateAction as generateActionWithElementBased } from '../action-generation/elementBased';
 import { getModel, getProviderOptions, resolveTemperature } from '../llm';
-import { runWithModelFallback } from '../task/modelFallback';
+import { describeModelFallbackError, runWithModelFallback } from '../task/modelFallback';
 import { AgentOptions, AssertionResult, GeneratedAction, TaskExecutionContext } from '../core/types';
 import { ActionGenerationDebugInfo, MessageForLogging, MessagePartForLogging, TokenUsage } from 'shiplight-types';
 import { withLlmTimeout } from '../llm/timeout';
@@ -278,6 +280,12 @@ Based on the above information, please determine if the statement is true.
 				// Provider options are model-specific — resolve per candidate model.
 				providerOptions: getProviderOptions(candidateModel, totalImageCount),
 			}));
+		}, (failedModel, nextModel, error) => {
+			const message =
+				`Verification model ${failedModel} failed (${describeModelFallbackError(error)}); ` +
+				`falling back to ${nextModel}`;
+			agentLogger.log(message);
+			logger.debug(message);
 		});
 
 		const { conclusion, explanation } = result.output!;

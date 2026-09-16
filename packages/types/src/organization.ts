@@ -172,6 +172,8 @@ export function resolveWebAgentModelFromEnv(env?: Env): string | undefined {
   if (isGoogleVertexEnv(env)) return DEFAULT_GOOGLE_MODEL;
   if (env.ANTHROPIC_API_KEY) return DEFAULT_ANTHROPIC_MODEL;
   if (env.OPENAI_API_KEY) return DEFAULT_OPENAI_MODEL;
+  // OpenRouter model ids are vendor-qualified and cannot be inferred from the key alone.
+  // Callers surface a targeted error asking for WEB_AGENT_MODEL=openrouter:<vendor>/<model>.
   if (env.SHIPLIGHT_API_TOKEN) return DEFAULT_WEBAGENT_MODEL;
   return undefined;
 }

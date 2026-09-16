@@ -48,8 +48,17 @@ function makeProvider(tag: string) {
 
 mock.module('../gemini', { namedExports: { runGeminiCua: makeProvider('gemini') } });
 mock.module('../openai', { namedExports: { runOpenAICua: makeProvider('openai') } });
-// parseModel identity so the mocked providers see the model id directly.
-mock.module('../../../llm', { namedExports: { parseModel: (m: string) => ({ modelId: m }) } });
+// Minimal provider:model parser so explicit-provider rejection is exercised.
+mock.module('../../../llm', {
+  namedExports: {
+    parseModel: (model: string) => {
+      const separator = model.indexOf(':');
+      return separator > 0
+        ? { provider: model.slice(0, separator), modelId: model.slice(separator + 1) }
+        : { provider: undefined, modelId: model };
+    },
+  },
+});
 mock.module('../shared', { namedExports: { prepareScreenshot: async () => 'screenshotB64' } });
 // modelFallback (loaded transitively) reads these off 'ai' for its instanceof checks.
 mock.module('ai', { namedExports: { APICallError, RetryError } });
@@ -123,6 +132,17 @@ describe('coordinatesBased generateAction: computer-use model fallback', () => {
 
     assert.strictEqual(result.status, 'error');
     assert.match(result.error ?? '', /No computer use model/);
+    assert.deepStrictEqual(calledModels, []);
+  });
+
+  it('rejects OpenRouter for coordinate-based computer use', async () => {
+    const result = await generateAction(
+      'click the button',
+      createContext('openrouter:openai/gpt-4o'),
+    );
+
+    assert.strictEqual(result.status, 'error');
+    assert.match(result.error ?? '', /OpenRouter computer use is not supported/);
     assert.deepStrictEqual(calledModels, []);
   });
 });

@@ -590,7 +590,7 @@ export function scaffoldProject(opts: ScaffoldOptions): ScaffoldResult {
     content: envExampleTpl,
     merge: {
       strategy: "append_missing_env_keys",
-      humanSummary: "Append missing AI-provider keys GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY to .env.example.",
+      humanSummary: "Append missing AI-provider keys GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY to .env.example.",
       instructions:
         "An existing .env.example was found. For each variable KEY in the template (lines matching `KEY=` or `# KEY=`), check whether KEY appears anywhere in the existing file. If not, append the corresponding line (preserving commented vs uncommented form). Group additions under a `# --- Shiplight ---` divider at the end. Preserve all existing content.",
     },

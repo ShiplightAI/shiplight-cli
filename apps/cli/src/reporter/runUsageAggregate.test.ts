@@ -127,6 +127,16 @@ describe('detectUsageRouting', () => {
     );
   });
 
+  it('recognizes OpenRouter vendor-qualified model usage as byok', () => {
+    const env = { ...proxyOnly, OPENROUTER_API_KEY: 'sk-or-v1-x' };
+    assert.strictEqual(detectUsageRouting('openai', env, 'openai/gpt-4o'), 'byok');
+    assert.strictEqual(
+      detectUsageRouting('anthropic', env, 'anthropic/claude-sonnet-4-6'),
+      'byok',
+    );
+    assert.strictEqual(detectUsageRouting('gemini', env, 'gemini-3.5-flash'), 'proxy');
+  });
+
   it("applies each provider's exact sdk-core truthiness to its Vertex flag", () => {
     // anthropic.ts isTruthy: 1/true/yes/on, trimmed, case-insensitive.
     for (const value of ['true', 'True', '1', 'yes', 'on', ' TRUE ']) {

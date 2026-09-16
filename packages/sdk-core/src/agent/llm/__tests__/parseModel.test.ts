@@ -62,6 +62,14 @@ describe('parseModel', () => {
       assert.deepStrictEqual(result, { provider: 'openai', modelId: 'gpt-5.4-mini' });
     });
 
+    it('should parse an OpenRouter vendor-qualified model', () => {
+      const result = parseModel('openrouter:anthropic/claude-sonnet-4-6');
+      assert.deepStrictEqual(result, {
+        provider: 'openrouter',
+        modelId: 'anthropic/claude-sonnet-4-6',
+      });
+    });
+
     it('should parse vertex:model for Anthropic models on Vertex', () => {
       const result = parseModel('vertex:claude-sonnet-4-6');
       assert.deepStrictEqual(result, { provider: 'vertex', modelId: 'claude-sonnet-4-6' });
@@ -160,6 +168,10 @@ describe('getProviderOptions', () => {
     assert.deepStrictEqual(opts, {});
   });
 
+  it('should return empty options for OpenRouter models', () => {
+    assert.deepStrictEqual(getProviderOptions('openrouter:openai/gpt-4o', 1), {});
+  });
+
   it('should return empty options for azure:gpt models', () => {
     const opts = getProviderOptions('azure:gpt-4o', 1);
     assert.deepStrictEqual(opts, {});
@@ -218,6 +230,13 @@ describe('getModel error handling', () => {
     assert.throws(
       () => getModel('openai:'),
       /Empty model ID/,
+    );
+  });
+
+  it('should throw an actionable error when OpenRouter has no API key', () => {
+    assert.throws(
+      () => getModel('openrouter:openai/gpt-4o'),
+      /OPENROUTER_API_KEY not configured/,
     );
   });
 });

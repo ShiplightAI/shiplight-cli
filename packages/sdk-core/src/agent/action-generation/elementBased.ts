@@ -14,7 +14,7 @@ import { ActionGenerationDebugInfo, MessageForLogging, MessagePartForLogging, To
 import {  AgentOptions, GeneratedAction, TaskExecutionContext } from '../core/types';
 
 import { getModel, getProviderOptions, resolveTemperature } from '../llm';
-import { runWithModelFallback } from '../task/modelFallback';
+import { describeModelFallbackError, runWithModelFallback } from '../task/modelFallback';
 import { getActionGenerationSystemPrompt, getActionGenerationUserPrompt } from './actionPrompts';
 import { generateAction as generateActionWithCoordinatesBased } from './coordinatesBased';
 import { withLlmTimeout, LLM_MAX_RETRIES } from '../llm/timeout';
@@ -301,8 +301,13 @@ export async function generateAction(
 					maxRetries: LLM_MAX_RETRIES,
 				}));
 			},
-			(failedModel, nextModel) =>
-				agentLogger.log(`Action-gen model ${failedModel} unavailable; falling back to ${nextModel}`),
+			(failedModel, nextModel, error) => {
+				const message =
+					`Action-gen model ${failedModel} failed (${describeModelFallbackError(error)}); ` +
+					`falling back to ${nextModel}`;
+				agentLogger.log(message);
+				logger.debug(message);
+			},
 		);
 	} catch (err) {
 		// The action union schema cannot represent an empty / "no matching element" action,

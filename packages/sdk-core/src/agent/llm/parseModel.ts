@@ -18,6 +18,7 @@ export const KNOWN_PROVIDERS = new Set([
 	'anthropic',
 	'google',
 	'openai',
+	'openrouter',
 	'vertex',
 	'azure',
 	'bedrock',

@@ -208,13 +208,15 @@ describe('scaffoldProject', () => {
   });
 
   describe('.env.example', () => {
-    it('lists the three LLM provider API keys as commented-out entries', () => {
+    it('lists the supported LLM provider API keys as commented-out entries', () => {
       const target = makeTarget();
       scaffold({ projectPath: target });
       const content = readFileSync(join(target, '.env.example'), 'utf-8');
       assert.match(content, /# GOOGLE_API_KEY=/);
       assert.match(content, /# ANTHROPIC_API_KEY=/);
       assert.match(content, /# OPENAI_API_KEY=/);
+      assert.match(content, /# OPENROUTER_API_KEY=/);
+      assert.match(content, /WEB_AGENT_MODEL=openrouter:anthropic\/claude-sonnet-4-6/);
     });
 
     it('documents the WEB_AGENT_MODEL override', () => {

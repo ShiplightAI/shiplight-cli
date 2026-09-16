@@ -112,6 +112,7 @@ The SDK supports any model from the following providers. Pass the model name dir
 | Google | `gemini-*` | `gemini-2.5-pro`, `gemini-2.5-flash` | `GOOGLE_API_KEY` |
 | Anthropic | `claude-*` | `claude-haiku-4-5`, `claude-sonnet-4-6`, `claude-opus-4-6` | `ANTHROPIC_API_KEY` |
 | OpenAI | `gpt-*`, `o1*`, `o3*`, `o4*`, `chatgpt-*` | `gpt-4o`, `o4-mini` | `OPENAI_API_KEY` |
+| OpenRouter | `openrouter:<provider>/<model>` | `openrouter:openai/gpt-4o` | `OPENROUTER_API_KEY` |
 
 **Explicit provider routing** — use `provider:model` to bypass auto-detection:
 
@@ -119,6 +120,7 @@ The SDK supports any model from the following providers. Pass the model name dir
 // Route through specific provider
 const agent = createAgent({ model: 'openai:gpt-4o' });
 const agent = createAgent({ model: 'anthropic:claude-sonnet-4-6' });
+const agent = createAgent({ model: 'openrouter:openai/gpt-4o' });
 
 // Useful for fine-tuned models or cloud-hosted variants
 const agent = createAgent({ model: 'openai:ft:gpt-4o:my-org' });
@@ -318,6 +320,7 @@ configureSdk({
     GOOGLE_API_KEY: 'your-google-api-key',       // for gemini-* models
     // ANTHROPIC_API_KEY: 'your-anthropic-key',   // for claude-* models
     // OPENAI_API_KEY: 'sk-...',                  // for gpt-*, o1*, o3*, o4* models
+    // OPENROUTER_API_KEY: 'sk-or-v1-...',        // requires openrouter:<provider>/<model>
   },
 
   // Optional: paths for logs and results
@@ -338,6 +341,7 @@ API keys must be passed via `configureSdk({ env })` — the SDK does not read `p
 | `GOOGLE_API_KEY` | Yes* | Google AI API key for `gemini-*` models |
 | `ANTHROPIC_API_KEY` | Yes* | Anthropic API key for `claude-*` models |
 | `OPENAI_API_KEY` | Yes* | OpenAI API key for `gpt-*`, `o1*`, `o3*`, `o4*` models |
+| `OPENROUTER_API_KEY` | Yes* | OpenRouter API key for explicit `openrouter:<provider>/<model>` models |
 
 *Provide the key for the provider matching your chosen model.
 

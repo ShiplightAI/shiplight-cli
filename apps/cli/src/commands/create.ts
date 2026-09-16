@@ -27,11 +27,11 @@ import { writeStdoutFlushed } from "../stdoutFlushed.js";
  */
 export const ENV_STEP_PROSE: Record<EnvSetupState, string> = {
   merge_example_then_diff:
-    "# .env AND .env.example both exist: merge .env.example first, then add any newly-required keys to your .env — credentials are SHIPLIGHT_API_TOKEN (run: npx shiplight setup-api-token) or an AI provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY); do NOT cp over your existing .env",
+    "# .env AND .env.example both exist: merge .env.example first, then add any newly-required keys to your .env — credentials are SHIPLIGHT_API_TOKEN (run: npx shiplight setup-api-token) or an AI provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY); do NOT cp over your existing .env",
   diff_fresh_example:
     "# A fresh .env.example was just written next to your existing .env — diff them and add any new required keys; credentials are SHIPLIGHT_API_TOKEN (run: npx shiplight setup-api-token) or an AI provider key (e.g. GOOGLE_API_KEY); do NOT overwrite",
   review_existing_env:
-    "# .env already exists — review it and ensure credentials are set: SHIPLIGHT_API_TOKEN (run: npx shiplight setup-api-token) or an AI provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY); do NOT overwrite",
+    "# .env already exists — review it and ensure credentials are set: SHIPLIGHT_API_TOKEN (run: npx shiplight setup-api-token) or an AI provider key (GOOGLE_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / OPENROUTER_API_KEY); do NOT overwrite",
   copy_example_after_merge:
     "# AFTER merging .env.example above, run: cp .env.example .env, then: npx shiplight setup-api-token  (or set an AI provider key like GOOGLE_API_KEY)",
   copy_example:

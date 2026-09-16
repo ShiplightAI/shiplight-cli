@@ -2,6 +2,12 @@
 
 All notable changes to `shiplightai` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## Unreleased
+
+### Features
+
+- **llm:** add native OpenRouter routing with `OPENROUTER_API_KEY` and `openrouter:<provider>/<model>`
+
 ## 0.1.104 (2026-09-08)
 
 ### Other Changes

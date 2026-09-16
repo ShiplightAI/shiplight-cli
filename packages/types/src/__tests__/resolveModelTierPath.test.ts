@@ -116,6 +116,7 @@ describe('BYOK is untouched — the customer pays the provider, so the customer 
     ['google key', { GOOGLE_API_KEY: 'AIza' }],
     ['anthropic key', { ANTHROPIC_API_KEY: 'sk-ant' }],
     ['openai key', { OPENAI_API_KEY: 'sk' }],
+    ['openrouter key', { OPENROUTER_API_KEY: 'sk-or-v1' }],
     ['vertex ADC', { GOOGLE_GENAI_USE_VERTEXAI: 'true', GOOGLE_CLOUD_PROJECT: 'proj' }],
   ];
 
