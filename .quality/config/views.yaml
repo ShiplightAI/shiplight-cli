@@ -12,3 +12,8 @@ views:
     feature_ids:
       - 001-web-agent-engine
       - 003-shiplightai-mcp-server
+  - id: sdk
+    name: SDK
+    description: SDK package view for @shiplightai/sdk and the shared web-agent engine.
+    feature_ids:
+      - 001-web-agent-engine
