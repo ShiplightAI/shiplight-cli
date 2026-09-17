@@ -131,7 +131,7 @@ describe('detectUsageRouting', () => {
     const env = { ...proxyOnly, OPENROUTER_API_KEY: 'sk-or-v1-x' };
     assert.strictEqual(detectUsageRouting('openai', env, 'openai/gpt-4o'), 'byok');
     assert.strictEqual(
-      detectUsageRouting('anthropic', env, 'anthropic/claude-sonnet-4-6'),
+      detectUsageRouting('anthropic', env, 'anthropic/claude-sonnet-4.6'),
       'byok',
     );
     assert.strictEqual(detectUsageRouting('gemini', env, 'gemini-3.5-flash'), 'proxy');

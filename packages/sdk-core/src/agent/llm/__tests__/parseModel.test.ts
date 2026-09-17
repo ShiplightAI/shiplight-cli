@@ -63,10 +63,10 @@ describe('parseModel', () => {
     });
 
     it('should parse an OpenRouter vendor-qualified model', () => {
-      const result = parseModel('openrouter:anthropic/claude-sonnet-4-6');
+      const result = parseModel('openrouter:anthropic/claude-sonnet-4.6');
       assert.deepStrictEqual(result, {
         provider: 'openrouter',
-        modelId: 'anthropic/claude-sonnet-4-6',
+        modelId: 'anthropic/claude-sonnet-4.6',
       });
     });
 

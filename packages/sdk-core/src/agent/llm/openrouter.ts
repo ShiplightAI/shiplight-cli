@@ -3,7 +3,7 @@
  *
  * Provides OpenRouter model instances through the official Vercel AI SDK
  * provider. Model ids use OpenRouter's upstream-qualified slug format, for
- * example `openai/gpt-4o` or `anthropic/claude-sonnet-4-6`.
+ * example `openai/gpt-4o` or `anthropic/claude-sonnet-4.6`.
  */
 
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';

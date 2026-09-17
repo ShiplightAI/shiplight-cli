@@ -216,7 +216,7 @@ describe('scaffoldProject', () => {
       assert.match(content, /# ANTHROPIC_API_KEY=/);
       assert.match(content, /# OPENAI_API_KEY=/);
       assert.match(content, /# OPENROUTER_API_KEY=/);
-      assert.match(content, /WEB_AGENT_MODEL=openrouter:anthropic\/claude-sonnet-4-6/);
+      assert.match(content, /WEB_AGENT_MODEL=openrouter:anthropic\/claude-sonnet-4\.6/);
     });
 
     it('documents the WEB_AGENT_MODEL override', () => {
