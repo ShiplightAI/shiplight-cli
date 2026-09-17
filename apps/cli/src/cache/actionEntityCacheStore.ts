@@ -3,12 +3,12 @@
  *
  * Interface for reading/writing cached action entity stores per test file.
  * Two implementations:
- * - LocalActionEntityCache: reads/writes .shiplight/cache/ on local filesystem
+ * - LocalActionEntityCache: reads/writes .shiplight/action-cache/ on local filesystem
  * - CloudActionEntityCache: calls Shiplight API backed by Supabase DB
  *
  * Selection:
- * - NODE_ENV=production + SHIPLIGHT_API_TOKEN → CloudActionEntityCache
- * - Otherwise → LocalActionEntityCache
+ * - SHIPLIGHT_ACTION_CACHE_BACKEND=local/cloud explicitly selects the backend
+ * - auto (default): CI + SHIPLIGHT_API_TOKEN → cloud; otherwise → local
  */
 
 import * as fs from 'fs';
@@ -43,8 +43,9 @@ export interface ActionEntityCache {
 
 /**
  * Create the appropriate cache based on environment.
- * - CI + SHIPLIGHT_API_TOKEN → CloudActionEntityCache
- * - Otherwise → LocalActionEntityCache
+ * - local: filesystem only, even in CI with a token
+ * - cloud: requires a token, works outside CI too
+ * - auto (default): CI + token → cloud; otherwise → local
  *
  * Uses the CI env var (set by GitHub Actions, CircleCI, etc.) rather than
  * NODE_ENV, since NODE_ENV=production is commonly set on dev machines.
@@ -54,7 +55,19 @@ export function createActionEntityCache(cwd: string): ActionEntityCache {
   // live in `.env`, so it stays on process.env. The token is user config and
   // comes from the .env stash (so a stale shell-level token doesn't
   // accidentally opt a dev machine into the cloud cache).
-  const apiToken = getShiplightEnv().SHIPLIGHT_API_TOKEN;
+  const env = getShiplightEnv();
+  const backend = env.SHIPLIGHT_ACTION_CACHE_BACKEND ?? 'auto';
+  const apiToken = env.SHIPLIGHT_API_TOKEN;
+  if (backend === 'local') return new LocalActionEntityCache(cwd);
+  if (backend === 'cloud') {
+    if (!apiToken?.trim()) {
+      throw new Error('SHIPLIGHT_ACTION_CACHE_BACKEND=cloud requires SHIPLIGHT_API_TOKEN.');
+    }
+    return new CloudActionEntityCache();
+  }
+  if (backend !== 'auto') {
+    throw new Error('SHIPLIGHT_ACTION_CACHE_BACKEND must be auto, local, or cloud.');
+  }
   if (process.env.CI && apiToken) {
     return new CloudActionEntityCache();
   }
@@ -83,7 +96,7 @@ export function unescapeTestPath(fileName: string): string {
 
 /**
  * File-based cache for dev environments.
- * Reads/writes JSON files in .shiplight/cache/{escaped_path}.json.
+ * Reads/writes JSON files in .shiplight/action-cache/{escaped_path}.json.
  * Persistent across runs on the same machine.
  */
 class LocalActionEntityCache implements ActionEntityCache {
