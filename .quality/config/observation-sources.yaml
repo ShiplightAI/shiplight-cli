@@ -3,7 +3,7 @@
 # upload; parser selection does not belong in this source configuration.
 profiles:
   - id: "monots-cli-publish"
-    name: "Monots CLI publish workflow"
+    name: "Shiplight CLI publish workflow"
     description: "Fetch canonical CLI and shared SDK observations from publish-cli.yml."
     transport: "github-actions"
     observation_path: "quality-observations.json"
@@ -17,7 +17,7 @@ profiles:
       - path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
         label: "Shared SDK quality map"
     github:
-      repo: "ShiplightAI/monots"
+      repo: "ShiplightAI/shiplight-cli"
       workflow: "publish-cli.yml"
       artifact_names:
         - "quality-cli-observations"
@@ -27,7 +27,7 @@ profiles:
         - "GITHUB_TOKEN"
 
   - id: "monots-mcp-publish"
-    name: "Monots MCP publish workflow"
+    name: "Shiplight MCP publish workflow"
     description: "Fetch canonical MCP and shared SDK observations from publish-mcp.yml."
     transport: "github-actions"
     observation_path: "quality-observations.json"
@@ -41,10 +41,31 @@ profiles:
       - path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
         label: "Shared SDK quality map"
     github:
-      repo: "ShiplightAI/monots"
+      repo: "ShiplightAI/shiplight-cli"
       workflow: "publish-mcp.yml"
       artifact_names:
         - "quality-mcp-observations"
+        - "sdk-tests-observations"
+    auth:
+      required_env:
+        - "GITHUB_TOKEN"
+
+  - id: "shiplight-sdk-publish"
+    name: "Shiplight SDK publish workflow"
+    description: "Fetch canonical shared SDK observations from publish-sdk.yml."
+    transport: "github-actions"
+    observation_path: "quality-observations.json"
+    source_refs:
+      - path: ".github/workflows/publish-sdk.yml"
+        label: "SDK publish workflow"
+      - path: ".github/workflows/sdk-tests.yml"
+        label: "Shared SDK release gate"
+      - path: ".quality/evidence/001-web-agent-engine/quality-map.yaml"
+        label: "Shared SDK quality map"
+    github:
+      repo: "ShiplightAI/shiplight-cli"
+      workflow: "publish-sdk.yml"
+      artifact_names:
         - "sdk-tests-observations"
     auth:
       required_env:
