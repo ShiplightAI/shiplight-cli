@@ -58,7 +58,7 @@ describe('resolveTemperature', () => {
     assert.strictEqual(resolveTemperature('bedrock:us.anthropic.claude-sonnet-5', 0), undefined);
     assert.strictEqual(resolveTemperature('bedrock:eu.anthropic.claude-opus-4-8', 0), undefined);
     assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-sonnet-5', 0), undefined);
-    assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-opus-4-8', 0.7), undefined);
+    assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-opus-4.8', 0.7), undefined);
   });
 
   it('only gates Anthropic Claude models — non-Claude models on any provider keep temperature', () => {
@@ -82,6 +82,7 @@ describe('resolveTemperature', () => {
   });
 
   it('honors an explicitly requested temperature where sampling is accepted', () => {
+    assert.strictEqual(resolveTemperature('openrouter:anthropic/claude-sonnet-4.6', 0.5), 0.5);
     assert.strictEqual(resolveTemperature('google:gemini-3.5-flash', 0.7), 0.7);
     assert.strictEqual(resolveTemperature('anthropic:claude-haiku-4-5', 0.5), 0.5);
     // ...but still omits it where the model rejects sampling entirely.

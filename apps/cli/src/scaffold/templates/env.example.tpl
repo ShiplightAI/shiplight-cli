@@ -11,4 +11,4 @@
 
 # Optional: override the default AI model.
 # WEB_AGENT_MODEL=claude-sonnet-4-6
-# WEB_AGENT_MODEL=openrouter:anthropic/claude-sonnet-4-6
+# WEB_AGENT_MODEL=openrouter:anthropic/claude-sonnet-4.6

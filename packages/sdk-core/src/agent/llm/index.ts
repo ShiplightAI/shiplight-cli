@@ -183,7 +183,8 @@ export function resolveTemperature(
 		if (match) claudeId = match[1];
 	} else if (provider === 'openrouter') {
 		const match = modelId.match(/^anthropic\/(claude-.+)$/);
-		if (match) claudeId = match[1];
+		// OpenRouter uses dotted versions; normalize only for the sampling check.
+		if (match) claudeId = match[1]!.replace(/(\d)\.(\d)/g, '$1-$2');
 	}
 
 	if (claudeId !== undefined) {
