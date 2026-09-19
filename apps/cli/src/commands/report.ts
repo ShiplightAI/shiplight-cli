@@ -13,6 +13,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { createHash } from 'node:crypto';
 import { type ReportData, type ReportTest, type ReportStep } from '../reporter/template.js';
 import { writeHtmlReport, writeReportDataFile } from '../reporter/reportFiles.js';
 import { summarizeUploadError, uploadToCloud } from '../reporter/cloudUpload.js';
@@ -42,7 +43,9 @@ export async function runReport(args: string[]) {
     console.log('                     "Local" everywhere else.');
     console.log('');
     console.log('Examples:');
-    console.log('  shiplight report                                              # regenerate ./shiplight-report/index.html');
+    console.log(
+      '  shiplight report                                              # regenerate ./shiplight-report/index.html',
+    );
     console.log('  shiplight report my-report --open                             # regenerate and open');
     console.log('  shiplight report --merge all-shards/*/shiplight-report/       # merge shard reports');
     console.log('  shiplight report --merge shard-0/ shard-1/ -o combined-report # merge with custom output');
@@ -160,11 +163,9 @@ async function runSingleReport(args: string[], shouldOpen: boolean, triggerOverr
   // `looksLikeFlag`, not a `--` test: a leftover single-dash token (an unknown
   // flag, or a `--trigger -nightly` value the parser declined to swallow) would
   // otherwise be resolved as the report folder and fail the whole command.
-  const folder = args.find(a => !looksLikeFlag(a)) || resolveDefaultReportFolder();
+  const folder = args.find((a) => !looksLikeFlag(a)) || resolveDefaultReportFolder();
 
-  const outputDir = path.isAbsolute(folder)
-    ? folder
-    : path.join(process.cwd(), folder);
+  const outputDir = path.isAbsolute(folder) ? folder : path.join(process.cwd(), folder);
 
   const reportDataPath = path.join(outputDir, 'report-data.json');
 
@@ -197,14 +198,16 @@ async function runSingleReport(args: string[], shouldOpen: boolean, triggerOverr
     try {
       const open = (await import('open')).default;
       await open(htmlPath);
-    } catch { /* open is optional */ }
+    } catch {
+      /* open is optional */
+    }
   }
 }
 
 async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary: boolean, triggerOverride?: string) {
   // Parse --output / -o flag
   let outputDir = path.join(process.cwd(), 'shiplight-report');
-  const outputIdx = args.findIndex(a => a === '-o' || a === '--output');
+  const outputIdx = args.findIndex((a) => a === '-o' || a === '--output');
   if (outputIdx !== -1 && args[outputIdx + 1]) {
     const outputArg = args[outputIdx + 1];
     outputDir = path.isAbsolute(outputArg) ? outputArg : path.join(process.cwd(), outputArg);
@@ -238,6 +241,8 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
   const shardUsageSummaries: (RunUsageSummary | undefined)[] = [];
   const shardCacheSummaries: (RunCacheSummary | undefined)[] = [];
   const shardCacheExecutionSummaries: (RunCacheExecutionSummary | undefined)[] = [];
+  const shardClientRunIds: string[] = [];
+  let containsDirectShardReport = false;
   let totalDuration = 0;
   let shardCount = 0;
 
@@ -273,6 +278,8 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
     // Unlike cacheSummary, this one is a plain sum: shards execute disjoint tests,
     // so no statement is counted twice. See mergeCacheExecutionSummaries.
     shardCacheExecutionSummaries.push(shardData.cacheExecutionSummary);
+    if (shardData.clientRunId) shardClientRunIds.push(shardData.clientRunId);
+    containsDirectShardReport ||= isDirectShardReport(shardData);
 
     // Copy screenshots with shard prefix
     const srcScreenshotsDir = path.join(dir, 'screenshots');
@@ -318,6 +325,12 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
   // is `undefined` for dev builds, so uploaded artifacts never carry
   // `"dev"` as the version; `undefined` is dropped by JSON.stringify.
   const reportData: ReportData = {
+    clientRunId:
+      new Set(shardClientRunIds).size === 1
+        ? shardClientRunIds[0]
+        : `merge-${createHash('sha256')
+            .update(JSON.stringify(allTests.map((test) => [test.file, test.title, test.startTime])))
+            .digest('hex')}`,
     tests: allTests,
     totalDuration,
     timestamp: new Date().toISOString(),
@@ -341,8 +354,14 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
       : `\nMerged ${allTests.length} tests from ${shardCount} shards into: ${outputDir} (report-data.json only)`,
   );
 
-  // Cloud upload
-  await maybeUploadToCloud(reportData, outputDir, triggerOverride);
+  // Direct-upload shards have already registered and completed their own
+  // batches. Uploading this merged artifact as a legacy completion would mix
+  // two protocols under the shared clientRunId and could duplicate slots.
+  if (containsDirectShardReport && isReportToCloudEnabled()) {
+    console.warn('[report] Shards were uploaded directly; skipping cloud upload of the merged report.');
+  } else {
+    await maybeUploadToCloud(reportData, outputDir, triggerOverride);
+  }
 
   // GitHub step summary
   if (githubSummary) {
@@ -355,8 +374,14 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
     try {
       const open = (await import('open')).default;
       await open(htmlPath);
-    } catch { /* open is optional */ }
+    } catch {
+      /* open is optional */
+    }
   }
+}
+
+export function isDirectShardReport(reportData: Pick<ReportData, 'batchId' | 'expectedBatchCount'>): boolean {
+  return Boolean(reportData.batchId || reportData.expectedBatchCount !== undefined);
 }
 
 // Validate that artifactPath doesn't escape baseDir via path traversal (e.g. ../../etc/passwd),
@@ -406,19 +431,15 @@ async function maybeUploadToCloud(reportData: ReportData, outputDir: string, tri
   if (!isReportToCloudEnabled()) return;
   const apiToken = process.env.SHIPLIGHT_API_TOKEN;
   if (!apiToken) {
-    const activeVar = process.env.SHIPLIGHT_REPORT_TO_CLOUD !== undefined
-      ? 'SHIPLIGHT_REPORT_TO_CLOUD'
-      : 'REPORT_TO_CLOUD';
+    const activeVar =
+      process.env.SHIPLIGHT_REPORT_TO_CLOUD !== undefined ? 'SHIPLIGHT_REPORT_TO_CLOUD' : 'REPORT_TO_CLOUD';
     console.warn(`[report] ${activeVar} is enabled but no SHIPLIGHT_API_TOKEN found, skipping cloud upload.`);
     return;
   }
   // Derive run start time from the earliest test start, falling back to report timestamp
-  const startTimes = reportData.tests
-    .map(t => t.startTime)
-    .filter((t): t is string => Boolean(t));
-  const runStartTime = startTimes.length > 0
-    ? startTimes.sort()[0]
-    : reportData.timestamp ?? new Date().toISOString();
+  const startTimes = reportData.tests.map((t) => t.startTime).filter((t): t is string => Boolean(t));
+  const runStartTime =
+    startTimes.length > 0 ? startTimes.sort()[0] : (reportData.timestamp ?? new Date().toISOString());
   try {
     // Non-fatal: don't fail the report step if cloud upload fails
     await uploadToCloud(reportData, outputDir, runStartTime, apiToken, triggerOverride);
@@ -439,11 +460,11 @@ function getTestDisplayName(test: ReportTest): { name: string; yamlPath: string 
 export function buildGitHubSummary(allTests: ReportTest[]): string {
   // Filter out Playwright setup files (auth.setup) which are infrastructure,
   // not user-facing tests — they'd clutter the summary without adding signal.
-  const tests = allTests.filter(t => !t.file.includes('auth.setup'));
-  const flaky = tests.filter(t => t.flaky);
-  const retried = tests.filter(t => !t.flaky && t.retries != null && t.retries > 0);
-  const passed = tests.filter(t => t.status === 'passed' && !t.flaky);
-  const failed = tests.filter(t => t.status !== 'passed');
+  const tests = allTests.filter((t) => !t.file.includes('auth.setup'));
+  const flaky = tests.filter((t) => t.flaky);
+  const retried = tests.filter((t) => !t.flaky && t.retries != null && t.retries > 0);
+  const passed = tests.filter((t) => t.status === 'passed' && !t.flaky);
+  const failed = tests.filter((t) => t.status !== 'passed');
   const total = tests.length;
 
   let summary = '## Test Results\n\n';
@@ -457,19 +478,19 @@ export function buildGitHubSummary(allTests: ReportTest[]): string {
   }
 
   if (failed.length > 0) {
-    const failedPaths = [...new Set(failed.map(t => getTestDisplayName(t).yamlPath))];
+    const failedPaths = [...new Set(failed.map((t) => getTestDisplayName(t).yamlPath))];
     summary += '### Failed\n\n';
     for (const p of failedPaths) {
       summary += `- \`npx shiplight test ${p}\`\n`;
     }
     summary += '\n**Run all failed tests**\n\n';
     summary += '```sh\n';
-    summary += `npx shiplight test ${failedPaths.map(p => `"${p}"`).join(' \\\n  ')}\n`;
+    summary += `npx shiplight test ${failedPaths.map((p) => `"${p}"`).join(' \\\n  ')}\n`;
     summary += '```\n\n';
   }
 
   if (flaky.length > 0) {
-    const flakyPaths = [...new Set(flaky.map(t => getTestDisplayName(t).yamlPath))];
+    const flakyPaths = [...new Set(flaky.map((t) => getTestDisplayName(t).yamlPath))];
     summary += `### Flaky (${flakyPaths.length})\n\n`;
     for (const p of flakyPaths) {
       summary += `- \`${p}\`\n`;
@@ -478,7 +499,7 @@ export function buildGitHubSummary(allTests: ReportTest[]): string {
   }
 
   if (retried.length > 0) {
-    const retriedPaths = [...new Set(retried.map(t => getTestDisplayName(t).yamlPath))];
+    const retriedPaths = [...new Set(retried.map((t) => getTestDisplayName(t).yamlPath))];
     summary += `### Retried (${retriedPaths.length})\n\n`;
     for (const p of retriedPaths) {
       summary += `- \`${p}\`\n`;
@@ -487,7 +508,7 @@ export function buildGitHubSummary(allTests: ReportTest[]): string {
   }
 
   if (passed.length > 0) {
-    const passedPaths = [...new Set(passed.map(t => getTestDisplayName(t).yamlPath))];
+    const passedPaths = [...new Set(passed.map((t) => getTestDisplayName(t).yamlPath))];
     summary += `<details><summary>Passed (${passedPaths.length})</summary>\n\n`;
     for (const p of passedPaths) {
       summary += `- ${p}\n`;

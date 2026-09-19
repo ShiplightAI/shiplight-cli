@@ -8,8 +8,15 @@ import { tmpdir } from 'node:os';
 // so we get real end-to-end coverage including arg parsing.
 import { execFileSync } from 'node:child_process';
 
-import { buildGitHubSummary, extractTriggerOption, isReportToCloudEnabled } from './report.js';
-import type { ReportTest } from '../reporter/template.js';
+import { buildGitHubSummary, extractTriggerOption, isDirectShardReport, isReportToCloudEnabled } from './report.js';
+import type { ReportData, ReportTest } from '../reporter/template.js';
+
+describe('direct shard report detection', () => {
+  it('distinguishes direct batch uploads from legacy merge inputs', () => {
+    assert.equal(isDirectShardReport({ batchId: 'shard-0', expectedBatchCount: 2 } as ReportData), true);
+    assert.equal(isDirectShardReport({} as ReportData), false);
+  });
+});
 
 const CLI_PATH = join(import.meta.dirname, '..', '..', 'dist', 'cli.js');
 const cliExists = existsSync(CLI_PATH);
@@ -18,9 +25,7 @@ const cliExists = existsSync(CLI_PATH);
 // built (e.g. CI runs test:unit without building the package), skip the whole
 // suite at the describe level — a per-test t.skip() does NOT halt the body, so
 // the spawn would still run and fail with "Cannot find module dist/cli.js".
-const skipNoBuild = cliExists
-  ? false
-  : ('dist/cli.js not found — run pnpm build first' as const);
+const skipNoBuild = cliExists ? false : ('dist/cli.js not found — run pnpm build first' as const);
 
 function makeShardReport(dir: string, data: object) {
   const reportDir = join(dir, 'shiplight-report');
@@ -51,20 +56,40 @@ describe('report --merge', { skip: skipNoBuild }, () => {
     const shard2Dir = join(tmpDir, 'shard-2');
 
     const shard1Report = makeShardReport(shard1Dir, {
+      clientRunId: 'shared-sharded-run',
       tests: [
-        { title: 'Test A', file: 'a.yaml.spec.ts', status: 'passed', duration: 3000, steps: [
-          { stepId: 'main.0', description: 'Step A', status: 'success', screenshot: 'screenshots/test-0/main-0.png' },
-        ] },
+        {
+          title: 'Test A',
+          file: 'a.yaml.spec.ts',
+          status: 'passed',
+          duration: 3000,
+          steps: [
+            { stepId: 'main.0', description: 'Step A', status: 'success', screenshot: 'screenshots/test-0/main-0.png' },
+          ],
+        },
       ],
       totalDuration: 3000,
       timestamp: '2026-01-01T00:00:00Z',
     });
 
     const shard2Report = makeShardReport(shard2Dir, {
+      clientRunId: 'shared-sharded-run',
       tests: [
-        { title: 'Test B', file: 'b.yaml.spec.ts', status: 'failed', duration: 5000, steps: [
-          { stepId: 'main.0', description: 'Step B', status: 'failure', error: 'timeout', screenshot: 'screenshots/test-0/main-0.png' },
-        ] },
+        {
+          title: 'Test B',
+          file: 'b.yaml.spec.ts',
+          status: 'failed',
+          duration: 5000,
+          steps: [
+            {
+              stepId: 'main.0',
+              description: 'Step B',
+              status: 'failure',
+              error: 'timeout',
+              screenshot: 'screenshots/test-0/main-0.png',
+            },
+          ],
+        },
       ],
       totalDuration: 5000,
       timestamp: '2026-01-01T00:00:00Z',
@@ -83,6 +108,7 @@ describe('report --merge', { skip: skipNoBuild }, () => {
     const merged = JSON.parse(readFileSync(join(outputDir, 'report-data.json'), 'utf-8'));
     assert.equal(merged.tests.length, 2);
     assert.equal(merged.totalDuration, 8000);
+    assert.equal(merged.clientRunId, 'shared-sharded-run');
     assert.equal(merged.tests[0].title, 'Test A');
     assert.equal(merged.tests[1].title, 'Test B');
 
@@ -133,8 +159,10 @@ describe('report --merge', { skip: skipNoBuild }, () => {
     assert.equal(merged.cacheSummary.total_statements, 10);
     assert.equal(merged.cacheSummary.healed, 3);
     assert.equal(
-      merged.cacheSummary.original + merged.cacheSummary.cache_hits +
-        merged.cacheSummary.healed + merged.cacheSummary.failed,
+      merged.cacheSummary.original +
+        merged.cacheSummary.cache_hits +
+        merged.cacheSummary.healed +
+        merged.cacheSummary.failed,
       10,
       'buckets must still account for every statement exactly once',
     );
@@ -159,8 +187,15 @@ describe('report --merge', { skip: skipNoBuild }, () => {
     const shardDir = join(tmpDir, 'shard-with-artifacts');
     const reportDir = makeShardReport(shardDir, {
       tests: [
-        { title: 'Test C', file: 'c.yaml.spec.ts', status: 'passed', duration: 2000, steps: [],
-          tracePath: 'trace.zip', videoPath: 'video.webm' },
+        {
+          title: 'Test C',
+          file: 'c.yaml.spec.ts',
+          status: 'passed',
+          duration: 2000,
+          steps: [],
+          tracePath: 'trace.zip',
+          videoPath: 'video.webm',
+        },
       ],
       totalDuration: 2000,
     });
@@ -233,15 +268,14 @@ describe('report --merge', { skip: skipNoBuild }, () => {
     mkdirSync(emptyDir, { recursive: true });
 
     makeShardReport(goodDir, {
-      tests: [
-        { title: 'Test D', file: 'd.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] },
-      ],
+      tests: [{ title: 'Test D', file: 'd.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] }],
       totalDuration: 1000,
     });
 
     const outputDir = join(tmpDir, 'output-skip');
-    const result = execFileSync('node', [CLI_PATH, 'report', '--merge',
-      join(goodDir, 'shiplight-report'), emptyDir, '-o', outputDir],
+    const result = execFileSync(
+      'node',
+      [CLI_PATH, 'report', '--merge', join(goodDir, 'shiplight-report'), emptyDir, '-o', outputDir],
       { encoding: 'utf-8', timeout: 10000 },
     );
 
@@ -252,9 +286,7 @@ describe('report --merge', { skip: skipNoBuild }, () => {
   it('defaults output to shiplight-report in cwd', () => {
     const shardDir = join(tmpDir, 'shard');
     const reportDir = makeShardReport(shardDir, {
-      tests: [
-        { title: 'Test E', file: 'e.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] },
-      ],
+      tests: [{ title: 'Test E', file: 'e.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] }],
       totalDuration: 1000,
     });
 
@@ -299,13 +331,15 @@ describe('report (single)', { skip: skipNoBuild }, () => {
   it('regenerates index.html from report-data.json', () => {
     const reportDir = join(tmpDir, 'shiplight-report');
     mkdirSync(reportDir, { recursive: true });
-    writeFileSync(join(reportDir, 'report-data.json'), JSON.stringify({
-      tests: [
-        { title: 'Test F', file: 'f.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] },
-      ],
-      totalDuration: 1000,
-      timestamp: '2026-01-01T00:00:00Z',
-    }), 'utf-8');
+    writeFileSync(
+      join(reportDir, 'report-data.json'),
+      JSON.stringify({
+        tests: [{ title: 'Test F', file: 'f.yaml.spec.ts', status: 'passed', duration: 1000, steps: [] }],
+        totalDuration: 1000,
+        timestamp: '2026-01-01T00:00:00Z',
+      }),
+      'utf-8',
+    );
 
     const stdout = runCli('report', reportDir);
 
@@ -536,7 +570,13 @@ describe('extractTriggerOption', () => {
     // runMergeReport treats each non-flag arg as an input dir; swallowing one
     // would silently drop a shard from the merged report.
     const { trigger, rest } = extractTriggerOption([
-      '--merge', 'shard-0/', 'shard-1/', '--trigger', 'Jenkins', '-o', 'combined/',
+      '--merge',
+      'shard-0/',
+      'shard-1/',
+      '--trigger',
+      'Jenkins',
+      '-o',
+      'combined/',
     ]);
     assert.equal(trigger, 'Jenkins');
     assert.deepEqual(rest, ['--merge', 'shard-0/', 'shard-1/', '-o', 'combined/']);
@@ -668,10 +708,7 @@ describe('extractTriggerOption', () => {
   });
 
   it('reports both the missing-value and swallowed-path warnings together', () => {
-    const { trigger, warnings } = extractTriggerOption(
-      ['--trigger', '--open', '--trigger', 'my-report'],
-      () => true,
-    );
+    const { trigger, warnings } = extractTriggerOption(['--trigger', '--open', '--trigger', 'my-report'], () => true);
     assert.equal(trigger, 'my-report');
     assert.equal(warnings.length, 2);
   });

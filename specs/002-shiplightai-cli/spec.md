@@ -23,8 +23,8 @@ This feature owns **test authoring** — scaffolding, the normative YAML languag
 spec, validation, and YAML→spec transpilation — alongside test execution. The MCP
 server (003) owns live browser sessions and nothing else; see its Scope Boundary.
 
-The rule is that the artifact which *defines and validates* a test must ship and
-version with the artifact that *runs* it. Validation living in a separately
+The rule is that the artifact which _defines and validates_ a test must ship and
+version with the artifact that _runs_ it. Validation living in a separately
 released package let an agent validate green against one YAML schema and fail at
 runtime against another, with nothing detecting the skew. Same for the language
 spec: a normative document distributed on its own cadence can describe syntax the
@@ -39,7 +39,7 @@ Two consequences that constrain the design:
   at all (CI, a plain terminal, a non-MCP agent), so they may not point at
   `shiplight://` URIs.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Run YAML + Playwright tests with one command (Priority: P1)
 
@@ -170,7 +170,7 @@ package, scaffold, read both spec outputs, write a YAML test, and validate it wi
 - Per-test context options (viewport/locale/colorScheme) override project `use`; `viewport: null` drops incompatible options.
 - Closest `.env` wins over parent `.env` and over `process.env`.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -179,7 +179,7 @@ package, scaffold, read both spec outputs, write a YAML test, and validate it wi
 - **FR-003 [SOURCE]**: `shiplight debug` MUST launch the interactive visual debugger on an auto-selected (or `--port`) port; concurrent invocations MUST not require port coordination.
 - **FR-004 [SOURCE]**: `shiplightConfig()` MUST wire YAML transpilation, `.env` discovery, and the HTML reporter into a Playwright config.
 - **FR-005 [SOURCE]**: `shiplight report`, `transpile`, and `inspect` MUST be available with their documented behavior.
-- **FR-006 [SOURCE]**: The CLI MUST forward only an explicit env-var allowlist into the SDK; non-allowlisted vars (PATH/HOME/GITHUB_TOKEN/AWS_*/…) MUST be invisible to the agent.
+- **FR-006 [SOURCE]**: The CLI MUST forward only an explicit env-var allowlist into the SDK; non-allowlisted vars (PATH/HOME/GITHUB*TOKEN/AWS*\*/…) MUST be invisible to the agent.
 - **FR-007 [IMPL]**: `--vars`/`--vars-file`/`SHIPLIGHT_VARS_OVERRIDE` MUST apply with allowlist + sensitive-flag semantics into the test context.
 - **FR-008 [IMPL]**: `.env` discovery MUST walk to the project root with closest-wins precedence over `process.env`.
 - **FR-009 [IMPL]**: The CLI MUST block running from a global install and warn (non-blocking) when behind the latest published version, suppressed in CI/dev.
@@ -198,6 +198,7 @@ package, scaffold, read both spec outputs, write a YAML test, and validate it wi
 - **FR-021 [IMPL]**: When tier selection governs a run, the reporter MUST record run-level model-tier **provenance** — the tier requested and its source (env / org-default / baked), the resolved primaries, and whether the mapping came from the server or baked defaults — into `report-data.json` and carry it on the run-complete upload. Absent for BYOK/non-tier runs; carries no secret. Server-controlled values MUST be HTML-escaped where rendered.
 - **FR-023 [IMPL]**: The `shiplight debug` file tree MUST list only directories inside the project root of the invocation. Because every project's debugger is served from the same `localhost` origin, browser-persisted UI state is shared across projects and MUST be scoped per project root and stored **relative** to it, with any `..`/`.`/empty segment rejected on read, so a restored entry cannot name a path outside the current project. Enforcement today is client-side (`packages/debugger-ui/src/components/local-debugger-shell/expandedDirs.ts`); `GET /api/files` still resolves any absolute path it is handed, so this is an invariant of the shell, not of the server.
 - **FR-024 [IMPL]**: Per-step variable snapshots MUST be bounded in size, in `report-data.json` and in the run-complete upload alike. Each recorded value MUST be capped, oversized values replaced by a marker naming the original size; and within one step list each snapshot MUST record only what changed since the previously recorded state, with removed variables named explicitly. The snapshots are display-only — no execution path reads them back — so the encoding MUST be lossless for display: a consumer that applies the recorded changes in order reconstructs exactly the values the run observed, up to the cap. **Both forms MUST stay readable**: a consumer detects the form per step from the fields present, a full snapshot replaces the accumulated state, and an artifact written before this requirement is read without a version negotiation. An uploaded artifact that may carry the changed-only form MUST declare `schemaVersion: 3`. The wire contract is [contracts/report-artifact.md](./contracts/report-artifact.md); testing contract: [report-artifact-size/test-spec.md](./report-artifact-size/test-spec.md).
+- **FR-025 [IMPL]**: Cloud run creation MUST be idempotent. `report-data.json` MUST retain one stable client run identity, the create-run payload MUST carry it plus stable per-test identities, and retries MUST reuse the same cloud run/result slots. Shard aggregation is explicitly selected by a caller-provided `SHIPLIGHT_RUN_ID`: when it is present and Playwright reports `config.shard`, the reporter MUST derive `batchId=shard-{current}` and `expectedBatchCount=total`; `SHIPLIGHT_BATCH_ID` / `SHIPLIGHT_BATCH_COUNT` remain explicit overrides. An internally generated per-invocation Run ID MUST NOT opt into aggregation, so shards without a caller-provided shared ID remain separate Test Runs. The first accepted completion fixes that batch's results and analytics, retrying it MUST be a no-op, distinct batches MUST append to the shared run, and the reporter MUST attempt finalization after its batch is accepted so only the last completed batch closes the run. Merged reports MUST preserve the shared identity or derive a deterministic merged identity; when their inputs already used direct batch upload, merge MUST remain local and MUST NOT upload a second legacy completion for the same run.
 
 ### Key Entities
 
@@ -209,7 +210,7 @@ package, scaffold, read both spec outputs, write a YAML test, and validate it wi
 - **Step variable snapshot**: the display-only record of the test variables as a step saw them, before and after. Produced per step by the engine as a full copy of the store; recorded in the report as a bounded, changed-only delta. It is evidence, never an input — nothing replays, resumes, or asserts from it.
 - **Action registry render**: build-time artifact rendering the engine's action registry to markdown for `shiplight spec actions`. Shares its source with 003's action-entity resource; a disagreement between the two surfaces means they were built from different engine versions, which is a signal worth surfacing rather than hiding.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -229,6 +230,6 @@ package, scaffold, read both spec outputs, write a YAML test, and validate it wi
 - Node.js >= 22; the user provides at least one LLM provider key in `.env`.
 - `create → install → run`, the real `test` spawn, and a live `debug` session are validated by the deferred e2e/browser lane, not the default CI unit gate.
 - Cloud features activate only when a Shiplight token is present.
-- The `/shiplight` skills distribution carries authoring *guidance and examples*; this package carries the *normative* spec. Skills reference the CLI commands rather than embedding a spec copy, so the two cannot disagree about what the parser accepts.
+- The `/shiplight` skills distribution carries authoring _guidance and examples_; this package carries the _normative_ spec. Skills reference the CLI commands rather than embedding a spec copy, so the two cannot disagree about what the parser accepts.
 - Moving authoring here trades away the MCP tool descriptions' ambient discoverability — an agent that never loads the skill no longer sees a "scaffold first" instruction. Accepted; see 003's Assumptions.
 - Publishing implication: the YAML spec and the rendered action table become build outputs of `apps/cli`, so the existing "run the full `pnpm build`, never bare `tsup`" release rule now also gates authoring docs, not just debugger assets. A partial build ships a package whose `spec` commands are missing or stale.

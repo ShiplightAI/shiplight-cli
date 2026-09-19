@@ -7,7 +7,18 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import { summarizeUploadError, uploadToCloud, __testing } from './cloudUpload.js';
 import type { ReportAttempt, ReportData, ReportStep, ReportTest } from './template.js';
 
-const { absoluteReportUrl, apiToWebBase, getCloudUploadConcurrency, buildCloudUploadConfigLog, buildReportV2, buildStepResultJson, buildVersionMeta, sumTestLlmUsage, runCapturedLlmUsage, uploadableCacheSummary } = __testing;
+const {
+  absoluteReportUrl,
+  apiToWebBase,
+  getCloudUploadConcurrency,
+  buildCloudUploadConfigLog,
+  buildReportV2,
+  buildStepResultJson,
+  buildVersionMeta,
+  sumTestLlmUsage,
+  runCapturedLlmUsage,
+  uploadableCacheSummary,
+} = __testing;
 
 // Empty-tests ReportData → uploadToCloud only makes the create-run POST and
 // the complete PUT. Both hit baseUrl directly, which is what we want to
@@ -183,10 +194,7 @@ describe('cloudUpload absoluteReportUrl — promote path-only responses to absol
   });
 
   it('falls back to the API base for unknown hosts (staging / localhost / self-hosted)', () => {
-    assert.equal(
-      absoluteReportUrl('/run-results/7', 'http://localhost:3001'),
-      'http://localhost:3001/run-results/7',
-    );
+    assert.equal(absoluteReportUrl('/run-results/7', 'http://localhost:3001'), 'http://localhost:3001/run-results/7');
     assert.equal(
       absoluteReportUrl('/run-results/7', 'https://staging.shiplight.ai/'),
       'https://staging.shiplight.ai/run-results/7',
@@ -292,8 +300,12 @@ describe('cloudUpload upload concurrency', () => {
         const { stepIds } = body as { stepIds: string[] };
         return {
           data: {
-            screenshots: Object.fromEntries(stepIds.map((stepId) => [stepId, `https://upload.test/screenshot/${encodeURIComponent(stepId)}`])),
-            screenshotS3Uris: Object.fromEntries(stepIds.map((stepId) => [stepId, `s3://bucket/screenshots/${stepId}`])),
+            screenshots: Object.fromEntries(
+              stepIds.map((stepId) => [stepId, `https://upload.test/screenshot/${encodeURIComponent(stepId)}`]),
+            ),
+            screenshotS3Uris: Object.fromEntries(
+              stepIds.map((stepId) => [stepId, `s3://bucket/screenshots/${stepId}`]),
+            ),
           },
         };
       }
@@ -345,7 +357,7 @@ describe('cloudUpload upload concurrency', () => {
   });
 });
 
-describe('cloudUpload — one test\'s report-url failure does not abort the run', () => {
+describe("cloudUpload — one test's report-url failure does not abort the run", () => {
   // Regression test: a backend 500 on POST .../report-url for one test used to
   // throw uncaught out of the per-test worker, which fail-fast-rejected the
   // shared withConcurrency() Promise.all for ALL tests and skipped [4/4]
@@ -643,7 +655,11 @@ describe('buildStepResultJson', () => {
     );
     assert.deepEqual(
       Object.entries(result).map(([stepId, entry]) => [stepId, (entry as Record<string, unknown>).seq]),
-      [['main.0', 0], ['main.1', 1], ['main.1.2', 2]],
+      [
+        ['main.0', 0],
+        ['main.1', 1],
+        ['main.1.2', 2],
+      ],
     );
   });
 
@@ -726,8 +742,7 @@ describe('runCapturedLlmUsage', () => {
       status: 'success',
       llmUsage: [{ model: 'm', promptTokens: 1, completionTokens: 1, totalTokens: 2 }],
     }) as ReportStep;
-  const bareStep = (): ReportStep =>
-    ({ stepId: 'main.0', description: 'go', status: 'success' }) as ReportStep;
+  const bareStep = (): ReportStep => ({ stepId: 'main.0', description: 'go', status: 'success' }) as ReportStep;
 
   it('is true when the run-level summary is present', () => {
     const report = { tests: [], usageSummary: { by_operation: [] } } as unknown as ReportData;
@@ -879,7 +894,15 @@ describe('cloudUpload /complete payload — the new metric fields reach the wire
   it('omits llmCalls/llmTokens entirely when the run captured no usage', async () => {
     // Omission is what makes the platform store NULL rather than a fabricated 0.
     const body = await captureComplete({
-      tests: [{ title: 'T', file: 't.yaml.spec.ts', status: 'passed', duration: 1, steps: [{ stepId: 'main.0', description: 'x', status: 'success' }] }],
+      tests: [
+        {
+          title: 'T',
+          file: 't.yaml.spec.ts',
+          status: 'passed',
+          duration: 1,
+          steps: [{ stepId: 'main.0', description: 'x', status: 'success' }],
+        },
+      ],
       totalDuration: 1,
       timestamp: '2026-01-01T00:00:00Z',
     } as unknown as ReportData);
@@ -1109,7 +1132,8 @@ describe('cloudUpload /complete — optional analytics must never cost the run i
 
     // A retry that lost the bearer token would 401 and strand the run — the
     // exact outcome this fallback exists to prevent.
-    const authOf = (attempt: CompleteAttempt) => (attempt.config?.headers as Record<string, string> | undefined)?.Authorization;
+    const authOf = (attempt: CompleteAttempt) =>
+      (attempt.config?.headers as Record<string, string> | undefined)?.Authorization;
     assert.match(String(authOf(first)), /^Bearer shp_pat_/);
     assert.equal(authOf(retry), authOf(first), 'the retry must be authenticated like the first attempt');
   });
@@ -1440,6 +1464,87 @@ describe('cloudUpload uploadToCloud — trigger in the create-run payload', () =
   });
 });
 
+describe('cloudUpload uploadToCloud — idempotency keys', () => {
+  it('sends the persisted client run id and stable per-test ids', async () => {
+    const report: ReportData = {
+      clientRunId: '2026-09-18T10-20-30-123',
+      tests: [
+        {
+          title: 'checkout succeeds',
+          file: 'tests/checkout.yaml.spec.ts',
+          status: 'passed',
+          duration: 10,
+          steps: [],
+        },
+      ],
+      totalDuration: 10,
+      timestamp: '2026-09-18T10:20:30.123Z',
+    };
+
+    const first = await captureCreateRunBody(report);
+    const replay = await captureCreateRunBody(report);
+
+    assert.equal(first.clientRunId, '2026-09-18T10-20-30-123');
+    assert.deepEqual(replay, first);
+    const tests = first.tests as Array<Record<string, unknown>>;
+    assert.match(String(tests[0]?.clientTestId), /^[a-f0-9]{64}$/);
+  });
+
+  it('uploads a shard as one batch and attempts finalization after accepting it', async () => {
+    const originalPost = axios.post;
+    const originalPut = axios.put;
+    const putUrls: string[] = [];
+    const postUrls: string[] = [];
+    let createBody: Record<string, unknown> | undefined;
+    const report: ReportData = {
+      clientRunId: 'gha-123-attempt-1',
+      batchId: 'shard-2',
+      expectedBatchCount: 4,
+      tests: [
+        {
+          title: 'checkout succeeds',
+          file: 'tests/checkout.yaml.spec.ts',
+          status: 'passed',
+          duration: 10,
+          steps: [],
+        },
+      ],
+      totalDuration: 10,
+      timestamp: '2026-09-18T10:20:30.123Z',
+    };
+
+    axios.post = (async (url: string, body?: unknown) => {
+      postUrls.push(url);
+      if (url.endsWith('/v1/local-runs')) {
+        createBody = body as Record<string, unknown>;
+        return { data: { testRunId: 44, testCaseResults: [] } };
+      }
+      if (url.endsWith('/v1/local-runs/44/finalize')) {
+        return { data: { reportUrl: '/run-results/44', alreadyCompleted: false } };
+      }
+      throw new Error(`Unexpected POST ${url}`);
+    }) as typeof axios.post;
+    axios.put = (async (url: string) => {
+      putUrls.push(url);
+      return { data: { reportUrl: '/run-results/44', batchAccepted: true } };
+    }) as typeof axios.put;
+
+    try {
+      await uploadToCloud(report, '/tmp/nonexistent', report.timestamp, 'shp_pat_testtoken');
+    } finally {
+      axios.post = originalPost;
+      axios.put = originalPut;
+    }
+
+    assert.equal(createBody?.batchId, 'shard-2');
+    assert.equal(createBody?.expectedBatchCount, 4);
+    const tests = createBody?.tests as Array<Record<string, unknown>>;
+    assert.match(String(tests[0]?.clientTestId), /^[a-f0-9]{64}$/);
+    assert.ok(putUrls.some((url) => url.endsWith('/v1/local-runs/44/batches/shard-2/complete')));
+    assert.ok(postUrls.some((url) => url.endsWith('/v1/local-runs/44/finalize')));
+  });
+});
+
 describe('cloudUpload — tags in the create-run payload', () => {
   // The uploaded test list is the only channel carrying tags to the cloud, so
   // assert on the serialized POST body rather than on the ReportTest shape.
@@ -1544,10 +1649,10 @@ describe('buildReportV2 — console output per attempt', () => {
     // Report JSON written before ReportAttempt carried these fields still has
     // the final attempt's output at the test level; it must not regress to ''.
     const segments = segmentsOf(
-      retriedTest(
-        [attempt({ attemptNumber: 1, status: 'failed' }), attempt({ attemptNumber: 2 })],
-        { stdout: 'from the test level', stderr: 'stderr too' },
-      ),
+      retriedTest([attempt({ attemptNumber: 1, status: 'failed' }), attempt({ attemptNumber: 2 })], {
+        stdout: 'from the test level',
+        stderr: 'stderr too',
+      }),
     );
 
     assert.equal(segments[1].stdout, 'from the test level');

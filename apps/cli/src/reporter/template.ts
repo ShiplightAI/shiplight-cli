@@ -140,10 +140,17 @@ export interface ReportCacheSummary {
   original: number;
   cache_hits: number;
   healed: number;
+  healed_from_cache?: number;
   failed: number;
 }
 
 export interface ReportData {
+  /** Stable client-side identity used to make cloud run creation idempotent. */
+  clientRunId?: string;
+  /** Stable identity of this independently uploaded shard. */
+  batchId?: string;
+  /** Total number of shards that must complete before the cloud run is finalized. */
+  expectedBatchCount?: number;
   tests: ReportTest[];
   totalDuration: number;
   timestamp: string; // ISO 8601
@@ -292,19 +299,19 @@ function renderCodeBlock(step: ReportStep): string {
 
   // File-snippet mode: codeStartLine + codeLine both set → show gutter + highlight step line
   if (step.codeStartLine != null && step.codeLine != null) {
-    const linesHtml = lines.map((line, i) => {
-      const lineNum = step.codeStartLine! + i;
-      const isActive = lineNum === step.codeLine;
-      const lineNumStr = String(lineNum).padStart(4);
-      return `<span class="code-line${isActive ? ' code-line-active' : ''}">${lineNumStr} \u2502 ${escapeHtml(line)}</span>`;
-    }).join('');
+    const linesHtml = lines
+      .map((line, i) => {
+        const lineNum = step.codeStartLine! + i;
+        const isActive = lineNum === step.codeLine;
+        const lineNumStr = String(lineNum).padStart(4);
+        return `<span class="code-line${isActive ? ' code-line-active' : ''}">${lineNumStr} \u2502 ${escapeHtml(line)}</span>`;
+      })
+      .join('');
     return `<div class="step-code"><pre class="code-block">${linesHtml}</pre></div>`;
   }
 
   // Function-body mode: no file gutter, all lines shown as body code
-  const linesHtml = lines.map(line =>
-    `<span class="code-line code-line-body">${escapeHtml(line)}</span>`,
-  ).join('');
+  const linesHtml = lines.map((line) => `<span class="code-line code-line-body">${escapeHtml(line)}</span>`).join('');
   return `<div class="step-code"><pre class="code-block">${linesHtml}</pre></div>`;
 }
 
@@ -389,8 +396,8 @@ function renderArtifacts(
   }
 
   const gallerySteps = steps
-    .filter(s => s.screenshot)
-    .map(s => ({
+    .filter((s) => s.screenshot)
+    .map((s) => ({
       src: s.screenshot!,
       stepId: s.stepId,
       description: s.description,
@@ -400,11 +407,15 @@ function renderArtifacts(
 
   if (gallerySteps.length > 0) {
     const galleryDataAttr = escapeHtml(JSON.stringify(gallerySteps));
-    const thumbs = gallerySteps.map((s, i) => `
+    const thumbs = gallerySteps
+      .map(
+        (s, i) => `
       <div class="screenshot-thumb" onclick="openGalleryAt(this, ${i})" data-gallery="${galleryDataAttr}">
         <img src="${escapeHtml(s.src)}" alt="${escapeHtml(s.stepId)}" />
         <span class="thumb-label">${escapeHtml(s.stepId)}</span>
-      </div>`).join('');
+      </div>`,
+      )
+      .join('');
 
     artifactSections.push(`
       <details class="artifact-section">
@@ -445,7 +456,7 @@ function renderAttemptBody(
   const stepsHtml = steps.map(renderStep).join('\n');
 
   let errorBlock = '';
-  if (error && !steps.some(s => s.error)) {
+  if (error && !steps.some((s) => s.error)) {
     errorBlock = `<div class="test-error"><pre>${escapeHtml(error)}</pre></div>`;
   }
 
@@ -472,32 +483,36 @@ function renderTest(test: ReportTest, index: number): string {
     // For flaky tests default to the last (passed) tab; for all-failed show the last attempt too
     const defaultTab = totalAttempts - 1;
 
-    const tabHeaders = test.attempts.map((attempt, i) => {
-      const isActive = i === defaultTab;
-      const tabStatus = attempt.status === 'passed' ? 'passed' : 'failed';
-      const label = `Attempt ${attempt.attemptNumber}`;
-      return `<button class="attempt-tab ${isActive ? 'active' : ''} attempt-tab-${tabStatus}"
+    const tabHeaders = test.attempts
+      .map((attempt, i) => {
+        const isActive = i === defaultTab;
+        const tabStatus = attempt.status === 'passed' ? 'passed' : 'failed';
+        const label = `Attempt ${attempt.attemptNumber}`;
+        return `<button class="attempt-tab ${isActive ? 'active' : ''} attempt-tab-${tabStatus}"
         onclick="switchAttemptTab('${tabGroupId}', ${i})"
         data-tab-index="${i}">${statusIcon(tabStatus)} ${label} <span class="attempt-tab-badge badge-${tabStatus}">${attempt.status}</span></button>`;
-    }).join('');
+      })
+      .join('');
 
-    const tabPanels = test.attempts.map((attempt, i) => {
-      const isActive = i === defaultTab;
-      const panelBody = renderAttemptBody(
-        attempt.steps,
-        attempt.error,
-        attempt.videoPath,
-        attempt.tracePath,
-        `${index}-attempt-${i}`,
-      );
-      return `<div class="attempt-panel ${isActive ? 'active' : ''}" data-panel-index="${i}">
+    const tabPanels = test.attempts
+      .map((attempt, i) => {
+        const isActive = i === defaultTab;
+        const panelBody = renderAttemptBody(
+          attempt.steps,
+          attempt.error,
+          attempt.videoPath,
+          attempt.tracePath,
+          `${index}-attempt-${i}`,
+        );
+        return `<div class="attempt-panel ${isActive ? 'active' : ''}" data-panel-index="${i}">
         <div class="attempt-meta">
           ${statusIcon(attempt.status === 'passed' ? 'passed' : 'failed')}
           <span class="attempt-meta-text">Attempt ${attempt.attemptNumber} &mdash; ${attempt.status} in ${formatDuration(attempt.duration)}</span>
         </div>
         ${panelBody}
       </div>`;
-    }).join('');
+      })
+      .join('');
 
     const noteLabel = test.flaky
       ? `Flaky &mdash; ${formatRetryLabel(test.retries)}`
@@ -540,19 +555,19 @@ function resolveTestTracePaths(test: ReportTest, outputDir: string | undefined):
   return {
     ...test,
     tracePath: resolveTracePath(test.tracePath, outputDir),
-    attempts: test.attempts?.map(a => ({ ...a, tracePath: resolveTracePath(a.tracePath, outputDir) })),
+    attempts: test.attempts?.map((a) => ({ ...a, tracePath: resolveTracePath(a.tracePath, outputDir) })),
   };
 }
 
 export function generateHtml(data: ReportData): string {
-  const flaky = data.tests.filter(t => t.flaky).length;
-  const retried = data.tests.filter(t => !t.flaky && t.retries != null && t.retries > 0).length;
-  const passed = data.tests.filter(t => t.status === 'passed' && !t.flaky).length;
-  const failed = data.tests.filter(t => t.status === 'failed' || t.status === 'timedOut').length;
-  const skipped = data.tests.filter(t => t.status === 'skipped').length;
+  const flaky = data.tests.filter((t) => t.flaky).length;
+  const retried = data.tests.filter((t) => !t.flaky && t.retries != null && t.retries > 0).length;
+  const passed = data.tests.filter((t) => t.status === 'passed' && !t.flaky).length;
+  const failed = data.tests.filter((t) => t.status === 'failed' || t.status === 'timedOut').length;
+  const skipped = data.tests.filter((t) => t.status === 'skipped').length;
   const total = data.tests.length;
 
-  const tests = data.tests.map(t => resolveTestTracePaths(t, data.outputDir));
+  const tests = data.tests.map((t) => resolveTestTracePaths(t, data.outputDir));
   const testsHtml = tests.map((t, i) => renderTest(t, i)).join('\n');
 
   return `<!DOCTYPE html>
@@ -1207,19 +1222,27 @@ export function generateHtml(data: ReportData): string {
         <span class="summary-stat">${formatDuration(data.totalDuration)}</span>
         ${data.timestamp ? `<span class="summary-stat" style="margin-left:auto;color:var(--color-text-secondary)">${new Date(data.timestamp).toLocaleString()}</span>` : ''}
       </div>
-    </div>${data.cacheSummary || hasCacheExecutionSignal(data.cacheExecutionSummary) ? `
+    </div>${
+      data.cacheSummary || hasCacheExecutionSignal(data.cacheExecutionSummary)
+        ? `
     <div class="cache-stats" style="margin-bottom:16px;padding:12px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:8px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--color-text-secondary);">Action Entity Cache</div>${
         hasCacheExecutionSignal(data.cacheExecutionSummary) ? renderCacheExecution(data.cacheExecutionSummary) : ''
-      }${data.cacheSummary ? `
+      }${
+        data.cacheSummary
+          ? `
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Across all transpiled statements</div>
       <div class="summary">
         ${data.cacheSummary.cache_hits > 0 ? `<span class="summary-stat" style="color:var(--color-accent)">${data.cacheSummary.cache_hits} cached</span>` : ''}
         ${data.cacheSummary.healed > 0 ? `<span class="summary-stat" style="color:var(--color-flaky)">${data.cacheSummary.healed} healed</span>` : ''}
         ${data.cacheSummary.original > 0 ? `<span class="summary-stat">${data.cacheSummary.original} original</span>` : ''}
         ${data.cacheSummary.failed > 0 ? `<span class="summary-stat failed">${data.cacheSummary.failed} failed</span>` : ''}
-      </div>` : ''}
-    </div>` : ''}
+      </div>`
+          : ''
+      }
+    </div>`
+        : ''
+    }
     <div class="test-list">
       ${testsHtml}
     </div>

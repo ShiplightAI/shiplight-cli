@@ -10,7 +10,7 @@ import { defineConfig as pwDefineConfig, type PlaywrightTestConfig, type Reporte
 import { transpileAllYamlTests } from './transpile';
 import { loadStagedActionEntityStores } from './cache/actionEntityCacheStore.js';
 import { loadShiplightEnv, findEnvFiles } from './dotenvSource.js';
-import { resolveRunId } from './runId.js';
+import { publishRunId } from './runId.js';
 
 export interface ShiplightOptions {
   /**
@@ -97,8 +97,7 @@ export function shiplightConfig(options: ShiplightOptions = {}): PlaywrightTestC
   // Generate a stable run ID for this invocation. Re-use if already set —
   // `shiplight test` publishes one before spawning us (so its post-test scan can
   // find this run's artifacts), and watch mode re-evaluates this config.
-  const runId = resolveRunId(process.env);
-  process.env.SHIPLIGHT_RUN_ID = runId;
+  const runId = publishRunId(process.env);
   const standardReporters: ReporterDescription[] = [];
 
   if (process.env.PLAYWRIGHT_JSON_OUTPUT_FILE) {
@@ -166,4 +165,3 @@ function loadDotenvWalkUp(startDir: string): void {
     dotenv.config({ path: f });
   }
 }
-

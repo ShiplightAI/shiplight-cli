@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateRunId, resolveRunId } from './runId.js';
+import { generateRunId, publishRunId, resolveRunId } from './runId.js';
 
 describe('generateRunId', () => {
   it('produces a filename-safe, sortable timestamp', () => {
@@ -33,5 +33,29 @@ describe('resolveRunId', () => {
     // `test-results/` — the unscoped directory full of previous runs' artifacts
     // that the run scoping exists to skip.
     assert.match(resolveRunId({ SHIPLIGHT_RUN_ID: '' }), /^\d{4}-\d{2}-\d{2}T/);
+  });
+});
+
+describe('publishRunId', () => {
+  it('marks a caller-provided run id as explicit', () => {
+    const env: NodeJS.ProcessEnv = { SHIPLIGHT_RUN_ID: 'shared-run' };
+
+    assert.equal(publishRunId(env), 'shared-run');
+    assert.equal(env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE, 'explicit');
+  });
+
+  it('marks an internally minted run id as generated', () => {
+    const env: NodeJS.ProcessEnv = {};
+
+    assert.match(publishRunId(env), /^\d{4}-\d{2}-\d{2}T/);
+    assert.equal(env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE, 'generated');
+  });
+
+  it('preserves the generated source when config evaluation republishes the id', () => {
+    const env: NodeJS.ProcessEnv = {};
+    const generated = publishRunId(env);
+
+    assert.equal(publishRunId(env), generated);
+    assert.equal(env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE, 'generated');
   });
 });

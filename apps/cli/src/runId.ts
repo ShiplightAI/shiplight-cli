@@ -34,3 +34,27 @@ export function generateRunId(): string {
 export function resolveRunId(env: NodeJS.ProcessEnv): string {
   return env.SHIPLIGHT_RUN_ID || generateRunId();
 }
+
+/**
+ * Publish the invocation-local ID and remember whether the caller supplied it.
+ *
+ * The CLI always needs an ID for artifact directories, so presence alone no
+ * longer proves that the user selected a shared ID for shard aggregation.
+ */
+export function publishRunId(env: NodeJS.ProcessEnv): string {
+  const existingSource = env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE;
+  const source =
+    existingSource === 'explicit' || existingSource === 'generated'
+      ? existingSource
+      : env.SHIPLIGHT_RUN_ID
+        ? 'explicit'
+        : 'generated';
+  const runId = resolveRunId(env);
+  env.SHIPLIGHT_RUN_ID = runId;
+  env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE = source;
+  return runId;
+}
+
+export function hasExplicitRunId(env: NodeJS.ProcessEnv): boolean {
+  return Boolean(env.SHIPLIGHT_RUN_ID) && env.SHIPLIGHT_INTERNAL_RUN_ID_SOURCE !== 'generated';
+}

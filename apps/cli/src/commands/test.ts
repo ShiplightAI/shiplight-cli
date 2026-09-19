@@ -21,7 +21,7 @@ import { takeFlagValues } from "../argv.js";
 import { getRequestedYamlFiles } from "../transpile.js";
 import { loadShiplightEnv, getShiplightEnv } from "../dotenvSource.js";
 import { describeTierSelection, fetchOrgSettings, resolveTierPreflight } from "../orgSettings.js";
-import { resolveRunId } from "../runId.js";
+import { publishRunId } from "../runId.js";
 
 export async function runTests(args: string[]) {
   // Check if --help
@@ -198,8 +198,7 @@ export async function runTests(args: string[]) {
   // Mint the run ID HERE rather than leaving it to shiplightConfig() in the
   // child: `test-results/<runId>` is the only place this run's healed entities
   // can be, and postTestUpload below has to know that directory by name.
-  const runId = resolveRunId(env);
-  env.SHIPLIGHT_RUN_ID = runId;
+  const runId = publishRunId(env);
 
   // Stamped before the spawn: postTestUpload uses it to tell this run's healed
   // entities apart from those left in test-results/ by every previous run.

@@ -46,6 +46,7 @@ import { loadCachedYaml, resolveYamlEnrichment } from './reportYamlEnrichment.js
 import { buildModelTierProvenance } from '../orgSettings.js';
 import { getShiplightEnv } from '../dotenvSource.js';
 import { PUBLISHED_VERSION } from '../versionCheck.js';
+import { hasExplicitRunId } from '../runId.js';
 // Type-only — erased at build time, so this does NOT pull the sdk-core barrel into the
 // standalone reporter.ts bundle (see the barrel-import guard test in runUsageAggregate.test.ts).
 import type { AIActionDetail } from 'sdk-core';
@@ -57,6 +58,50 @@ const PHASE_ORDER: Record<string, number> = {
   teardown: 2,
   after: 3,
 };
+
+function parseExpectedBatchCount(raw: string | undefined): number | undefined {
+  if (!raw?.trim()) return undefined;
+  const value = Number(raw);
+  return Number.isInteger(value) && value > 0 ? value : undefined;
+}
+
+interface PlaywrightShard {
+  current: number;
+  total: number;
+}
+
+export function resolveShardUploadIdentity(
+  shard: PlaywrightShard | null | undefined,
+  env: NodeJS.ProcessEnv,
+): Pick<ReportData, 'clientRunId' | 'batchId' | 'expectedBatchCount'> {
+  const clientRunId = env.SHIPLIGHT_RUN_ID?.trim() || undefined;
+  const explicitBatchId = env.SHIPLIGHT_BATCH_ID?.trim() || undefined;
+  const explicitBatchCount = parseExpectedBatchCount(env.SHIPLIGHT_BATCH_COUNT);
+  const hasBatchOverride = env.SHIPLIGHT_BATCH_ID !== undefined || env.SHIPLIGHT_BATCH_COUNT !== undefined;
+
+  if (hasBatchOverride) {
+    if (!clientRunId || !hasExplicitRunId(env)) {
+      throw new Error(
+        'SHIPLIGHT_RUN_ID must be set explicitly when SHIPLIGHT_BATCH_ID or SHIPLIGHT_BATCH_COUNT is set',
+      );
+    }
+    return {
+      clientRunId,
+      batchId: explicitBatchId,
+      expectedBatchCount: explicitBatchCount,
+    };
+  }
+
+  if (!clientRunId || !hasExplicitRunId(env) || !shard) {
+    return { clientRunId, batchId: undefined, expectedBatchCount: undefined };
+  }
+
+  return {
+    clientRunId,
+    batchId: `shard-${shard.current}`,
+    expectedBatchCount: shard.total,
+  };
+}
 
 function getPhaseRank(stepId: string): number {
   const phase = stepId.split('.')[0];
@@ -190,7 +235,9 @@ function extractStepsFromPlaywrightResult(
 
       // Recurse into nested steps after emitting the parent
       if (step.steps.length > 0) {
-        result.push(...extractStepsFromPlaywrightResult(step.steps, stepId, includeExpectAndApi, locationMap, counters));
+        result.push(
+          ...extractStepsFromPlaywrightResult(step.steps, stepId, includeExpectAndApi, locationMap, counters),
+        );
       }
     }
   }
@@ -199,9 +246,7 @@ function extractStepsFromPlaywrightResult(
 }
 
 function updateLatestSymlink(parentDir: string, runFolderName: string): void {
-  const absoluteParent = path.isAbsolute(parentDir)
-    ? parentDir
-    : path.join(process.cwd(), parentDir);
+  const absoluteParent = path.isAbsolute(parentDir) ? parentDir : path.join(process.cwd(), parentDir);
   const linkPath = path.join(absoluteParent, 'latest');
   try {
     const stat = fs.lstatSync(linkPath); // throws if nothing is there
@@ -393,7 +438,9 @@ export class ShiplightReporter implements Reporter {
     // artifacts never carry `"dev"` as the version. `undefined` values
     // are dropped by JSON.stringify, preserving the absent-field shape
     // in report-data.json.
+    const uploadIdentity = resolveShardUploadIdentity(this.config.shard, process.env);
     const reportData: ReportData = {
+      ...uploadIdentity,
       tests: reportTests,
       totalDuration: result.duration,
       timestamp: new Date().toISOString(),
@@ -636,9 +683,7 @@ export class ShiplightReporter implements Reporter {
     // cache summary can be assembled entirely inside the Playwright process:
     // report-data.json is written in onEnd, before the parent's post-test scan
     // ever runs, so a summary built there would arrive too late to be uploaded.
-    const healedAtt = testResult.attachments.find(
-      (a) => a.name === 'shiplight-new-action-entities',
-    );
+    const healedAtt = testResult.attachments.find((a) => a.name === 'shiplight-new-action-entities');
     if (healedAtt) {
       try {
         const raw = healedAtt.body
@@ -702,11 +747,7 @@ export class ShiplightReporter implements Reporter {
 
         // Executed descriptions have already resolved runtime parameter values;
         // YAML/action-entity text is only the fallback for steps that did not run.
-        const description = resolveReportStepDescription(
-          stepId,
-          actionInfo,
-          execResult?.description,
-        );
+        const description = resolveReportStepDescription(stepId, actionInfo, execResult?.description);
 
         const step: ReportStep = {
           stepId,

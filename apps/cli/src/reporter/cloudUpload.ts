@@ -7,7 +7,8 @@
  *     TestCaseResult + TestSuiteResult records, returns presigned S3 URLs)
  *  3. Uploads all assets (screenshots, video, trace) directly to S3
  *  4. Builds a ReportV2 JSON (the ReportV2 schema the v1 runner produced) and uploads it
- *  5. Finalises the run via PUT /v1/local-runs/:id/complete
+ *  5. Completes either the legacy run or one idempotent shard batch
+ *  6. For a shard, attempts finalization; the last completed shard succeeds
  */
 
 import * as fs from 'fs';
@@ -28,6 +29,7 @@ import type { RunCacheSummary } from 'shiplight-types';
 // ---------------------------------------------------------------------------
 
 interface LocalRunTest {
+  clientTestId: string;
   testCaseName: string;
   testCaseBaseName?: string;
   suiteName?: string;
@@ -899,11 +901,31 @@ export async function uploadToCloud(
 
   const metadata = collectMetadata();
   const trigger = resolveTrigger(triggerOverride);
+  const clientRunId = resolveClientRunId(reportData);
+  const batchId = reportData.batchId?.trim() || undefined;
+  const expectedBatchCount = reportData.expectedBatchCount;
+  if (batchId) {
+    if (!reportData.clientRunId) {
+      throw new Error('SHIPLIGHT_RUN_ID is required when SHIPLIGHT_BATCH_ID is set');
+    }
+    if (!Number.isInteger(expectedBatchCount) || expectedBatchCount! < 1) {
+      throw new Error('SHIPLIGHT_BATCH_COUNT must be a positive integer when SHIPLIGHT_BATCH_ID is set');
+    }
+  } else if (expectedBatchCount !== undefined) {
+    throw new Error('SHIPLIGHT_BATCH_ID is required when SHIPLIGHT_BATCH_COUNT is set');
+  }
+  const identityOccurrences = new Map<string, number>();
 
   // Build flat test list; compute MD5 for video/trace now (files exist) so backend
   // can sign the values into the presigned URLs.
   const tests: LocalRunTest[] = reportData.tests.map((t) => {
+    const identity = JSON.stringify([t.file, t.title, t.baseTitle, t.suiteName, t.parameterSetName, t.baseUrl]);
+    const occurrence = identityOccurrences.get(identity) ?? 0;
+    identityOccurrences.set(identity, occurrence + 1);
     const entry: LocalRunTest = {
+      clientTestId: createHash('sha256')
+        .update(batchId ? `${batchId}\0${identity}\0${occurrence}` : `${identity}\0${occurrence}`)
+        .digest('hex'),
       testCaseName: t.title,
       testCaseBaseName: t.baseTitle,
       suiteName: t.suiteName,
@@ -936,7 +958,14 @@ export async function uploadToCloud(
   console.log('[reporter] [1/4] Creating run record...');
   const createRes = await axios.post<LocalRunResponse>(
     `${baseUrl}/v1/local-runs`,
-    { trigger, startTime: runStartTime, metadata, tests },
+    {
+      clientRunId,
+      ...(batchId && { batchId, expectedBatchCount }),
+      trigger,
+      startTime: runStartTime,
+      metadata,
+      tests,
+    },
     requestConfig,
   );
   const localRun = createRes.data;
@@ -1245,8 +1274,9 @@ export async function uploadToCloud(
     )
   ).filter((result): result is LocalRunTestResult => Boolean(result));
 
-  // Step 3: Finalise the run
-  console.log('[reporter] [4/4] Finalising run...');
+  // Step 4: complete this upload unit. A shard remains part of a running parent
+  // until the server observes every expected batch below.
+  console.log(batchId ? '[reporter] [4/4] Completing shard batch...' : '[reporter] [4/4] Finalising run...');
   const overallStatus = determineOverallStatus(reportData.tests);
   console.log(`[reporter] [4/4] Overall status: ${overallStatus}`);
 
@@ -1289,14 +1319,45 @@ export async function uploadToCloud(
     ...(modelTierProvenance && { modelTierProvenance }),
   };
 
-  const completeRes = await putRunCompletion(
-    `${baseUrl}/v1/local-runs/${localRun.testRunId}/complete`,
-    finalization,
-    analytics,
-    requestConfig,
-  );
+  const completionUrl = batchId
+    ? `${baseUrl}/v1/local-runs/${localRun.testRunId}/batches/${encodeURIComponent(batchId)}/complete`
+    : `${baseUrl}/v1/local-runs/${localRun.testRunId}/complete`;
+  const completeRes = await putRunCompletion(completionUrl, finalization, analytics, requestConfig);
 
-  console.log(`\nShiplight cloud report: ${absoluteReportUrl(completeRes.data.reportUrl, baseUrl)}`);
+  let reportUrl = completeRes.data.reportUrl;
+  if (batchId) {
+    try {
+      const finalizeRes = await retryUpload(() =>
+        axios.post<{ reportUrl: string; alreadyCompleted: boolean }>(
+          `${baseUrl}/v1/local-runs/${localRun.testRunId}/finalize`,
+          { endTime: new Date().toISOString() },
+          requestConfig,
+        ),
+      );
+      reportUrl = finalizeRes.data.reportUrl;
+    } catch (err) {
+      if (!(axios.isAxiosError(err) && err.response?.status === 409)) throw err;
+      const data = err.response.data as {
+        completedBatchCount?: number;
+        expectedBatchCount?: number;
+      };
+      console.log(
+        `[reporter] Shard accepted; waiting for ${data.completedBatchCount ?? '?'} / ` +
+          `${data.expectedBatchCount ?? expectedBatchCount} batches to complete.`,
+      );
+    }
+  }
+
+  console.log(`\nShiplight cloud report: ${absoluteReportUrl(reportUrl, baseUrl)}`);
+}
+
+function resolveClientRunId(reportData: ReportData): string {
+  if (reportData.clientRunId) return reportData.clientRunId;
+  const identity = JSON.stringify({
+    timestamp: reportData.timestamp,
+    tests: reportData.tests.map((test) => [test.file, test.title, test.startTime]),
+  });
+  return `report-${createHash('sha256').update(identity).digest('hex')}`;
 }
 
 // The API returns the report URL as a path-only string (e.g. "/run-results/38").
