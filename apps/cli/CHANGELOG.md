@@ -2,6 +2,19 @@
 
 All notable changes to `shiplightai` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## 0.1.105 (2026-09-21)
+
+### Features
+
+- **cli:** allow explicit action cache backend selection (32ddd0f)
+- **cli:** add native OpenRouter support (272538d)
+
+### Bug Fixes
+
+- **deps:** upgrade sharp to patch libheif vulnerabilities (c9cceea)
+- **cli:** keep OpenRouter provider external to bundles (1135a95)
+- **llm:** use OpenRouter dotted Claude model identifiers (7775aee)
+
 ## Unreleased
 
 ### Features
