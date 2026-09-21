@@ -68,7 +68,7 @@
     "html-to-text": "^9.0.5",
     "openai": "^6.25.0",
     "otplib": "^13.4.0",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "uuid": "^11.0.0",
     "zod": "^3.23.8",
     "zod-to-json-schema": "^3.24.6"
