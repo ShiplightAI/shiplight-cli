@@ -358,7 +358,10 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
   // batches. Uploading this merged artifact as a legacy completion would mix
   // two protocols under the shared clientRunId and could duplicate slots.
   if (containsDirectShardReport && isReportToCloudEnabled()) {
-    console.warn('[report] Shards were uploaded directly; skipping cloud upload of the merged report.');
+    console.warn(
+      '[report] Shards were uploaded directly; skipping cloud upload of the merged report. ' +
+        'Pin every shard to the same shiplightai version to avoid mixing upload modes.',
+    );
   } else {
     await maybeUploadToCloud(reportData, outputDir, triggerOverride);
   }
@@ -381,7 +384,11 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
 }
 
 export function isDirectShardReport(reportData: Pick<ReportData, 'batchId' | 'expectedBatchCount'>): boolean {
-  return Boolean(reportData.batchId?.trim() || reportData.expectedBatchCount !== undefined);
+  const expectedBatchCount = reportData.expectedBatchCount;
+  return Boolean(
+    reportData.batchId?.trim() ||
+    (typeof expectedBatchCount === 'number' && Number.isInteger(expectedBatchCount) && expectedBatchCount > 0),
+  );
 }
 
 // Validate that artifactPath doesn't escape baseDir via path traversal (e.g. ../../etc/passwd),

@@ -46,6 +46,23 @@ describe('resolveShardUploadIdentity', () => {
     );
   });
 
+  it('ignores a blank batch id and derives the Playwright shard identity', () => {
+    assert.deepEqual(
+      resolveShardUploadIdentity(
+        { current: 2, total: 4 },
+        {
+          SHIPLIGHT_RUN_ID: 'shared-run',
+          SHIPLIGHT_BATCH_ID: '   ',
+        },
+      ),
+      {
+        clientRunId: 'shared-run',
+        batchId: 'shard-2',
+        expectedBatchCount: 4,
+      },
+    );
+  });
+
   it('rejects explicit batch settings without a caller-provided shared run id', () => {
     assert.throws(
       () =>

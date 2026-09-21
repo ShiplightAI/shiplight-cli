@@ -77,7 +77,7 @@ export function resolveShardUploadIdentity(
   const clientRunId = env.SHIPLIGHT_RUN_ID?.trim() || undefined;
   const explicitBatchId = env.SHIPLIGHT_BATCH_ID?.trim() || undefined;
   const explicitBatchCount = parseExpectedBatchCount(env.SHIPLIGHT_BATCH_COUNT);
-  const hasBatchOverride = env.SHIPLIGHT_BATCH_ID !== undefined || env.SHIPLIGHT_BATCH_COUNT !== undefined;
+  const hasBatchOverride = explicitBatchId !== undefined || env.SHIPLIGHT_BATCH_COUNT !== undefined;
 
   if (hasBatchOverride) {
     if (!clientRunId || !hasExplicitRunId(env)) {

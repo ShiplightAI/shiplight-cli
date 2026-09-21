@@ -1526,7 +1526,7 @@ describe('cloudUpload uploadToCloud — idempotency keys', () => {
     }) as typeof axios.post;
     axios.put = (async (url: string) => {
       putUrls.push(url);
-      return { data: { reportUrl: '/run-results/44', batchAccepted: true } };
+      return { data: { reportUrl: '/run-results/44' } };
     }) as typeof axios.put;
 
     try {
@@ -1574,7 +1574,7 @@ describe('cloudUpload uploadToCloud — idempotency keys', () => {
       throw new Error(`Unexpected POST ${url}`);
     }) as typeof axios.post;
     axios.put = (async () => ({
-      data: { reportUrl: '/run-results/44', batchAccepted: true },
+      data: { reportUrl: '/run-results/44' },
     })) as typeof axios.put;
     console.log = (...args: unknown[]) => logs.push(args.map(String).join(' '));
 

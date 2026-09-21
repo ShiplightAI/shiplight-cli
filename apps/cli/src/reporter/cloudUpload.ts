@@ -908,7 +908,7 @@ export async function uploadToCloud(
     if (!reportData.clientRunId) {
       throw new Error('SHIPLIGHT_RUN_ID is required when SHIPLIGHT_BATCH_ID is set');
     }
-    if (!Number.isInteger(expectedBatchCount) || expectedBatchCount! < 1) {
+    if (typeof expectedBatchCount !== 'number' || !Number.isInteger(expectedBatchCount) || expectedBatchCount < 1) {
       throw new Error('SHIPLIGHT_BATCH_COUNT must be a positive integer when SHIPLIGHT_BATCH_ID is set');
     }
   } else if (expectedBatchCount !== undefined) {

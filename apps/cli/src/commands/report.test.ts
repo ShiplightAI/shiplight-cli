@@ -17,6 +17,7 @@ describe('direct shard report detection', () => {
     assert.equal(isDirectShardReport({ batchId: 'shard-0' } as ReportData), true);
     assert.equal(isDirectShardReport({ expectedBatchCount: 2 } as ReportData), true);
     assert.equal(isDirectShardReport({ batchId: '   ' } as ReportData), false);
+    assert.equal(isDirectShardReport({ expectedBatchCount: 0 } as ReportData), false);
     assert.equal(isDirectShardReport({} as ReportData), false);
   });
 });
