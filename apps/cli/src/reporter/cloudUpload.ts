@@ -1325,6 +1325,7 @@ export async function uploadToCloud(
   const completeRes = await putRunCompletion(completionUrl, finalization, analytics, requestConfig);
 
   let reportUrl = completeRes.data.reportUrl;
+  let waitingForOtherBatches = false;
   if (batchId) {
     try {
       const finalizeRes = await retryUpload(() =>
@@ -1341,6 +1342,7 @@ export async function uploadToCloud(
         completedBatchCount?: number;
         expectedBatchCount?: number;
       };
+      waitingForOtherBatches = true;
       console.log(
         `[reporter] Shard accepted; waiting for ${data.completedBatchCount ?? '?'} / ` +
           `${data.expectedBatchCount ?? expectedBatchCount} batches to complete.`,
@@ -1348,7 +1350,8 @@ export async function uploadToCloud(
     }
   }
 
-  console.log(`\nShiplight cloud report: ${absoluteReportUrl(reportUrl, baseUrl)}`);
+  const completionNote = waitingForOtherBatches ? ' (report will be complete once all shards finish)' : '';
+  console.log(`\nShiplight cloud report: ${absoluteReportUrl(reportUrl, baseUrl)}${completionNote}`);
 }
 
 function resolveClientRunId(reportData: ReportData): string {

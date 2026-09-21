@@ -140,6 +140,7 @@ export interface ReportCacheSummary {
   original: number;
   cache_hits: number;
   healed: number;
+  /** Subset of healed statements whose pre-heal entity came from the cache. */
   healed_from_cache?: number;
   failed: number;
 }

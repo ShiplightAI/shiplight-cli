@@ -14,6 +14,9 @@ import type { ReportData, ReportTest } from '../reporter/template.js';
 describe('direct shard report detection', () => {
   it('distinguishes direct batch uploads from legacy merge inputs', () => {
     assert.equal(isDirectShardReport({ batchId: 'shard-0', expectedBatchCount: 2 } as ReportData), true);
+    assert.equal(isDirectShardReport({ batchId: 'shard-0' } as ReportData), true);
+    assert.equal(isDirectShardReport({ expectedBatchCount: 2 } as ReportData), true);
+    assert.equal(isDirectShardReport({ batchId: '   ' } as ReportData), false);
     assert.equal(isDirectShardReport({} as ReportData), false);
   });
 });

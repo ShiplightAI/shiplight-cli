@@ -381,7 +381,7 @@ async function runMergeReport(args: string[], shouldOpen: boolean, githubSummary
 }
 
 export function isDirectShardReport(reportData: Pick<ReportData, 'batchId' | 'expectedBatchCount'>): boolean {
-  return Boolean(reportData.batchId || reportData.expectedBatchCount !== undefined);
+  return Boolean(reportData.batchId?.trim() || reportData.expectedBatchCount !== undefined);
 }
 
 // Validate that artifactPath doesn't escape baseDir via path traversal (e.g. ../../etc/passwd),

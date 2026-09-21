@@ -1543,6 +1543,52 @@ describe('cloudUpload uploadToCloud — idempotency keys', () => {
     assert.ok(putUrls.some((url) => url.endsWith('/v1/local-runs/44/batches/shard-2/complete')));
     assert.ok(postUrls.some((url) => url.endsWith('/v1/local-runs/44/finalize')));
   });
+
+  it('accepts the shard and logs barrier progress when finalization returns 409', async () => {
+    const originalPost = axios.post;
+    const originalPut = axios.put;
+    const originalConsoleLog = console.log;
+    const logs: string[] = [];
+    const report: ReportData = {
+      clientRunId: 'gha-123-attempt-1',
+      batchId: 'shard-1',
+      expectedBatchCount: 4,
+      tests: [],
+      totalDuration: 10,
+      timestamp: '2026-09-18T10:20:30.123Z',
+    };
+
+    axios.post = (async (url: string) => {
+      if (url.endsWith('/v1/local-runs')) {
+        return { data: { testRunId: 44, testCaseResults: [] } };
+      }
+      if (url.endsWith('/v1/local-runs/44/finalize')) {
+        throw {
+          isAxiosError: true,
+          response: {
+            status: 409,
+            data: { completedBatchCount: 2, expectedBatchCount: 4 },
+          },
+        };
+      }
+      throw new Error(`Unexpected POST ${url}`);
+    }) as typeof axios.post;
+    axios.put = (async () => ({
+      data: { reportUrl: '/run-results/44', batchAccepted: true },
+    })) as typeof axios.put;
+    console.log = (...args: unknown[]) => logs.push(args.map(String).join(' '));
+
+    try {
+      await uploadToCloud(report, '/tmp/nonexistent', report.timestamp, 'shp_pat_testtoken');
+    } finally {
+      axios.post = originalPost;
+      axios.put = originalPut;
+      console.log = originalConsoleLog;
+    }
+
+    assert.ok(logs.some((line) => line.includes('waiting for 2 / 4 batches to complete')));
+    assert.ok(logs.some((line) => line.includes('report will be complete once all shards finish')));
+  });
 });
 
 describe('cloudUpload — tags in the create-run payload', () => {
