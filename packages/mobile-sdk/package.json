@@ -38,7 +38,7 @@
     "expect-webdriverio": "^5.0.3",
     "nanoid": "^5.0.9",
     "openai": "^4.104.0",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "shiplight-types": "workspace:*",
     "socket.io": "^4.6.1",
     "webdriverio": "^9.4.5",

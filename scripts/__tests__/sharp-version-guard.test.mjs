@@ -6,7 +6,8 @@ import { parse } from 'yaml';
 import { validateSharpPackageMetadata } from '../verify-sharp-install.mjs';
 
 const repoRoot = process.cwd();
-const minimumSafeVersion = [0, 35, 0];
+// GHSA-rgj7-g3m4-5g8c: sharp <0.35.4 ships vulnerable libheif.
+const minimumSafeVersion = [0, 35, 4];
 const dependencyFields =['dependencies', 'optionalDependencies', 'peerDependencies', 'devDependencies'];
 const lockfile = parse(readFileSync(path.join(repoRoot, 'pnpm-lock.yaml'), 'utf8'));
 
@@ -57,7 +58,7 @@ function minimumNodeVersion(range) {
   return match.slice(1).map((part) => Number(part ?? 0));
 }
 
-test('all supported workspace sharp dependencies exclude versions affected by GHSA-f88m-g3jw-g9cj', () => {
+test('all supported workspace sharp dependencies exclude versions affected by GHSA-rgj7-g3m4-5g8c', () => {
   const declarations = [];
 
   for (const manifestPath of workspacePackageJsonPaths()) {
@@ -165,7 +166,7 @@ test('patched Sharp snapshots keep matching native packages and patched libvips 
 test('shiplightai excludes the unused legacy Agent SDK image bundle', () => {
   const manifest = JSON.parse(readFileSync(path.join(repoRoot, 'apps/cli/package.json'), 'utf8'));
 
-  assert.equal(manifest.dependencies?.sharp, '0.35.3', 'shiplightai must pin the verified Sharp release exactly');
+  assert.equal(manifest.dependencies?.sharp, '0.35.4', 'shiplightai must pin the verified Sharp release exactly');
   assert.equal(
     manifest.dependencies?.['@anthropic-ai/claude-agent-sdk'],
     undefined,
