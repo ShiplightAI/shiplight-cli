@@ -33,6 +33,13 @@ SHIPLIGHT_TELEMETRY=0
 Put this in your project's git-ignored `.env`, or inject it from your CI secret
 store. The provider bills AI usage to your own account.
 
+These two are not interchangeable when both are present: `readShiplightEnv`
+(`apps/cli/src/dotenvSource.ts`) starts from `process.env` and then applies each
+`.env` on top, so **`.env` wins over the runner environment**. A committed or
+left-over `.env` therefore overrides the `env:` block in the CI example below —
+which is the same stale-value problem this page warns about for
+`SHIPLIGHT_API_TOKEN`.
+
 | Variable | Effect |
 |---|---|
 | `WEB_AGENT_FALLBACK_MODELS` | Comma-separated `provider:model` list tried when the primary model fails. Set it empty to disable the built-in cross-provider chain, so a run never reaches a provider you did not configure. |
@@ -41,7 +48,10 @@ store. The provider bills AI usage to your own account.
 
 Shiplight reads environment variables through an explicit allowlist
 (`SDK_ENV_ALLOWLIST` in `apps/cli/src/fixture.ts`): a variable not on that list is never
-forwarded into the SDK config.
+forwarded into the SDK config. Model selection is the exception — `WEB_AGENT_MODEL`,
+`WEB_AGENT_FALLBACK_MODELS` and `COMPUTER_USE_MODEL` are resolved separately and passed
+to `createAgentContext` as parameters, so they take effect without appearing on the
+allowlist.
 
 ## 2. Choose the action cache backend
 
@@ -245,11 +255,28 @@ artifacts or copy to internal storage:
 | `shiplight-report/<runId>` | The HTML report and its `report-data.json`. `shiplight-report/latest` symlinks to the most recent run. |
 | `test-results/<runId>` | Playwright artifacts — traces, screenshots, and the per-test `new-action-entities.json` the cache write-back reads. |
 
+### These artifacts can hold typed values
+
+Treat `.shiplight/action-cache/` and `test-results/` as secret-bearing, not as
+ordinary build output. A healed action is cached with its `kwargs` verbatim
+(`fingerprintActionEntity` in `packages/types/src/test-flow/actionEntityFingerprint.ts`),
+so an `input_text` keeps the string that was typed; Playwright traces and
+screenshots capture form input the same way. Nothing on the write path redacts.
+
+A value is stripped only when its variable was declared `sensitive: true` under
+`use.variables` — `isDeclaredSensitive` in `apps/cli/src/fixture.ts` is what sets
+the flag, and a variable saved during a run never gets it. So declare every
+credential sensitive, and give cache and artifact storage the same access rules
+as any other secret: a branch-scoped Actions cache restored through
+`restore-keys` is readable by later runs on that branch.
+
 `npx shiplight report` regenerates the HTML report from saved artifacts and is
-safe to run: it uploads to Shiplight Cloud only when `SHIPLIGHT_REPORT_TO_CLOUD`
-is truthy **and** `SHIPLIGHT_API_TOKEN` is set (`maybeUploadToCloud` in
-`apps/cli/src/commands/report.ts`). With the token removed, as above, nothing
-leaves your infrastructure.
+safe to run: it uploads to Shiplight Cloud only when the upload flag is truthy
+**and** `SHIPLIGHT_API_TOKEN` is set (`maybeUploadToCloud` in
+`apps/cli/src/commands/report.ts`). Two variables set that flag —
+`SHIPLIGHT_REPORT_TO_CLOUD` and the legacy `REPORT_TO_CLOUD` alias, which
+`isReportToCloudEnabled` still honours — so scrub both from a runner image you
+inherited. With the token removed, as above, nothing leaves your infrastructure.
 
 Merge sharded reports into one with `shiplight report --merge`:
 

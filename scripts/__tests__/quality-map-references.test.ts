@@ -12,7 +12,7 @@ function collectYaml(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(path.join(REPO_ROOT, dir), { withFileTypes: true })) {
     const rel = path.join(dir, entry.name);
     if (entry.isDirectory()) collectYaml(rel, acc);
-    else if (entry.name.endsWith('.yaml')) acc.push(rel);
+    else if (/\.ya?ml$/.test(entry.name)) acc.push(rel);
   }
   return acc;
 }
@@ -26,11 +26,26 @@ interface Declared {
 }
 
 /**
- * Every value under a key named exactly `path`, with its location.
+ * `observation_path` names a build artifact produced by a workflow run rather
+ * than a file in the tree, so it is the one `_path` key that must not be
+ * resolved against the repository.
+ */
+const NON_FILE_KEYS = new Set(['observation_path']);
+
+function holdsFilePath(key: string): boolean {
+  if (NON_FILE_KEYS.has(key)) return false;
+  // `path` covers source_refs/evidence entries; the `*_path` scalars carry the
+  // spec, plan, tasks, test-report and quality-map references in project-map.yaml.
+  return key === 'path' || key.endsWith('_path');
+}
+
+/**
+ * Every value under a key that holds a file path, with its location.
  *
- * Keyed on the exact name on purpose: `observation_path` in
- * config/observation-sources.yaml names a build artifact produced by a workflow
- * run, not a file in the tree, and a suffix match would drag it in.
+ * Deliberately not extended to `code_refs` / `legacy_refs` / `archived_drafts`:
+ * those are prose lines that begin with a path and continue with commentary or a
+ * glob, so resolving them means guessing where the path ends. They also point at
+ * the retired v1 monorepo, which is not in this repository by design.
  */
 function declaredPaths(file: string): Declared[] {
   const found: Declared[] = [];
@@ -41,7 +56,7 @@ function declaredPaths(file: string): Declared[] {
     }
     if (node === null || typeof node !== 'object') return;
     for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
-      if (key === 'path' && typeof value === 'string') {
+      if (holdsFilePath(key) && typeof value === 'string') {
         found.push({ file, trail: trail.join('.') || '<root>', value });
       }
       walk(value, [...trail, key]);
@@ -78,10 +93,20 @@ function resolves(ref: Declared): boolean {
  */
 describe('.quality reference integrity', () => {
   it('declares no path that is missing from the repository', () => {
-    const dangling = collectYaml(QUALITY_ROOT)
-      .flatMap(declaredPaths)
+    const declared = collectYaml(QUALITY_ROOT).flatMap(declaredPaths);
+
+    // Without a floor this passes vacuously. The maps are input to an external
+    // scanner whose schema this repository does not own: if a future revision
+    // renames `path`, every file yields nothing, `dangling` is empty, and the
+    // guard reports success while checking nothing at all.
+    assert.ok(
+      declared.length >= 50,
+      `expected .quality to declare many file references, found ${declared.length} — has the schema changed?`
+    );
+
+    const dangling = declared
       .filter((ref) => !resolves(ref))
-      .map((ref) => `${ref.file} :: ${ref.trail}.path -> ${ref.value}`);
+      .map((ref) => `${ref.file} :: ${ref.trail} -> ${ref.value}`);
 
     assert.deepEqual(
       dangling,
@@ -101,9 +126,17 @@ describe('.quality reference integrity', () => {
           expectations?: { evidence?: { id?: string }[] }[];
         };
         return (doc.expectations ?? []).flatMap((exp) =>
-          (exp.evidence ?? []).map((ev) => `${file}::${ev.id}`)
+          (exp.evidence ?? []).map((ev) => {
+            // An entry with no id would otherwise collide with every other such
+            // entry and be reported as a duplicate of `undefined`, naming no
+            // entry a maintainer could find.
+            assert.ok(ev.id, `${file} has an evidence entry with no id`);
+            return `${file}::${ev.id}`;
+          })
         );
       });
+
+    assert.ok(ids.length >= 20, `expected many evidence entries, found ${ids.length}`);
 
     const duplicates = ids.filter((id, i) => ids.indexOf(id) !== i);
     assert.deepEqual(duplicates, [], `duplicate evidence ids: ${duplicates.join(', ')}`);
