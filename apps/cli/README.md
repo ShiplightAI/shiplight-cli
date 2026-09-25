@@ -13,10 +13,13 @@ npx shiplightai@latest create ./my-tests
 cd my-tests
 cp .env.example .env            # configure credentials after install
 npm install
-npx shiplight setup-api-token   # writes SHIPLIGHT_API_TOKEN; skip if using a provider key
 npx playwright install chromium
 npx shiplight test              # runs the scaffolded starter test
 ```
+
+> Configure a provider API key in `.env` — `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`,
+> `OPENAI_API_KEY` or `OPENROUTER_API_KEY`. `SHIPLIGHT_API_TOKEN` also works today
+> but stops on **October 31, 2026**, when Shiplight Cloud shuts down.
 
 The scaffolder writes `package.json`, `playwright.config.ts`, `.env.example`, `.gitignore`, and a runnable `tests/example.test.yaml` that exercises a live site. Open `shiplight-report/index.html` after the run to see per-step screenshots, videos, and traces.
 
@@ -32,7 +35,7 @@ Every command is invoked via `npx shiplight <command>` from inside a project tha
 
 | Command                      | Purpose                                                                                                                                                                                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shiplight setup-api-token`  | Authenticate with Shiplight and write `SHIPLIGHT_API_TOKEN` to the current project's `.env`                                                                                                                                                                                       |
+| `shiplight setup-api-token`  | **Retiring October 31, 2026** — authenticate with Shiplight and write `SHIPLIGHT_API_TOKEN` to the current project's `.env`. Use a provider API key instead; see [self-hosting](./docs/self-hosting.md)                                                                                                                                                                                       |
 | `shiplight create <path>`    | Scaffold a new test project                                                                                                                                                                                                                                                       |
 | `shiplight test [args]`      | Run your YAML and Playwright test suite (forwards all Playwright flags)                                                                                                                                                                                                           |
 | `shiplight debug <file>`     | Launch the interactive visual debugger for a YAML test. The server picks a free port automatically; the chosen URL is printed on startup. Pass `--port N` for a stable URL (CI, bookmarks). Multiple concurrent `shiplight debug` invocations work without any port coordination. |
@@ -101,17 +104,19 @@ For the YAML statement language, authentication, variables, templates, and custo
 
 ## Environment variables
 
-Run `npx shiplight setup-api-token` to configure Shiplight's LLM proxy, or set
-at least one provider API key in `.env` before running tests:
+Set at least one provider API key in `.env` before running tests:
 
 ```
-SHIPLIGHT_API_TOKEN=...
-# or
 GOOGLE_API_KEY=...
 # or ANTHROPIC_API_KEY=sk-ant-...
 # or OPENAI_API_KEY=sk-...
 # or OPENROUTER_API_KEY=sk-or-v1-...  # also set WEB_AGENT_MODEL=openrouter:<provider>/<model>
 ```
+
+> **Shiplight Cloud shuts down on October 31, 2026.** After that date
+> `SHIPLIGHT_API_TOKEN` stops working — the hosted LLM proxy, the cloud action
+> cache, and report upload all go with it. Set a provider API key instead and
+> keep the action cache local: see [self-hosting](./docs/self-hosting.md).
 
 The AI model is auto-selected from the first key set. Override with `WEB_AGENT_MODEL=<model>`.
 OpenRouter requires an explicit upstream-qualified model, for example
@@ -146,4 +151,4 @@ DO_NOT_TRACK=1
 
 - **Documentation:** [docs.shiplight.ai](https://docs.shiplight.ai)
 - **VS Code extension:** [github.com/ShiplightAI/vscode-extension](https://github.com/ShiplightAI/vscode-extension)
-- **Cloud platform:** [shiplight.ai](https://www.shiplight.ai)
+- **Cloud platform:** [shiplight.ai](https://www.shiplight.ai) — shutting down October 31, 2026

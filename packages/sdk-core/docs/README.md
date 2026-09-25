@@ -115,7 +115,7 @@ npx playwright test
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `organization.apiToken` | string | Yes | API authentication token (identifies the org) |
+| `organization.apiToken` | string | Yes | API authentication token (identifies the org). **Retiring October 31, 2026** — see the note under Environment Variables |
 | `organization.apiBaseUrl` | string | No | API endpoint (default: https://api.shiplight.ai) |
 | `webagent.url` | string | No | WebAgent service URL for AI features |
 | `webagent.timeout` | number | No | Request timeout in ms (default: 30000) |
@@ -250,12 +250,17 @@ await agent.waitUntilStable(page, 5000);
 For backward compatibility, the package also supports environment variables:
 
 - `ORGANIZATION_ID` - Organization identifier
-- `SHIPLIGHT_API_TOKEN` - API token
+- `SHIPLIGHT_API_TOKEN` - API token (**retiring October 31, 2026**)
 - `API_BASE_URL` - API endpoint
 - `WEBAGENT_URL` - WebAgent service URL
 - `PLAYWRIGHT_STARTING_URL` - Starting URL
 - `PLAYWRIGHT_TEST_USERNAME` - Test account username
 - `PLAYWRIGHT_TEST_PASSWORD` - Test account password
+
+> **Shiplight Cloud shuts down on October 31, 2026.** `SHIPLIGHT_API_TOKEN`,
+> `organization.apiToken`, and the `https://api.shiplight.ai` endpoint stop
+> working then. Configure a provider API key directly instead.
+
 
 ## Advanced Usage
 
