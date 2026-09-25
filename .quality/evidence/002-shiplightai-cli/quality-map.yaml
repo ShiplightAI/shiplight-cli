@@ -159,16 +159,12 @@ expectations:
         path: "apps/cli/tests/integration/transpile-pipeline.test.ts"
         command: "cd apps/cli && pnpm test:logic"
         contexts: ["local", "pr-ci"]
-        notes: "Exercises the full YAML->spec pipeline end-to-end as text."
-      - id: ev-standalone-export-logic
-        type: integration
-        path: "apps/cli/tests/integration/standalone-export.test.ts"
-        command: "cd apps/cli && pnpm test:logic"
-        contexts: ["local", "pr-ci"]
         notes: >-
-          Standalone-test export equivalence (formerly the MCP export_yaml_to_test
-          surface): transpileYAMLTestFlow output imports resolve from the built
-          shiplightai package; name/starting-url overrides honored.
+          Exercises the full YAML->spec pipeline end-to-end as text, including the
+          standalone-export equivalence formerly declared separately: the generated
+          spec imports from the published shiplightai package
+          ('shiplightai/fixture'), and the `name` / `base_url` overrides are honored
+          in both single-test and suite form.
       - id: ev-transpile-parity
         type: integration
         path: "apps/cli/tests/conformance/action-parity.test.ts"
@@ -217,12 +213,13 @@ expectations:
     title: "Action-entity cache client self-heals locators across runs"
     description: >-
       lookupActionStores/updateActionStores no-op without a token, handle HTTP/network
-      errors gracefully, and return correct counts; statement hashes are stable 16-char
-      hex keyed on description + statement-path + file-path.
+      errors gracefully, and return correct counts; statement UIDs are a stable sha256
+      prefix rendered in UUID v4 shape (32 hex chars, 8-4-4-4-12) keyed on
+      repo-relative file-path + statement-path + description.
     source_type: IMPLEMENTATION
     source_refs:
       - path: "apps/cli/src/cache/actionEntityCacheClient.test.ts"
-      - path: "apps/cli/src/cache/statementHash.test.ts"
+      - path: "apps/cli/src/yaml-transpiler/statementIdentityPath.test.ts"
       - path: "apps/cli/src/cache/actionCache.test.ts"
     category: other
     priority: P2
@@ -232,7 +229,20 @@ expectations:
         path: "apps/cli/src/cache/actionEntityCacheClient.test.ts"
         command: "cd apps/cli && pnpm test:unit"
         contexts: ["local", "pr-ci"]
-        notes: "Covers no-op without a token, graceful HTTP/network error handling, counts, and stable statement-hash keys."
+        notes: >-
+          Covers no-op without a token, graceful HTTP/network error handling, returned
+          counts, >100-path batching with independent per-batch degradation, and
+          token-prefix host routing.
+      - id: ev-statement-uid-unit
+        type: unit
+        path: "apps/cli/src/yaml-transpiler/statementIdentityPath.test.ts"
+        command: "cd apps/cli && pnpm test:unit"
+        contexts: ["local", "pr-ci"]
+        notes: >-
+          Proves the cache key travels: repoRelativeIdentityPath reduces an absolute path
+          to repo-relative POSIX form (worktree roots, nested repos, no-repo fallback), and
+          statement UIDs match across two checkouts, differ per file, and are stable across
+          repeated parses.
       - id: ev-cache-store-unit
         type: unit
         path: "apps/cli/src/cache/actionCache.test.ts"
@@ -485,7 +495,6 @@ expectations:
       - path: "apps/cli/src/debugger/routes/testFlow.test.ts"
       - path: "apps/cli/src/debugger/services/playwrightSandbox.test.ts"
       - path: "apps/cli/src/debugger/index.test.ts"
-      - path: "specs/_archive/004-testbox-debugger"
     category: other
     priority: P1
     evidence:
