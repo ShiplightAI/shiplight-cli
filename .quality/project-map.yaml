@@ -190,10 +190,10 @@ features:
       - "Publish pipeline: full `pnpm build` required (not bare tsup) so
         debugger static assets build; tarball-size gate; publish devtools-assets
         before shiplightai."
-      - "v1 decoupling: CLI dropped its the internal shared package dependency; a guard test
-        (scripts/__tests__/cluster-v1-dependency-boundary.test.mjs) +
-        .github/CODEOWNERS keep the cli/mcp/sdk cluster off v1 (internal-scope)
-        packages. Currently published as shiplightai@0.1.84."
+      - "v1 decoupling: CLI dropped its internal shared package dependency. The
+        v1 (internal-scope) packages are no longer in this repository, so the
+        boundary holds structurally; .github/CODEOWNERS carries ownership, but
+        no CI guard test asserts the rule."
     priority_provenance: human
 
   - id: "003-shiplightai-mcp-server"
@@ -301,15 +301,15 @@ cross_feature_concerns:
         "003-shiplightai-mcp-server"
       ]
     source_refs:
-      - path: "scripts/__tests__/cluster-v1-dependency-boundary.test.mjs"
-        label: "guard test forbidding internal-scope deps in the published cluster"
       - path: ".github/CODEOWNERS"
         label: "ownership boundary for the active cluster"
     notes: >-
       The published developer tooling (engine, CLI, MCP) is intentionally
       severed from the v1 monorepo's internal-scope packages so it can ship
-      independently. CLI already dropped the internal shared package; a CI guard test fails
-      the build if any cluster package re-introduces a v1 dependency.
+      independently. The separation is now structural rather than enforced: the v1
+      monorepo's internal-scope packages are not in this repository at all, so no
+      cluster package can resolve one. .github/CODEOWNERS is the remaining
+      ownership boundary; there is no CI guard test asserting the dependency rule.
       Cloud-touching surfaces route through v1 tokens / v2 APIs rather than
       bundling v1 code.
 
