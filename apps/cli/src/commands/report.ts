@@ -402,9 +402,23 @@ export function isReportToCloudEnabled(): boolean {
   return ['true', '1', 'yes', 'on'].includes(raw.trim().toLowerCase());
 }
 
+/**
+ * The whole cloud-upload gate as a value: the token to upload with, or `null`
+ * for do-not-upload.
+ *
+ * Both halves live here rather than as control flow inside `maybeUploadToCloud`
+ * because `apps/cli/docs/self-hosting.md` promises a run with the token removed
+ * sends nothing. That is a documented guarantee, not an implementation detail,
+ * so it is exported to have a test of its own.
+ */
+export function resolveCloudUploadToken(): string | null {
+  if (!isReportToCloudEnabled()) return null;
+  return process.env.SHIPLIGHT_API_TOKEN || null;
+}
+
 async function maybeUploadToCloud(reportData: ReportData, outputDir: string, triggerOverride?: string): Promise<void> {
   if (!isReportToCloudEnabled()) return;
-  const apiToken = process.env.SHIPLIGHT_API_TOKEN;
+  const apiToken = resolveCloudUploadToken();
   if (!apiToken) {
     const activeVar = process.env.SHIPLIGHT_REPORT_TO_CLOUD !== undefined
       ? 'SHIPLIGHT_REPORT_TO_CLOUD'

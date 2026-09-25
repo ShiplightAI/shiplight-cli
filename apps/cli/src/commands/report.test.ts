@@ -8,7 +8,12 @@ import { tmpdir } from 'node:os';
 // so we get real end-to-end coverage including arg parsing.
 import { execFileSync } from 'node:child_process';
 
-import { buildGitHubSummary, extractTriggerOption, isReportToCloudEnabled } from './report.js';
+import {
+  buildGitHubSummary,
+  extractTriggerOption,
+  isReportToCloudEnabled,
+  resolveCloudUploadToken,
+} from './report.js';
 import type { ReportTest } from '../reporter/template.js';
 
 const CLI_PATH = join(import.meta.dirname, '..', '..', 'dist', 'cli.js');
@@ -674,5 +679,67 @@ describe('extractTriggerOption', () => {
     );
     assert.equal(trigger, 'my-report');
     assert.equal(warnings.length, 2);
+  });
+});
+
+/**
+ * `apps/cli/docs/self-hosting.md` tells a self-hoster that removing
+ * `SHIPLIGHT_API_TOKEN` stops the report leaving their infrastructure. The flag
+ * half of that gate was already covered above; this covers the token half and
+ * the AND between them, so the promise cannot quietly stop being true.
+ */
+describe('resolveCloudUploadToken', () => {
+  const {
+    SHIPLIGHT_REPORT_TO_CLOUD,
+    REPORT_TO_CLOUD,
+    SHIPLIGHT_API_TOKEN,
+  } = process.env;
+
+  function restoreEnv(key: string, value: string | undefined) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+
+  beforeEach(() => {
+    delete process.env.SHIPLIGHT_REPORT_TO_CLOUD;
+    delete process.env.REPORT_TO_CLOUD;
+    delete process.env.SHIPLIGHT_API_TOKEN;
+  });
+
+  afterEach(() => {
+    restoreEnv('SHIPLIGHT_REPORT_TO_CLOUD', SHIPLIGHT_REPORT_TO_CLOUD);
+    restoreEnv('REPORT_TO_CLOUD', REPORT_TO_CLOUD);
+    restoreEnv('SHIPLIGHT_API_TOKEN', SHIPLIGHT_API_TOKEN);
+  });
+
+  it('returns null when the flag is on but the token was removed', () => {
+    process.env.SHIPLIGHT_REPORT_TO_CLOUD = '1';
+    assert.equal(resolveCloudUploadToken(), null);
+  });
+
+  it('returns null when the legacy flag is on but the token was removed', () => {
+    process.env.REPORT_TO_CLOUD = '1';
+    assert.equal(resolveCloudUploadToken(), null);
+  });
+
+  it('returns null when a token is present but the flag is off', () => {
+    process.env.SHIPLIGHT_API_TOKEN = 'shp_pat_example';
+    assert.equal(resolveCloudUploadToken(), null);
+  });
+
+  it('returns null when neither is set', () => {
+    assert.equal(resolveCloudUploadToken(), null);
+  });
+
+  it('treats an empty token as no token', () => {
+    process.env.SHIPLIGHT_REPORT_TO_CLOUD = '1';
+    process.env.SHIPLIGHT_API_TOKEN = '';
+    assert.equal(resolveCloudUploadToken(), null);
+  });
+
+  it('returns the token only when the flag and the token are both set', () => {
+    process.env.SHIPLIGHT_REPORT_TO_CLOUD = '1';
+    process.env.SHIPLIGHT_API_TOKEN = 'shp_pat_example';
+    assert.equal(resolveCloudUploadToken(), 'shp_pat_example');
   });
 });
