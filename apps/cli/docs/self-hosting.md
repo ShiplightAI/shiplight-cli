@@ -258,18 +258,23 @@ artifacts or copy to internal storage:
 ### These artifacts can hold typed values
 
 Treat `.shiplight/action-cache/` and `test-results/` as secret-bearing, not as
-ordinary build output. A healed action is written to the store with its `kwargs` verbatim
-(`apps/cli/src/cache/actionEntityCacheStore.ts`; `fingerprintActionEntity` in
-`packages/types/src/test-flow/actionEntityFingerprint.ts` embeds them in the
-validity token too), so an `input_text` keeps the string that was typed; Playwright traces and
-screenshots capture form input the same way. Nothing on the write path redacts.
+ordinary build output. Playwright traces and screenshots capture form input
+unconditionally. The action cache is the softer case: a healed action is written
+to the store with its `kwargs` verbatim
+(`apps/cli/src/cache/actionEntityCacheStore.ts`) and nothing on the write path
+redacts, so an `input_text` keeps whatever string the model put there. The
+healing prompt asks the model to write `{{ placeholder }}` instead of the
+literal, so entries normally hold placeholders — but that is an instruction to a
+model, not a guarantee.
 
-A value is stripped only when its variable was declared `sensitive: true` under
-`use.variables` — `isDeclaredSensitive` in `apps/cli/src/fixture.ts` is what sets
-the flag, and a variable saved during a run never gets it. So declare every
-credential sensitive, and give cache and artifact storage the same access rules
-as any other secret: a branch-scoped Actions cache restored through
-`restore-keys` is readable by later runs on that branch.
+Declaring the variable `sensitive: true` under `use.variables` is what makes it a
+guarantee: the value is then never shown to the model at all — `actionPrompts.ts`
+emits `[SENSITIVE - value hidden]` in its place — so it cannot reach a cache
+entry. `isDeclaredSensitive` in `apps/cli/src/fixture.ts` sets the flag, and a
+variable saved during a run never gets it. So declare every credential sensitive,
+and give cache and artifact storage the same access rules as any other secret: a
+branch-scoped Actions cache restored through `restore-keys` is readable by later
+runs on that branch.
 
 `npx shiplight report` regenerates the HTML report from saved artifacts and is
 safe to run: it uploads to Shiplight Cloud only when the upload flag is truthy
