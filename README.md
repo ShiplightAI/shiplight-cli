@@ -49,6 +49,15 @@ A statement written as plain intent is resolved by a model at runtime; once
 resolved it carries a concrete locator, so later runs replay deterministically
 and only fall back to the model when the page has changed under it.
 
+## Self-hosting
+
+Run the CLI and browsers on your own machines or CI runners, with your own
+AI provider key and the action cache and reports in storage you control:
+[apps/cli/docs/self-hosting.md](./apps/cli/docs/self-hosting.md).
+
+Shiplight Cloud shuts down on **October 31, 2026**. After that date this is
+the only way to run Shiplight, and `SHIPLIGHT_API_TOKEN` stops working.
+
 ## Working on the code
 
 Requires Node.js >= 22 and pnpm 10.

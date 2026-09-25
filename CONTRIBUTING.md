@@ -81,8 +81,11 @@ pipeline runs as hard gates before it gets anywhere near a model.
 GOOGLE_API_KEY=...      # or
 ANTHROPIC_API_KEY=...   # or
 OPENAI_API_KEY=...      # or
-SHIPLIGHT_API_TOKEN=... # routes through Shiplight's hosted proxy
+SHIPLIGHT_API_TOKEN=... # routes through Shiplight's hosted proxy (retiring Oct 31, 2026)
 ```
+
+> The hosted proxy shuts down on **October 31, 2026**, so `SHIPLIGHT_API_TOKEN`
+> will stop resolving a model. Prefer one of the provider keys above.
 
 Set one and the live-AI tests run. If several are present the first match wins,
 in this order (`resolveWebAgentModelFromEnv` in `packages/types/src/organization.ts`):
@@ -92,7 +95,7 @@ in this order (`resolveWebAgentModelFromEnv` in `packages/types/src/organization
 3. Google Vertex via ADC (`GOOGLE_GENAI_USE_VERTEXAI` + `GOOGLE_CLOUD_PROJECT`)
 4. `ANTHROPIC_API_KEY`
 5. `OPENAI_API_KEY`
-6. `SHIPLIGHT_API_TOKEN`
+6. `SHIPLIGHT_API_TOKEN` — retiring October 31, 2026
 
 Worth knowing if a key you forgot about is set — `GOOGLE_API_KEY` outranks
 Vertex, which is exactly the shadowing the release pipeline guards against.
