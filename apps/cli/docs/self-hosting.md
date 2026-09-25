@@ -258,9 +258,10 @@ artifacts or copy to internal storage:
 ### These artifacts can hold typed values
 
 Treat `.shiplight/action-cache/` and `test-results/` as secret-bearing, not as
-ordinary build output. A healed action is cached with its `kwargs` verbatim
-(`fingerprintActionEntity` in `packages/types/src/test-flow/actionEntityFingerprint.ts`),
-so an `input_text` keeps the string that was typed; Playwright traces and
+ordinary build output. A healed action is written to the store with its `kwargs` verbatim
+(`apps/cli/src/cache/actionEntityCacheStore.ts`; `fingerprintActionEntity` in
+`packages/types/src/test-flow/actionEntityFingerprint.ts` embeds them in the
+validity token too), so an `input_text` keeps the string that was typed; Playwright traces and
 screenshots capture form input the same way. Nothing on the write path redacts.
 
 A value is stripped only when its variable was declared `sensitive: true` under

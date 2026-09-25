@@ -74,6 +74,9 @@ function declaredPaths(file: string): Declared[] {
  */
 function resolves(ref: Declared): boolean {
   if (/^https?:\/\//.test(ref.value)) return true;
+  // '', '.' and './' all join to REPO_ROOT, which exists — the same vacuous
+  // pass this guard exists to prevent.
+  if (!ref.value.trim() || /^\.\/?$/.test(ref.value.trim())) return false;
   return (
     existsSync(path.join(REPO_ROOT, ref.value)) ||
     existsSync(path.join(REPO_ROOT, QUALITY_ROOT, ref.value))
@@ -120,7 +123,7 @@ describe('.quality reference integrity', () => {
     // Findings are reported against these ids. Two entries sharing one makes a
     // result ambiguous about which test it came from.
     const ids = collectYaml(QUALITY_ROOT)
-      .filter((file) => file.endsWith('quality-map.yaml'))
+      .filter((file) => /quality-map\.ya?ml$/.test(file))
       .flatMap((file) => {
         const doc = parse(readFileSync(path.join(REPO_ROOT, file), 'utf-8')) as {
           expectations?: { evidence?: { id?: string }[] }[];
