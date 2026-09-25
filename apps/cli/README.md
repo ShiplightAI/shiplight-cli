@@ -11,15 +11,18 @@ Scaffold a new test project in under a minute:
 ```bash
 npx shiplightai@latest create ./my-tests
 cd my-tests
-cp .env.example .env            # configure credentials after install
+cp .env.example .env
+$EDITOR .env                        # required: every key in the template is commented out
 npm install
 npx playwright install chromium
-npx shiplight test              # runs the scaffolded starter test
+npx shiplight test                  # runs the scaffolded starter test
 ```
 
-> Configure a provider API key in `.env` — `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`,
-> `OPENAI_API_KEY` or `OPENROUTER_API_KEY`. `SHIPLIGHT_API_TOKEN` also works today
-> but stops on **October 31, 2026**, when Shiplight Cloud shuts down.
+> Any one provider key works — `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`,
+> `OPENAI_API_KEY`, or `OPENROUTER_API_KEY` together with `WEB_AGENT_MODEL`.
+> Without one, `shiplight test` exits with `No AI model configured`.
+> `SHIPLIGHT_API_TOKEN` also works today but stops on **October 31, 2026**,
+> when Shiplight Cloud shuts down.
 
 The scaffolder writes `package.json`, `playwright.config.ts`, `.env.example`, `.gitignore`, and a runnable `tests/example.test.yaml` that exercises a live site. Open `shiplight-report/index.html` after the run to see per-step screenshots, videos, and traces.
 
