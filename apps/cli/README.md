@@ -19,7 +19,8 @@ npx shiplight test                  # runs the scaffolded starter test
 ```
 
 > Any one provider key works — `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`,
-> `OPENAI_API_KEY`, or `OPENROUTER_API_KEY` together with `WEB_AGENT_MODEL`.
+> `OPENAI_API_KEY`, or `OPENROUTER_API_KEY` (OpenRouter additionally needs an
+> explicit `WEB_AGENT_MODEL`; the others derive a default model from the key).
 > Without one, `shiplight test` exits with `No AI model configured`.
 > `SHIPLIGHT_API_TOKEN` also works today but stops on **October 31, 2026**,
 > when Shiplight Cloud shuts down.

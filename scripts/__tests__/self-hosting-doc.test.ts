@@ -24,8 +24,6 @@ const SOURCE_ROOTS = [
  * Without this the guard fires on the next CI snippet the page grows.
  */
 const EXTERNAL_IDENTIFIERS = new Set([
-  'CI',
-  'DO_NOT_TRACK',
   'GITHUB_TOKEN',
   'NODE_OPTIONS',
   'PLAYWRIGHT_BROWSERS_PATH',
@@ -147,11 +145,15 @@ describe('self-hosting documentation', () => {
     // honours a legacy alias as well as the canonical name; the page missed it
     // once already, and a runner image carrying the old one would upload.
     const { isReportToCloudEnabled } = await import('../../apps/cli/src/commands/report.ts');
-    const flags = ['SHIPLIGHT_REPORT_TO_CLOUD', 'REPORT_TO_CLOUD'];
+    const flags = ['SHIPLIGHT_REPORT_TO_CLOUD', 'REPORT_TO_CLOUD'] as const;
 
-    for (const flag of flags) {
-      const previous = process.env[flag];
-      try {
+    // Snapshot BOTH names before the loop. Saving only the one being set loses
+    // the other, because each iteration clears both to isolate the flag it is
+    // testing — so a developer or runner with either exported would have it
+    // silently dropped for the rest of the process.
+    const saved = new Map(flags.map((flag) => [flag, process.env[flag]]));
+    try {
+      for (const flag of flags) {
         delete process.env.SHIPLIGHT_REPORT_TO_CLOUD;
         delete process.env.REPORT_TO_CLOUD;
         process.env[flag] = '1';
@@ -160,9 +162,11 @@ describe('self-hosting documentation', () => {
           true,
           `${flag} no longer enables the upload — drop it from ${DOC_PATH} if it is gone`
         );
-      } finally {
-        delete process.env[flag];
-        if (previous !== undefined) process.env[flag] = previous;
+      }
+    } finally {
+      for (const [flag, value] of saved) {
+        if (value === undefined) delete process.env[flag];
+        else process.env[flag] = value;
       }
     }
 
