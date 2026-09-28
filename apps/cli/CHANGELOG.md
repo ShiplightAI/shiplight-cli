@@ -2,6 +2,19 @@
 
 All notable changes to `shiplightai` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## 0.1.106 (2026-09-28)
+
+### Bug Fixes
+
+- **sdk-core:** send thinkingLevel, not thinkingBudget, to Gemini 3 models (5818e0f)
+- address round-2 review findings (724b5b8)
+- address local multi-lens review findings (fd94a40)
+
+### Other Changes
+
+- **cli:** cover the token half of the cloud-upload gate (237db60)
+- document the Cloud shutdown and add a self-hosting guide (e3794ac)
+
 ## 0.1.105 (2026-09-21)
 
 ### Features
