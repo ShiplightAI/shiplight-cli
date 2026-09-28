@@ -79,9 +79,12 @@ test('SDK publish workflow runs every public SDK example against the candidate t
   assert.equal(checkout.with.repository, 'ShiplightAI/examples');
   assert.equal(checkout.with.path, 'examples-repo');
 
-  // The live-AI examples gate needs the 8-vCPU self-hosted runner to run
-  // 4-wide; on a 2-vCPU GitHub-hosted runner it took 30+ minutes serially.
-  assert.equal(publishJob['runs-on'], 'shiplight-medium');
+  // GitHub-hosted: the shiplight-* self-hosted runners are being decommissioned,
+  // and npm refuses a provenance publish from one (422, "Unsupported GitHub
+  // Actions runner environment: self-hosted"). The examples gate still runs
+  // 4-wide — it blocks on live-AI calls, not on cores.
+  // github-actions-runner-labels.test.ts holds this for every workflow.
+  assert.equal(publishJob['runs-on'], 'ubuntu-latest');
 
   const examples = stepNamed('E2E — public SDK examples (hard gate, all must pass)');
   assert.equal(examples['working-directory'], 'examples-repo/sdk-examples');
@@ -90,11 +93,10 @@ test('SDK publish workflow runs every public SDK example against the candidate t
     examples.run,
     /npm install --no-save "\$\{\{ github\.workspace \}\}\/packages\/sdk-public\/shiplightai-sdk-\$\{\{ steps\.versions\.outputs\.new \}\}\.tgz"/,
   );
-  // No --with-deps on shiplight-medium: it shells out to `sudo apt-get`,
-  // which cannot prompt on the self-hosted runner. The image has the
-  // browser OS libraries pre-baked.
-  assert.match(examples.run, /npx playwright install chromium/);
-  assert.doesNotMatch(examples.run, /playwright install --with-deps/);
+  // --with-deps on a GitHub-hosted runner: `sudo apt-get` works here, the image
+  // does not pre-bake the browser OS libraries the retired shiplight-medium one
+  // did, and this install is what provides the xvfb asserted just below.
+  assert.match(examples.run, /npx playwright install --with-deps chromium/);
   assert.match(examples.run, /xvfb-run -a npm run "\$example_script"/);
 
   for (const script of [
