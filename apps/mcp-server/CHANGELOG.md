@@ -2,6 +2,23 @@
 
 All notable changes to `@shiplightai/mcp` are documented here. This file is generated automatically at release time from the commits that touch the published package and its bundled SDK.
 
+## 0.2.3 (2026-09-28)
+
+### Features
+
+- **cli:** add native OpenRouter support (272538d)
+
+### Bug Fixes
+
+- **mcp:** keep the OpenRouter provider external to the bundle (9aa1653)
+- **sdk-core:** send thinkingLevel, not thinkingBudget, to Gemini 3 models (5818e0f)
+- **deps:** upgrade sharp to patch libheif vulnerabilities (c9cceea)
+- **llm:** use OpenRouter dotted Claude model identifiers (7775aee)
+
+### Other Changes
+
+- document the Cloud shutdown and add a self-hosting guide (e3794ac)
+
 ## 0.2.2 (2026-09-06)
 
 ### Other Changes
