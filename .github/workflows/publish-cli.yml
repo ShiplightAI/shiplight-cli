@@ -30,12 +30,13 @@ jobs:
   publish:
     if: ${{ inputs.promote_run_id == '' }}
     needs: sdk-tests
-    # shiplight-medium (e2-standard-8, 8 vCPU / 32 GB) — a cloud-dispatched
-    # self-hosted runner. The live-AI browser E2E gates below run 4-wide
-    # (--workers=4) here instead of serially on a 2-vCPU GitHub-hosted runner,
-    # mirroring the cloud service's E2E CI. Requires monots to stay a connected repo in
-    # the cloud service runner control plane, else the job queues without a runner.
-    runs-on: shiplight-medium
+    # GitHub-hosted. This job used to run on shiplight-medium (e2-standard-8),
+    # but the shiplight-* self-hosted runners are being decommissioned, and npm
+    # refuses a provenance publish from one: trusted publishing signs a sigstore
+    # bundle, and the registry rejects it with "Unsupported GitHub Actions runner
+    # environment: self-hosted" (422). The live-AI browser E2E gates below stay
+    # 4-wide; they block on model and page I/O rather than CPU.
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       # TWO independent consumers — dropping this breaks publishing, not just the
@@ -374,13 +375,12 @@ jobs:
 
       - name: Install Chromium for e2e
         working-directory: apps/cli
-        # No --with-deps: the shiplight-medium runner image has the browser OS
-        # libraries pre-baked, and --with-deps shells out to `sudo apt-get`,
-        # which fails on the self-hosted runner (its user has no passwordless
-        # sudo). The plain install is a no-op when the baked Chromium already
-        # matches Playwright 1.60.0, otherwise it fetches the right revision to
-        # the user cache — neither path needs sudo.
-        run: pnpm exec playwright install chromium
+        # --with-deps, matching browser-tests.yml: the GitHub-hosted image does
+        # not pre-bake the browser OS libraries the way the retired
+        # shiplight-medium image did, and it is the install that provides xvfb
+        # for the headed lane below. `sudo apt-get` works here — the omission
+        # existed only because the self-hosted runner had no passwordless sudo.
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Browser e2e — keyless lane (hard gate)
         id: browser_e2e_gate
@@ -487,9 +487,8 @@ jobs:
           fi
           # Ensure the Chromium revision is present (the examples' pinned
           # Playwright may differ from apps/cli; browsers are cached per-revision).
-          # No --with-deps: the shiplight-medium image has the OS libraries
-          # pre-baked, and --with-deps' `sudo apt-get` fails on the self-hosted
-          # runner (no passwordless sudo). The plain install needs no sudo.
+          # The step above already installed the OS libraries with --with-deps,
+          # so this only has to fetch the examples' own Chromium revision.
           npx playwright install chromium
           # Run demo project first (auth setup → demo immediately, session is fresh).
           npx shiplight test --project=setup --project=demo --workers=4

@@ -21,13 +21,16 @@ jobs:
 
   publish:
     needs: [sdk-tests]
-    # shiplight-medium (e2-standard-8, 8 vCPU / 32 GB) — a cloud-dispatched
-    # self-hosted runner, same as publish-cli.yml. The SDK examples gate is 51
-    # live-AI call sites across 8 browser scenarios; running them serially on a
-    # 2-vCPU GitHub-hosted runner took 30+ minutes, which is why they now run
-    # 4-wide below. Requires monots to stay a connected repo in the cloud service
-    # runner control plane, else the job queues without a runner.
-    runs-on: shiplight-medium
+    # GitHub-hosted, same as publish-cli.yml. This job used to run on
+    # shiplight-medium (e2-standard-8), but the shiplight-* self-hosted runners
+    # are being decommissioned, and npm refuses a provenance publish from one:
+    # trusted publishing signs a sigstore bundle, and the registry rejects it
+    # with "Unsupported GitHub Actions runner environment: self-hosted" (422),
+    # which is how 0.1.12 failed after clearing every gate. The SDK examples
+    # gate is 51 live-AI call sites across 8 browser scenarios; serially it took
+    # 30+ minutes, so it stays 4-wide below — those calls block on model and
+    # page I/O rather than CPU.
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       # REQUIRED to publish: npm authenticates this workflow by OIDC (trusted
@@ -182,11 +185,11 @@ jobs:
             exit 1
           fi
 
-          # No --with-deps: the shiplight-medium image has the browser OS
-          # libraries pre-baked, and --with-deps shells out to `sudo apt-get`,
-          # which fails on the self-hosted runner ("sudo: a password is
-          # required"). Same reasoning as publish-cli.yml.
-          npx playwright install chromium
+          # --with-deps, matching browser-tests.yml and publish-cli.yml: the
+          # GitHub-hosted image does not pre-bake the browser OS libraries the
+          # retired shiplight-medium image had, and it is the install that
+          # provides the xvfb the examples below run under.
+          npx playwright install --with-deps chromium
           mkdir -p /tmp/sdk-examples
 
           # The examples currently end with `.catch(console.error)`, which logs
@@ -216,8 +219,10 @@ jobs:
           }
           export -f run_sdk_example
 
-          # 4-wide on shiplight-medium's 8 vCPU. Each example drives its own
-          # Chromium on its own xvfb display (`xvfb-run -a` picks a free one).
+          # 4-wide. Each example drives its own Chromium on its own xvfb display
+          # (`xvfb-run -a` picks a free one). The width is set by how long these
+          # block on live-AI calls, not by the runner's core count, which is why
+          # it survived the move off the 8-vCPU self-hosted runner.
           # xargs exits nonzero when any worker does, so one failing example
           # still fails the gate.
           printf '%s\n' "${EXAMPLES[@]}" \
