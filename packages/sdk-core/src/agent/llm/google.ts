@@ -101,44 +101,63 @@ export type GoogleProviderOptionsResult = {
 	vertex?: GoogleGenerativeAIProviderOptions;
 };
 
+type GeminiThinkingConfig = NonNullable<GoogleGenerativeAIProviderOptions['thinkingConfig']>;
+
+/**
+ * Gemini 3 or later. Follows the same rule as @ai-sdk/google's internal
+ * `usesGemini3Features` (not exported), minus its gemini-robotics-er-1.5 special
+ * case: a Gemini id that is not a known 1.x/2.x model is treated as Gemini 3 or
+ * later, so a new model gets the newer API.
+ */
+function isGemini3OrLaterModel(modelName: string): boolean {
+	if (!/(^|\/)gemini-/i.test(modelName)) return false;
+	const isPreGemini3 =
+		/(^|\/)gemini-[12](?:[.-]|$)/i.test(modelName) || /(^|\/)gemini-pro(?:-vision)?$/i.test(modelName);
+	return !isPreGemini3;
+}
+
+/**
+ * Thinking control for a Gemini model.
+ *
+ * Gemini 2.x takes only a token budget; Gemini 3 and later take a thinking level.
+ * Non-Gemini ids on this path keep the token budget they always had.
+ * Vertex rejects the wrong field with a non-retryable HTTP 400, and a 400 does
+ * not trigger model fallback, so the wrong field fails the call. Observed on
+ * Vertex (2026-09-28): `thinkingLevel` is rejected by gemini-2.5-flash/-pro, and
+ * `thinkingBudget` is rejected on about half of gemini-3.5-flash calls
+ * ("Thinking budget is not supported for this model.").
+ *
+ * The level is `low`, the lowest level every Gemini 3 model we route accepts:
+ * gemini-3.8-flash and gemini-3.1-pro-preview reject `minimal`.
+ * gemini-3-flash-preview accepts `minimal` and keeps it.
+ */
+function getGeminiThinkingConfig(modelName: string): GeminiThinkingConfig {
+	if (!isGemini3OrLaterModel(modelName)) {
+		return { thinkingBudget: 512, includeThoughts: true };
+	}
+	return {
+		thinkingLevel: modelName === 'gemini-3-flash-preview' ? 'minimal' : 'low',
+		includeThoughts: true,
+	};
+}
+
 /**
  * Get provider options based on image count in the request
  * - Exactly 1 image: HIGH resolution for best quality
  * - 0 images (PDFs, text only): No mediaResolution needed
  * - Multiple images: Default resolution (Vertex AI limitation)
+ * - gemini-3-flash-preview: HIGH at any image count
  *
  * In AI SDK v6, provider options key must match the provider:
  * - 'vertex' for Vertex AI (createVertex)
  * - 'google' for Google AI (createGoogleGenerativeAI)
  */
 export function getGoogleProviderOptions(imageCount: number, modelName: string): GoogleProviderOptionsResult {
-	const providerOptionsGemini2_5Pro: GoogleGenerativeAIProviderOptions = {
-		thinkingConfig: {
-			thinkingBudget: 512,
-			includeThoughts: true,
-		},
+	const providerOptions: GoogleGenerativeAIProviderOptions = {
+		thinkingConfig: getGeminiThinkingConfig(modelName),
 	};
-
-	const providerOptionsGemini3FlashPreview: GoogleGenerativeAIProviderOptions = {
-		thinkingConfig: {
-			thinkingLevel: 'minimal',
-			includeThoughts: true,
-		},
-		mediaResolution: MediaResolution.MEDIA_RESOLUTION_HIGH,
-	};
-
-	let providerOptions: GoogleGenerativeAIProviderOptions;
-	switch (modelName) {
-		case 'gemini-3-flash-preview':
-			providerOptions = { ...providerOptionsGemini3FlashPreview };
-			break;
-		default:
-			providerOptions = { ...providerOptionsGemini2_5Pro };
-			// Vertex AI only supports HIGH resolution for single images
-			// Use HIGH for single image, default (unspecified) for multiple images
-			if (imageCount === 1) {
-				providerOptions.mediaResolution = MediaResolution.MEDIA_RESOLUTION_HIGH;
-			}
+	if (modelName === 'gemini-3-flash-preview' || imageCount === 1) {
+		providerOptions.mediaResolution = MediaResolution.MEDIA_RESOLUTION_HIGH;
 	}
 
 	// AI SDK v6: Use 'vertex' key for Vertex AI, 'google' key for Google AI
