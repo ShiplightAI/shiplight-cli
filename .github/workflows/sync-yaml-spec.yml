@@ -16,8 +16,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          owner: ${{ vars.ORGANIZATION_NAME }}
-          app-id: ${{ vars.SHIPLIGHT_OPS_GITHUB_APP_ID }}
+          owner: ${{ github.repository_owner }}
+          client-id: ${{ vars.SHIPLIGHT_OPS_GITHUB_CLIENT_ID }}
           private-key: ${{ secrets.SHIPLIGHT_OPS_GITHUB_APP_KEY }}
           repositories: examples
 
