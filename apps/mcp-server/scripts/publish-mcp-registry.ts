@@ -205,9 +205,10 @@ if (npmVersion) {
 // Repository link — optional, but if present it must be publicly readable
 // ---------------------------------------------------------------------------
 //
-// The field is deliberately absent from server.json; see repositoryLink.ts for
-// why, and for the verdict rules this check applies. It exists because the
-// private monorepo URL shipped once already, in 0.2.0.
+// server.json points at ShiplightAI/shiplight-cli, which is public; see
+// repositoryLink.ts for the verdict rules this check applies. The check exists
+// because a private monorepo URL shipped once already, in 0.2.0, and the field
+// then stayed absent through 0.2.3 rather than ship a link nobody could open.
 step('Repository link');
 const repoUrl = manifest.repository?.url;
 let repoStatus = '';

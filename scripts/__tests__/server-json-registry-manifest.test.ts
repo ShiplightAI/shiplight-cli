@@ -17,9 +17,10 @@
  * the schema was the whole contract cost the 0.2.1 registry publish, after npm
  * had already been written and could not be taken back.
  *
- * `repository`, by contrast, really is optional and is omitted on purpose: the
- * source is private, and a link nobody outside the org can open is worse than
- * no link. See the repository tests below.
+ * `repository`, by contrast, really is optional. It was omitted through 0.2.3,
+ * when the source was private and a link nobody outside the org could open was
+ * worse than no link; it now points at the public repo. See the repository
+ * tests below.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -104,26 +105,25 @@ describe('server.json tracks the published MCP package', () => {
     assert.match(manifest.websiteUrl ?? '', /^https:\/\//);
   });
 
-  test('does not advertise a repository readers cannot open', () => {
+  test('advertises the public repository that holds this server', () => {
     // The field is optional in the schema — only name, description and version
     // are required — and 0.2.0 shipped one pointing at a repository that 404'd
     // for everyone outside the org, so every reader of the registry entry got a
-    // broken link. It stays omitted while this repository is not public.
+    // broken link. It stayed omitted through 0.2.3 for that reason.
     //
-    // When ShiplightAI/shiplight-cli goes public, add it back:
-    //   "repository": { "url": "https://github.com/ShiplightAI/shiplight-cli",
-    //                   "source": "github", "subfolder": "apps/mcp-server" }
-    // and invert this assertion. The publish workflow's manifest validator
-    // checks the URL is anonymously reachable, so it will confirm the change.
+    // ShiplightAI/shiplight-cli is public now and holds this server's source,
+    // so the link is worth publishing. subfolder points at it inside the
+    // monorepo. The publish preflight fetches the URL anonymously and blocks on
+    // a 4xx, so a regression to a private or wrong repo fails the release.
     //
     // apps/mcp-server/scripts/repositoryLink.test.ts asserts the same thing in
     // the mcp-server lane, so a developer running that package's tests sees it
     // without waiting for this one.
-    assert.equal(
-      manifest.repository,
-      undefined,
-      'server.json declares a repository, but this repo is not public — the link would 404 for registry readers',
-    );
+    assert.deepEqual(manifest.repository, {
+      url: 'https://github.com/ShiplightAI/shiplight-cli',
+      source: 'github',
+      subfolder: 'apps/mcp-server',
+    });
   });
 
   test('if a repository is declared at all, it is a well-formed public GitHub link', () => {
