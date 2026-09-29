@@ -21,12 +21,15 @@ const TRANSIENT_4XX = new Set(['408', '425', '429']);
 /**
  * Decide what an anonymous fetch of `repository.url` means for a release.
  *
- * `repository` is optional in the registry schema, and ours is deliberately
- * absent: the server's source lives in a private monorepo, and a link nobody
- * can open is worse than no link at all. Pointing it at some other public
- * Shiplight repo is not a fix either — the field exists so reviewers can read
- * *this server's* code, so a wrong repo misleads exactly the people it is meant
- * to serve.
+ * `repository` is optional in the registry schema. Ours points at
+ * ShiplightAI/shiplight-cli, which holds this server's source and is public.
+ *
+ * It was absent for 0.2.1 through 0.2.3, when that source sat in a private
+ * monorepo and a link nobody could open was worse than no link at all. That
+ * reasoning still governs the verdicts below: a link is only worth publishing
+ * if an anonymous reader can follow it to *this server's* code, so a private
+ * repo and a wrong-but-public one are equally useless to the reviewers the
+ * field exists to serve.
  *
  * Only a 4xx blocks, and only a 4xx that means "you cannot see this". A 5xx or
  * an unreachable host is trouble at GitHub's end or on the runner, and must not

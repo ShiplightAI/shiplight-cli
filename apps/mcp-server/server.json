@@ -3,6 +3,11 @@
   "name": "ai.shiplight/shiplight",
   "title": "Shiplight",
   "description": "An MCP server that provides browser automation",
+  "repository": {
+    "url": "https://github.com/ShiplightAI/shiplight-cli",
+    "source": "github",
+    "subfolder": "apps/mcp-server"
+  },
   "version": "0.2.3",
   "websiteUrl": "https://www.shiplight.ai",
   "packages": [

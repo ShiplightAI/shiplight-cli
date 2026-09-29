@@ -96,17 +96,15 @@ describe('server.json', () => {
     readFileSync(join(dirname(dirname(fileURLToPath(import.meta.url))), 'server.json'), 'utf8'),
   ) as { repository?: { url?: string } };
 
-  it('does not link a repository readers cannot open', () => {
+  it('links the public repository that holds this server', () => {
     // Checked without a network call so it holds in any environment: the URL
-    // itself is the defect, whatever GitHub happens to answer today. The field
-    // is optional in the registry schema and stays omitted while this
-    // repository is not public — see the note in
-    // scripts/__tests__/server-json-registry-manifest.test.ts for how to add it
-    // back when that changes.
+    // itself is what matters here, whatever GitHub happens to answer today. The
+    // publish preflight does fetch it anonymously and blocks on a 4xx, which is
+    // what catches a regression to a private or wrong repo.
     assert.equal(
-      manifest.repository,
-      undefined,
-      'server.json declares a repository, but this repo is not public — the link would 404 for registry readers.',
+      manifest.repository?.url,
+      'https://github.com/ShiplightAI/shiplight-cli',
+      'server.json must link the public repo that holds this server, so registry readers can reach its source.',
     );
   });
 });
