@@ -219,14 +219,22 @@ jobs:
           }
           export -f run_sdk_example
 
-          # 4-wide. Each example drives its own Chromium on its own xvfb display
-          # (`xvfb-run -a` picks a free one). The width is set by how long these
-          # block on live-AI calls, not by the runner's core count, which is why
-          # it survived the move off the 8-vCPU self-hosted runner.
+          # 2-wide. Each example drives its own Chromium on its own xvfb display
+          # (`xvfb-run -a` picks a free one).
+          #
+          # This was 4-wide on the 8-vCPU self-hosted runner, and stayed 4-wide
+          # across the move to ubuntu-latest on the reasoning that these block on
+          # live-AI calls rather than CPU. That reasoning was incomplete:
+          # concurrent headed Chromium instances also contend for memory and
+          # display surfaces. 4-wide here failed 2 of 3 runs, always on `basic`,
+          # always as `Page.captureScreenshot: Unable to capture screenshot` after
+          # the page had loaded — a capture-time resource failure, not a test
+          # failure. Halving the width trades wall time for a gate that holds.
+          #
           # xargs exits nonzero when any worker does, so one failing example
           # still fails the gate.
           printf '%s\n' "${EXAMPLES[@]}" \
-            | xargs -P 4 -I{} bash -c 'run_sdk_example "$@"' _ {}
+            | xargs -P 2 -I{} bash -c 'run_sdk_example "$@"' _ {}
 
       - name: Download baseline tarball (@shiplightai/sdk@OLD)
         run: |
