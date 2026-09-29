@@ -81,8 +81,7 @@ test('SDK publish workflow runs every public SDK example against the candidate t
 
   // GitHub-hosted: the shiplight-* self-hosted runners are being decommissioned,
   // and npm refuses a provenance publish from one (422, "Unsupported GitHub
-  // Actions runner environment: self-hosted"). The examples gate still runs
-  // 4-wide — it blocks on live-AI calls, not on cores.
+  // Actions runner environment: self-hosted").
   // github-actions-runner-labels.test.ts holds this for every workflow.
   assert.equal(publishJob['runs-on'], 'ubuntu-latest');
 
@@ -123,8 +122,10 @@ test('SDK publish workflow runs every public SDK example against the candidate t
     'EXPECTED_SCRIPTS must be derived from the EXAMPLES array, not restated as a literal',
   );
 
-  // Examples run 4-wide; a failure in any worker must still fail the gate.
-  assert.match(examples.run, /xargs -P 4 -I\{\} bash -c 'run_sdk_example "\$@"' _ \{\}/);
+  // Examples run 2-wide; a failure in any worker must still fail the gate.
+  // Not 4: concurrent headed Chromium contends for memory and display surfaces,
+  // and 4-wide failed 2 of 3 runs on ubuntu-latest inside Page.captureScreenshot.
+  assert.match(examples.run, /xargs -P 2 -I\{\} bash -c 'run_sdk_example "\$@"' _ \{\}/);
   assert.match(examples.run, /export -f run_sdk_example/);
 
   assert.ok(stepIndex('Pack candidate tarball') < stepIndex(checkout.name));
